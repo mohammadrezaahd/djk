@@ -144,7 +144,7 @@ const Dashboard = () => {
           </Button>
         </CardContent>
       </Card> */}
-      <div>HI</div>
+      <div>HI ✌️</div>
     </>
   );
 };
