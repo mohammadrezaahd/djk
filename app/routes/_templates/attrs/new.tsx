@@ -454,12 +454,12 @@ export default function NewProductTemplate() {
 
         {attributes.length > 0 && (
           <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
+            {/* <Typography variant="h6" gutterBottom>
               فرم ویژگی‌های محصول ({attributes.length} مورد)
-            </Typography>
+            </Typography> */}
 
             {/* فیلد جستجو */}
-            <Box sx={{ mb: 3 }}>
+            {/* <Box sx={{ mb: 3 }}>
               <TextField
                 fullWidth
                 placeholder="جستجو در ویژگی‌ها..."
@@ -474,7 +474,7 @@ export default function NewProductTemplate() {
                   {filteredAttributes.length} نتیجه یافت شد
                 </Typography>
               )}
-            </Box>
+            </Box> */}
 
             <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
               {filteredAttributes.map((attr) => (
