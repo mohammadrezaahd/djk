@@ -13,6 +13,9 @@ import {
   Paper,
   Autocomplete,
   Chip,
+  Grid,
+  Card,
+  CardContent,
 } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import { categoriesApi } from "~/api/categories.api";
@@ -28,10 +31,21 @@ import { AttributeType } from "~/types/interfaces/categories.interface";
 
 export function meta() {
   return [
-    { title: "ایجاد قالب محصول جدید" },
-    { name: "description", content: "صفحه ایجاد قالب محصول جدید" },
+    { title: "افزودن محصول جدید" },
+    { name: "description", content: "صفحه افزودن محصول جدید به فروشگاه" },
   ];
 }
+
+const SectionCard = ({ title, children, ...props }: any) => (
+    <Card sx={{ p: 2, ...props.sx }} {...props}>
+        <CardContent>
+            <Typography variant="h6" gutterBottom>
+                {title}
+            </Typography>
+            {children}
+        </CardContent>
+    </Card>
+);
 
 export default function NewProductTemplate() {
   const [attributes, setAttributes] = useState<IAttr[]>([]);
@@ -42,6 +56,8 @@ export default function NewProductTemplate() {
   const [categories, setCategories] = useState<ICategoryList[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<ICategoryList | null>(null);
   const [loadingCategories, setLoadingCategories] = useState(false);
+  const [productName, setProductName] = useState("");
+  const [sku, setSku] = useState("");
 
   // فیلتر کردن attributes بر اساس جستجو
   const filteredAttributes = attributes.filter(
@@ -70,24 +86,21 @@ export default function NewProductTemplate() {
     loadCategories();
   }, []);
 
-  const fetcher = async () => {
-    if (!selectedCategory) {
-      alert("ابتدا یک دسته‌بندی انتخاب کنید.");
+  const fetcher = async (categoryId: number) => {
+    if (!categoryId) {
       return;
     }
 
     setLoading(true);
     try {
-      const res = await categoriesApi.getCategories(selectedCategory.id);
+      const res = await categoriesApi.getCategories(categoryId);
       if (res.status === ApiStatus.TRUE && res.data) {
         const data = res.data;
         const categoryGroupAttributes =
           data.item.attributes.category_group_attributes;
 
-        // ذخیره داده‌های اصلی برای استفاده در handleSubmit
         setOriginalCategoryData(categoryGroupAttributes);
 
-        // استخراج تمام attributes از تمام گروه‌ها
         const allAttributes: IAttr[] = [];
         const initialFormData: { [key: string]: any } = {};
 
@@ -95,16 +108,15 @@ export default function NewProductTemplate() {
           Object.values(categoryData.attributes).forEach((attr) => {
             allAttributes.push(attr);
 
-            // تنظیم مقادیر پیش‌فرض بر اساس selected values
             const selectedValues = Object.entries(attr.values)
               .filter(([_, valueData]) => valueData.selected)
               .map(([valueId, _]) => valueId);
 
             if (selectedValues.length > 0) {
               if (attr.type === AttributeType.Select) {
-                initialFormData[attr.id] = selectedValues[0]; // اولین مقدار selected
+                initialFormData[attr.id] = selectedValues[0];
               } else if (attr.type === AttributeType.Checkbox) {
-                initialFormData[attr.id] = selectedValues; // تمام مقادیر selected
+                initialFormData[attr.id] = selectedValues;
               }
             }
           });
@@ -112,13 +124,9 @@ export default function NewProductTemplate() {
 
         setAttributes(allAttributes);
         setFormData((prev) => ({ ...prev, ...initialFormData }));
-        console.log("Loaded attributes for category:", selectedCategory.title);
-        console.log("Attributes:", allAttributes);
-        console.log("Initial form data:", initialFormData);
       }
     } catch (error) {
       console.error("Error loading attributes:", error);
-      alert("خطا در بارگیری ویژگی‌ها. لطفاً دوباره تلاش کنید.");
     } finally {
       setLoading(false);
     }
@@ -393,124 +401,148 @@ export default function NewProductTemplate() {
 
   return (
     <AppLayout>
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ p: 3, maxWidth: 1200, margin: 'auto' }}>
         <Typography variant="h4" gutterBottom>
-          ایجاد قالب محصول جدید
+          افزودن محصول جدید به فروشگاه
         </Typography>
 
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            انتخاب دسته‌بندی محصول
-          </Typography>
-          
-          <Box sx={{ mb: 2 }}>
-            <Autocomplete
-              fullWidth
-              options={categories}
-              getOptionLabel={(option) => option.title}
-              value={selectedCategory}
-              onChange={(_, newValue) => {
-                setSelectedCategory(newValue);
-                // پاک کردن داده‌های قبلی هنگام تغییر دسته‌بندی
-                if (newValue !== selectedCategory) {
-                  setAttributes([]);
-                  setFormData({});
-                  setOriginalCategoryData(null);
-                }
-              }}
-              onInputChange={(_, newInputValue) => {
-                loadCategories(newInputValue);
-              }}
-              loading={loadingCategories}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="جستجو و انتخاب دسته‌بندی *"
-                  placeholder="نام دسته‌بندی را تایپ کنید..."
-                  helperText="ابتدا دسته‌بندی مورد نظر را انتخاب کنید"
-                />
-              )}
-              noOptionsText="دسته‌بندی‌ای یافت نشد"
-              loadingText="در حال جستجو..."
-              isOptionEqualToValue={(option, value) => option.id === value.id}
-            />
-          </Box>
+        <Grid container spacing={3}>
+            <Grid item xs={12} md={8}>
+                <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                        <SectionCard>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} md={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="نام کامل محصول"
+                                        placeholder="مثال: کفش ورزشی مدل جدید نایک"
+                                        value={productName}
+                                        onChange={(e) => setProductName(e.target.value)}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} md={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="شناسه انحصاری محصول (SKU)"
+                                        placeholder="مثال: NK-SH-42-BL-2023"
+                                        value={sku}
+                                        onChange={(e) => setSku(e.target.value)}
+                                    />
+                                </Grid>
+                            </Grid>
+                        </SectionCard>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <SectionCard title="دسته‌بندی و قالب">
+                            <Grid container spacing={2}>
+                                <Grid item xs={12}>
+                                    <Autocomplete
+                                    fullWidth
+                                    options={categories}
+                                    getOptionLabel={(option) => option.title}
+                                    value={selectedCategory}
+                                    onChange={(_, newValue) => {
+                                        setSelectedCategory(newValue);
+                                        if (newValue) {
+                                            fetcher(newValue.id);
+                                        } else {
+                                            setAttributes([]);
+                                            setFormData({});
+                                            setOriginalCategoryData(null);
+                                        }
+                                    }}
+                                    onInputChange={(_, newInputValue) => {
+                                        loadCategories(newInputValue);
+                                    }}
+                                    loading={loadingCategories}
+                                    renderInput={(params) => (
+                                        <TextField
+                                        {...params}
+                                        label="قالب اطلاعاتی محصول"
+                                        placeholder="جستجو در قالب‌ها..."
+                                        />
+                                    )}
+                                    noOptionsText="قالب‌ای یافت نشد"
+                                    loadingText="در حال جستجو..."
+                                    />
+                                </Grid>
+                            </Grid>
+                        </SectionCard>
+                    </Grid>
 
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={fetcher}
-            disabled={loading || !selectedCategory}
-            fullWidth
-          >
-            {loading 
-              ? "در حال بارگیری ویژگی‌ها..." 
-              : selectedCategory 
-                ? `لود ویژگی‌های ${selectedCategory.title}`
-                : "ابتدا دسته‌بندی را انتخاب کنید"
-            }
-          </Button>
-        </Box>
+                    {loading && (
+                        <Grid item xs={12}>
+                            <Typography sx={{textAlign: 'center', my: 3}}>در حال بارگیری ویژگی‌ها...</Typography>
+                        </Grid>
+                    )}
 
-        {attributes.length > 0 && (
-          <Paper sx={{ p: 3 }}>
-            {/* <Typography variant="h6" gutterBottom>
-              فرم ویژگی‌های محصول ({attributes.length} مورد)
-            </Typography> */}
+                    {attributes.length > 0 && (
+                         <Grid item xs={12}>
+                            <SectionCard title="قالب‌های مربوط به محصول">
+                                <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                                    {filteredAttributes.map((attr) => (
+                                        <Box key={attr.id}>{renderField(attr)}</Box>
+                                    ))}
+                                </Box>
+                            </SectionCard>
+                        </Grid>
+                    )}
 
-            {/* فیلد جستجو */}
-            {/* <Box sx={{ mb: 3 }}>
-              <TextField
-                fullWidth
-                placeholder="جستجو در ویژگی‌ها..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                InputProps={{
-                  startAdornment: "🔍"
-                }}
-              />
-              {searchTerm && (
-                <Typography variant="caption" color="textSecondary" sx={{ mt: 1, display: 'block' }}>
-                  {filteredAttributes.length} نتیجه یافت شد
-                </Typography>
-              )}
-            </Box> */}
-
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              {filteredAttributes.map((attr) => (
-                <Box key={attr.id}>{renderField(attr)}</Box>
-              ))}
-            </Box>
-
-            {filteredAttributes.length === 0 && searchTerm && (
-              <Box sx={{ textAlign: "center", py: 4 }}>
-                <Typography variant="body2" color="textSecondary">
-                  هیچ ویژگی‌ای با عبارت "{searchTerm}" یافت نشد
-                </Typography>
-              </Box>
-            )}
-
-            <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleSubmit}
-              >
-                ذخیره فرم
-              </Button>
-              <Button variant="outlined" onClick={() => setFormData({})}>
-                پاک کردن فرم
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={() => setSearchTerm("")}
-                disabled={!searchTerm}
-              >
-                پاک کردن جستجو
-              </Button>
-            </Box>
-          </Paper>
-        )}
+                     <Grid item xs={12}>
+                        <SectionCard title="برچسب‌های محصول">
+                           <Autocomplete
+                                multiple
+                                freeSolo
+                                fullWidth
+                                options={[]} // Sample options can be added here
+                                defaultValue={['محصول جدید', 'کفش ورزشی']}
+                                renderTags={(value, getTagProps) =>
+                                value.map((option, index) => (
+                                    <Chip label={option} {...getTagProps({ index })} key={index} />
+                                ))
+                                }
+                                renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="برچسب‌ها"
+                                    placeholder="افزودن برچسب جدید..."
+                                />
+                                )}
+                            />
+                        </SectionCard>
+                    </Grid>
+                </Grid>
+            </Grid>
+            <Grid item xs={12} md={4}>
+                 <SectionCard title=" " sx={{ position: 'sticky', top: '24px' }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleSubmit}
+                            size="large"
+                        >
+                            ذخیره نهایی محصول
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="secondary"
+                            size="large"
+                            onClick={() => {
+                                setFormData({});
+                                setProductName("");
+                                setSku("");
+                                setAttributes([]);
+                                setSelectedCategory(null);
+                            }}
+                        >
+                            انصراف از افزودن
+                        </Button>
+                    </Box>
+                </SectionCard>
+            </Grid>
+        </Grid>
       </Box>
     </AppLayout>
   );

@@ -3,16 +3,16 @@ import { createTheme } from '@mui/material/styles';
 // تعریف رنگ‌های پیش‌فرض
 const palette = {
   primary: {
-    main: '#1976d2',
-    light: '#42a5f5',
-    dark: '#1565c0',
+    main: '#212B36',
+    light: '#454F5B',
+    dark: '#161C24',
     contrastText: '#ffffff',
   },
   secondary: {
-    main: '#9c27b0',
-    light: '#ba68c8',
-    dark: '#7b1fa2',
-    contrastText: '#ffffff',
+    main: '#919EAB',
+    light: '#C4CDD5',
+    dark: '#637381',
+    contrastText: '#212B36',
   },
   error: {
     main: '#d32f2f',
@@ -51,13 +51,13 @@ const palette = {
     900: '#212121',
   },
   background: {
-    default: '#fafafa',
+    default: '#F4F6F8',
     paper: '#ffffff',
   },
   text: {
-    primary: 'rgba(0, 0, 0, 0.87)',
-    secondary: 'rgba(0, 0, 0, 0.6)',
-    disabled: 'rgba(0, 0, 0, 0.38)',
+    primary: '#212B36',
+    secondary: '#637381',
+    disabled: '#919EAB',
   },
 };
 
@@ -133,7 +133,7 @@ const spacing = 8;
 
 // تنظیمات shape (گوشه‌ها)
 const shape = {
-  borderRadius: 8,
+  borderRadius: 12,
 };
 
 // تنظیمات breakpoints
@@ -177,15 +177,61 @@ export const theme = createTheme({
           borderRadius: shape.borderRadius,
           textTransform: 'none',
           fontWeight: 500,
+          boxShadow: 'none',
+          '&:hover': {
+            boxShadow: 'none',
+          }
         },
+        containedPrimary: {
+          boxShadow: `0 8px 16px 0 rgba(0,0,0,0.24)`,
+        },
+        containedSecondary: {
+            backgroundColor: palette.grey[300],
+            color: palette.text.primary,
+            '&:hover': {
+                backgroundColor: palette.grey[400],
+            }
+        }
       },
     },
     MuiCard: {
       styleOverrides: {
         root: {
           borderRadius: shape.borderRadius,
+          boxShadow: `0 0 2px 0 rgba(145, 158, 171, 0.2), 0 12px 24px -4px rgba(145, 158, 171, 0.12)`,
         },
       },
+    },
+    MuiTextField: {
+        styleOverrides: {
+            root: {
+                '& .MuiOutlinedInput-root': {
+                    borderRadius: shape.borderRadius,
+                    backgroundColor: palette.background.paper,
+                }
+            }
+        }
+    },
+    MuiAutocomplete: {
+        styleOverrides: {
+            root: {
+                '& .MuiOutlinedInput-root': {
+                    padding: '9px',
+                }
+            },
+            paper: {
+                borderRadius: shape.borderRadius,
+                boxShadow: `0 0 2px 0 rgba(145, 158, 171, 0.2), 0 12px 24px -4px rgba(145, 158, 171, 0.12)`,
+            }
+        }
+    },
+    MuiChip: {
+        styleOverrides: {
+            root: {
+                borderRadius: shape.borderRadius / 1.5,
+                backgroundColor: palette.grey[200],
+            }
+        }
     },
     MuiDrawer: {
       styleOverrides: {
