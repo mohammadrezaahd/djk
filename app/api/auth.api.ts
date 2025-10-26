@@ -30,7 +30,7 @@ export interface LoginResponse {
 
 export const loginApi = async (
   credentials: LoginRequest
-): Promise<ApiResponse<LoginResponse>> => {
+): ApiResponse<LoginResponse> => {
   return apiUtils(async () => {
     const response = await axios.post(`${apiUrl}/v1/auth/login`, credentials, {
       headers: {

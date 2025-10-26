@@ -1,13 +1,13 @@
 import {
   Button,
   TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Checkbox,
-  FormControlLabel,
-  FormGroup,
+  // Select,
+  // MenuItem,
+  // FormControl,
+  // InputLabel,
+  // Checkbox,
+  // FormControlLabel,
+  // FormGroup,
   Box,
   Typography,
   Paper,
@@ -24,12 +24,11 @@ import { categoriesApi } from "~/api/categories.api";
 
 import AppLayout from "~/components/AppLayout";
 import { ApiStatus } from "~/types";
-import type {
-  IAttr,
-  IAttributeValue,
-  ICategoryList,
-} from "~/types/interfaces/categories.interface";
-import { AttributeType } from "~/types/interfaces/categories.interface";
+import {
+  AttributeType,
+  type IAttr,
+} from "~/types/interfaces/attributes.interface";
+import type { ICategoryList } from "~/types/interfaces/categories.interface";
 
 export function meta() {
   return [
@@ -62,6 +61,10 @@ export default function NewProductTemplate() {
   const [productName, setProductName] = useState("");
   const [sku, setSku] = useState("");
   const [activeTab, setActiveTab] = useState(0); // 0 for ویژگی ها، 1 for اطلاعات
+  
+  // States for details tab
+  const [detailsData, setDetailsData] = useState<any>(null);
+  const [detailsFormData, setDetailsFormData] = useState<{ [key: string]: any }>({});
 
   // فیلتر کردن attributes بر اساس جستجو
   const filteredAttributes = attributes.filter(
@@ -75,7 +78,7 @@ export default function NewProductTemplate() {
     setLoadingCategories(true);
     try {
       const res = await categoriesApi.getCategoriesList(search, 1, 50);
-      if (res.status === ApiStatus.TRUE && res.data) {
+      if (res.status === ApiStatus.SUCCEEDED && res.data) {
         setCategories(res.data.items);
       }
     } catch (error) {
@@ -90,47 +93,66 @@ export default function NewProductTemplate() {
     loadCategories();
   }, []);
 
-  const fetcher = async (categoryId: number) => {
+  const fetcher = async (
+    categoryId: number,
+    includeOptions?: { attributes?: boolean; details?: boolean }
+  ) => {
     if (!categoryId) {
       return;
     }
 
     setLoading(true);
     try {
-      const res = await categoriesApi.getCategories(categoryId);
-      if (res.status === ApiStatus.TRUE && res.data) {
+      const defaultOptions = { attributes: true, details: false };
+      const options = includeOptions || defaultOptions;
+
+      const res = await categoriesApi.getCategories(categoryId, options);
+      if (res.status === ApiStatus.SUCCEEDED && res.data) {
         const data = res.data;
-        const categoryGroupAttributes =
-          data.item.attributes.category_group_attributes;
 
-        setOriginalCategoryData(categoryGroupAttributes);
+        // اگر attributes درخواست شده باشد
+        if (
+          options.attributes &&
+          data.item.attributes?.category_group_attributes
+        ) {
+          const categoryGroupAttributes =
+            data.item.attributes.category_group_attributes;
+          setOriginalCategoryData(categoryGroupAttributes);
 
-        const allAttributes: IAttr[] = [];
-        const initialFormData: { [key: string]: any } = {};
+          const allAttributes: IAttr[] = [];
+          const initialFormData: { [key: string]: any } = {};
 
-        Object.values(categoryGroupAttributes).forEach((categoryData) => {
-          Object.values(categoryData.attributes).forEach((attr) => {
-            allAttributes.push(attr);
+          Object.values(categoryGroupAttributes).forEach((categoryData) => {
+            Object.values(categoryData.attributes).forEach((attr) => {
+              allAttributes.push(attr);
 
-            const selectedValues = Object.entries(attr.values)
-              .filter(([_, valueData]) => valueData.selected)
-              .map(([valueId, _]) => valueId);
+              const selectedValues = Object.entries(attr.values)
+                .filter(([_, valueData]) => valueData.selected)
+                .map(([valueId, _]) => valueId);
 
-            if (selectedValues.length > 0) {
-              if (attr.type === AttributeType.Select) {
-                initialFormData[attr.id] = selectedValues[0];
-              } else if (attr.type === AttributeType.Checkbox) {
-                initialFormData[attr.id] = selectedValues;
+              if (selectedValues.length > 0) {
+                if (attr.type === AttributeType.Select) {
+                  initialFormData[attr.id] = selectedValues[0];
+                } else if (attr.type === AttributeType.Checkbox) {
+                  initialFormData[attr.id] = selectedValues;
+                }
               }
-            }
+            });
           });
-        });
 
-        setAttributes(allAttributes);
-        setFormData((prev) => ({ ...prev, ...initialFormData }));
+          setAttributes(allAttributes);
+          setFormData((prev) => ({ ...prev, ...initialFormData }));
+        }
+
+        // اگر details درخواست شده باشد، می‌تونی اینجا کارهای مربوط به details رو انجام بدی
+        if (options.details) {
+          // برای آینده - کارهای مربوط به details
+          console.log("Details loaded:", data.item);
+          setDetailsData(data.item.details);
+        }
       }
     } catch (error) {
-      console.error("Error loading attributes:", error);
+      console.error("Error loading category data:", error);
     } finally {
       setLoading(false);
     }
@@ -140,6 +162,13 @@ export default function NewProductTemplate() {
     setFormData((prev) => ({
       ...prev,
       [attrId]: value,
+    }));
+  };
+
+  const handleDetailsChange = (fieldName: string, value: any) => {
+    setDetailsFormData((prev) => ({
+      ...prev,
+      [fieldName]: value,
     }));
   };
 
@@ -155,6 +184,120 @@ export default function NewProductTemplate() {
       (attr.type === AttributeType.Select ||
         attr.type === AttributeType.Checkbox) &&
       valuesCount > 0
+    );
+  };
+
+  const renderDetailsField = (fieldName: string, fieldData: any, label: string) => {
+    if (!fieldData || !Array.isArray(fieldData)) return null;
+
+    const options = fieldData.map((item: any, index: number) => {
+      // برای fake_reasons منطق متفاوت است
+      if (fieldName === 'fake_reason') {
+        return {
+          id: item.text || index.toString(), // text همان id است
+          label: item.value || `${label} ${index + 1}`, // value همان متن قابل نمایش است
+          value: item.text || index.toString(),
+          data: item
+        };
+      }
+      
+      // برای بقیه فیلدها منطق قبلی
+      return {
+        id: item.value || item.id || index.toString(),
+        label: item.text || item.title || item.labeel || `${label} ${index + 1}`,
+        value: item.value || item.id || index.toString(),
+        data: item
+      };
+    });
+
+    const selectedOption = options.find(
+      (option) => option.id === detailsFormData[fieldName]
+    ) || null;
+
+    // Custom render for brands with logo
+    const renderBrandOption = (props: any, option: any) => {
+      const { key, ...otherProps } = props;
+      return (
+        <Box 
+          component="li" 
+          key={key}
+          {...otherProps} 
+          sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+        >
+          <Typography variant="body2" sx={{ flex: 1 }}>{option.label}</Typography>
+          {option.data.logo_id && (
+            <Box
+              component="img"
+              src={option.data.logo_id}
+              alt={option.label}
+              sx={{
+                width: 32,
+                height: 32,
+                borderRadius: 1,
+                objectFit: 'contain',
+                border: '1px solid #e0e0e0'
+              }}
+              onError={(e: any) => {
+                e.target.style.display = 'none';
+              }}
+            />
+          )}
+        </Box>
+      );
+    };
+
+    // Custom render for selected brand in input
+    const renderBrandInput = (params: any) => (
+      <TextField
+        {...params}
+        label={label}
+        placeholder="انتخاب کنید..."
+        InputProps={{
+          ...params.InputProps,
+          endAdornment: selectedOption?.data?.logo_id ? (
+            <Box
+              component="img"
+              src={selectedOption.data.logo_id}
+              alt={selectedOption.label}
+              sx={{
+                width: 24,
+                height: 24,
+                borderRadius: 0.5,
+                objectFit: 'contain',
+                ml: 1,
+                border: '1px solid #e0e0e0'
+              }}
+              onError={(e: any) => {
+                e.target.style.display = 'none';
+              }}
+            />
+          ) : null,
+        }}
+      />
+    );
+
+    return (
+      <Box key={fieldName} sx={{ mb: 3 }}>
+        <Autocomplete
+          fullWidth
+          options={options}
+          getOptionLabel={(option) => option.label}
+          value={selectedOption}
+          onChange={(_, newValue) => {
+            handleDetailsChange(fieldName, newValue?.id || "");
+          }}
+          renderOption={fieldName === 'brand' ? renderBrandOption : undefined}
+          renderInput={fieldName === 'brand' ? renderBrandInput : (params) => (
+            <TextField
+              {...params}
+              label={label}
+              placeholder="انتخاب کنید..."
+            />
+          )}
+          noOptionsText="گزینه‌ای یافت نشد"
+          isOptionEqualToValue={(option, value) => option.id === value.id}
+        />
+      </Box>
     );
   };
 
@@ -241,6 +384,7 @@ export default function NewProductTemplate() {
                     const selectedIds = newValues.map((item) => item.id);
                     handleInputChange(attr.id, selectedIds);
                   }}
+                  disableCloseOnSelect
                   renderTags={(value, getTagProps) =>
                     value.map((option, index) => (
                       <Chip
@@ -405,43 +549,167 @@ export default function NewProductTemplate() {
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
+
+    // اگر دسته‌بندی انتخاب شده باشد، بر اساس تب جدید API کال کن
+    if (selectedCategory) {
+      if (newValue === 0) {
+        // تب ویژگی‌ها - attributes: true, details: false
+        fetcher(selectedCategory.id, { attributes: true, details: false });
+      } else if (newValue === 1) {
+        // تب اطلاعات - attributes: false, details: true
+        fetcher(selectedCategory.id, { attributes: false, details: true });
+      }
+    }
   };
 
-  const renderAttributesTab = () => (
-    <>
-      {loading && (
+  const renderAttributesTab = () => {
+    if (loading) {
+      return (
         <Grid size={{ xs: 12 }}>
-          <Typography sx={{ textAlign: "center", my: 3 }}>
-            در حال بارگیری ویژگی‌ها...
-          </Typography>
+          <SectionCard title="اطلاعات محصول">
+            <Typography variant="body1" color="text.secondary">
+              در حال بارگیری اطلاعات...
+            </Typography>
+          </SectionCard>
         </Grid>
-      )}
+      );
+    }
 
-      {attributes.length > 0 && (
+    if (attributes.length === 0) {
+      return (
         <Grid size={{ xs: 12 }}>
-          <SectionCard title="قالب‌های مربوط به محصول">
-            <Box
-              sx={{ display: "flex", flexDirection: "column", gap: 3 }}
-            >
-              {filteredAttributes.map((attr) => (
-                <Box key={attr.id}>{renderField(attr)}</Box>
-              ))}
+          <SectionCard title="اطلاعات محصول">
+            <Typography variant="body1" color="text.secondary">
+              اطلاعات محصول در دسترس نیست
+            </Typography>
+          </SectionCard>
+        </Grid>
+      );
+    }
+
+    return (
+      <Grid size={{ xs: 12 }}>
+        <SectionCard title="اطلاعات محصول">
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            {filteredAttributes.map((attr) => (
+              <Box key={attr.id}>{renderField(attr)}</Box>
+            ))}
+          </Box>
+        </SectionCard>
+      </Grid>
+    );
+  };
+
+  const renderInformationTab = () => {
+    if (!detailsData || !detailsData.bind) {
+      return (
+        <Grid size={{ xs: 12 }}>
+          <SectionCard title="اطلاعات محصول">
+            <Typography variant="body1" color="text.secondary">
+              {loading ? "در حال بارگیری اطلاعات..." : "اطلاعات محصول در دسترس نیست"}
+            </Typography>
+          </SectionCard>
+        </Grid>
+      );
+    }
+
+    const { bind } = detailsData;
+
+    return (
+      <Grid container spacing={3}>
+        {/* برندها */}
+        {bind.brands && bind.brands.length > 0 && (
+          <Grid size={{ xs: 12, md: 6 }}>
+            <SectionCard title="برند محصول">
+              {renderDetailsField("brand", bind.brands, "برند")}
+            </SectionCard>
+          </Grid>
+        )}
+
+        {/* وضعیت محصول */}
+        {bind.statuses && bind.statuses.length > 0 && (
+          <Grid size={{ xs: 12, md: 6 }}>
+            <SectionCard title="وضعیت محصول">
+              {renderDetailsField("status", bind.statuses, "وضعیت")}
+            </SectionCard>
+          </Grid>
+        )}
+
+        {/* پلتفرم‌ها */}
+        {bind.platforms && bind.platforms.length > 0 && (
+          <Grid size={{ xs: 12, md: 6 }}>
+            <SectionCard title="پلتفرم">
+              {renderDetailsField("platform", bind.platforms, "پلتفرم")}
+            </SectionCard>
+          </Grid>
+        )}
+
+        {/* کلاس محصول */}
+        {bind.product_classes && bind.product_classes.length > 0 && (
+          <Grid size={{ xs: 12, md: 6 }}>
+            <SectionCard title="کلاس محصول">
+              {renderDetailsField("product_class", bind.product_classes, "کلاس محصول")}
+            </SectionCard>
+          </Grid>
+        )}
+
+        {/* نوع محصول دسته‌بندی */}
+        {bind.category_product_types && bind.category_product_types.length > 0 && (
+          <Grid size={{ xs: 12, md: 6 }}>
+            <SectionCard title="نوع محصول">
+              {renderDetailsField("category_product_type", bind.category_product_types, "نوع محصول")}
+            </SectionCard>
+          </Grid>
+        )}
+
+        {/* دلایل تقلبی */}
+        {bind.fake_reasons && bind.fake_reasons.length > 0 && (
+          <Grid size={{ xs: 12, md: 6 }}>
+            <SectionCard title="دلایل تقلبی">
+              {renderDetailsField("fake_reason", bind.fake_reasons, "دلیل تقلبی")}
+            </SectionCard>
+          </Grid>
+        )}
+
+        {/* تم‌های دسته‌بندی */}
+        {bind.category_data?.themes && bind.category_data.themes.length > 0 && (
+          <Grid size={{ xs: 12, md: 6 }}>
+            <SectionCard title="تم دسته‌بندی">
+              {renderDetailsField("theme", bind.category_data.themes, "تم")}
+            </SectionCard>
+          </Grid>
+        )}
+
+        {/* اطلاعات اضافی */}
+        <Grid size={{ xs: 12 }}>
+          <SectionCard title="تنظیمات اضافی">
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {bind.allow_fake !== undefined && (
+                <Typography variant="body2">
+                  <strong>اجازه محصول تقلبی:</strong> {bind.allow_fake ? "بله" : "خیر"}
+                </Typography>
+              )}
+              {bind.show_colors !== undefined && (
+                <Typography variant="body2">
+                  <strong>نمایش رنگ‌ها:</strong> {bind.show_colors ? "بله" : "خیر"}
+                </Typography>
+              )}
+              {bind.dimension_level && (
+                <Typography variant="body2">
+                  <strong>سطح ابعاد:</strong> {bind.dimension_level}
+                </Typography>
+              )}
+              {bind.category_mefa_type && (
+                <Typography variant="body2">
+                  <strong>نوع MEFA دسته‌بندی:</strong> {bind.category_mefa_type}
+                </Typography>
+              )}
             </Box>
           </SectionCard>
         </Grid>
-      )}
-    </>
-  );
-
-  const renderInformationTab = () => (
-    <Grid size={{ xs: 12 }}>
-      <SectionCard title="اطلاعات محصول">
-        <Typography variant="body1" color="text.secondary">
-          محتوای تب اطلاعات در آینده اضافه خواهد شد...
-        </Typography>
-      </SectionCard>
-    </Grid>
-  );
+      </Grid>
+    );
+  };
 
   return (
     <AppLayout>
@@ -464,10 +732,16 @@ export default function NewProductTemplate() {
                       onChange={(_, newValue) => {
                         setSelectedCategory(newValue);
                         if (newValue) {
-                          fetcher(newValue.id);
+                          // پیش‌فرض تب ویژگی‌ها - attributes: true, details: false
+                          fetcher(newValue.id, {
+                            attributes: true,
+                            details: false,
+                          });
                         } else {
                           setAttributes([]);
                           setFormData({});
+                          setDetailsFormData({});
+                          setDetailsData(null);
                           setOriginalCategoryData(null);
                         }
                       }}
@@ -495,7 +769,7 @@ export default function NewProductTemplate() {
               <Grid size={{ xs: 12 }}>
                 <Card>
                   <CardContent>
-                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                    <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
                       <Tabs
                         value={activeTab}
                         onChange={handleTabChange}
@@ -505,7 +779,7 @@ export default function NewProductTemplate() {
                         <Tab label="اطلاعات" />
                       </Tabs>
                     </Box>
-                    
+
                     <Box sx={{ mt: 3 }}>
                       <Grid container spacing={3}>
                         {activeTab === 0 && renderAttributesTab()}
@@ -521,14 +795,16 @@ export default function NewProductTemplate() {
             {selectedCategory && (
               <Grid size={{ xs: 12 }}>
                 <SectionCard>
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  <Box
+                    sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+                  >
                     <Button
                       variant="contained"
                       color="primary"
                       onClick={handleSubmit}
                       size="large"
                     >
-                      ذخیره نهایی محصول
+                      {activeTab === 0 ? "ذخیره قالب ویژگی‌ها" : "ذخیره قالب اطلاعات"}
                     </Button>
                     <Button
                       variant="contained"
@@ -536,9 +812,11 @@ export default function NewProductTemplate() {
                       size="large"
                       onClick={() => {
                         setFormData({});
+                        setDetailsFormData({});
                         setProductName("");
                         setSku("");
                         setAttributes([]);
+                        setDetailsData(null);
                         setSelectedCategory(null);
                         setActiveTab(0);
                       }}

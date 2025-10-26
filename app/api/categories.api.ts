@@ -7,6 +7,12 @@ import type {
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
+// Options for what to include in getCategories response
+export interface GetCategoriesOptions {
+  attributes?: boolean;
+  details?: boolean;
+}
+
 const getCategoriesList = async (
   search: string,
   page: number,
@@ -20,10 +26,14 @@ const getCategoriesList = async (
   });
 };
 
-const getCategories = async (categoryId: number) => {
+const getCategories = async (
+  categoryId: number,
+  include: GetCategoriesOptions = { attributes: true, details: true }
+) => {
   return apiUtils<{ item: ICategory }>(async () => {
+    const { attributes = true, details = true } = include;
     const response = await axios.get(
-      `${apiUrl}/v1/categories/get?category_id=${categoryId}&attributes=true&details=true`
+      `${apiUrl}/v1/categories/get?category_id=${categoryId}&attributes=${attributes}&details=${details}`
     );
     return response.data;
   });

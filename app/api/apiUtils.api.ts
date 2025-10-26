@@ -1,5 +1,5 @@
 import { AxiosError } from "axios";
-import { ApiStatus, type ApiResponse, type ListApiResponse } from "~/types";
+import { ApiStatus, type ApiResponseData } from "~/types";
 
 /**
  * Generic API utility function to standardize API responses
@@ -7,15 +7,15 @@ import { ApiStatus, type ApiResponse, type ListApiResponse } from "~/types";
  * @returns Promise with standardized ApiResponse format
  */
 export async function apiUtils<T>(
-  apiCall: () => Promise<ApiResponse<T>>
-): Promise<ApiResponse<T>> {
+  apiCall: () => Promise<ApiResponseData<T>>
+): Promise<ApiResponseData<T>> {
   try {
     const response = await apiCall();
 
     // Validate response structure
     if (!response || typeof response !== "object") {
       return {
-        status: ApiStatus.FALSE,
+        status: ApiStatus.FAILED,
         code: 500,
         error: "Invalid response format",
       };
@@ -23,13 +23,13 @@ export async function apiUtils<T>(
 
     // Ensure status is properly formatted
     if (
-      response.status !== ApiStatus.TRUE &&
-      response.status !== ApiStatus.FALSE
+      response.status !== ApiStatus.SUCCEEDED &&
+      response.status !== ApiStatus.FAILED
     ) {
       response.status =
         response.code >= 200 && response.code < 300
-          ? ApiStatus.TRUE
-          : ApiStatus.FALSE;
+          ? ApiStatus.SUCCEEDED
+          : ApiStatus.FAILED;
     }
 
     return response;
@@ -42,7 +42,7 @@ export async function apiUtils<T>(
 
       if (responseData && typeof responseData === "object") {
         return {
-          status: ApiStatus.FALSE,
+          status: ApiStatus.FAILED,
           code: (error.response?.status as any) || 500,
           error: responseData.error || responseData.message || "Request failed",
           message: responseData.message,
@@ -50,14 +50,14 @@ export async function apiUtils<T>(
       }
 
       return {
-        status: ApiStatus.FALSE,
+        status: ApiStatus.FAILED,
         code: (error.response?.status as any) || 500,
         error: error.message || "Network error occurred",
       };
     }
 
     return {
-      status: ApiStatus.FALSE,
+      status: ApiStatus.FAILED,
       code: 500,
       error: error instanceof Error ? error.message : "Unknown error occurred",
     };
@@ -70,30 +70,35 @@ export async function apiUtils<T>(
  * @returns Promise with standardized ListApiResponse format
  */
 export async function apiListUtils<T>(
-  apiCall: () => Promise<ListApiResponse<T>>
-): Promise<ListApiResponse<T>> {
+  apiCall: () => Promise<ApiResponseData<T>>
+): Promise<ApiResponseData<T>> {
   try {
     const response = await apiCall();
 
     // Validate response structure
     if (!response || typeof response !== "object") {
       return {
-        status: "false",
+        status: ApiStatus.FAILED,
         code: 500,
         error: "Invalid response format",
-        data: [],
+        data: undefined,
       };
     }
 
     // Ensure status is properly formatted
-    if (response.status !== "true" && response.status !== "false") {
+    if (
+      response.status !== ApiStatus.SUCCEEDED &&
+      response.status !== ApiStatus.FAILED
+    ) {
       response.status =
-        response.code >= 200 && response.code < 300 ? "true" : "false";
+        response.code >= 200 && response.code < 300
+          ? ApiStatus.SUCCEEDED
+          : ApiStatus.FAILED;
     }
 
     // Ensure data is an array
     if (!Array.isArray(response.data)) {
-      response.data = [];
+      response.data = undefined;
     }
 
     return response;
@@ -106,27 +111,27 @@ export async function apiListUtils<T>(
 
       if (responseData && typeof responseData === "object") {
         return {
-          status: "false",
+          status: ApiStatus.FAILED,
           code: (error.response?.status as any) || 500,
           error: responseData.error || responseData.message || "Request failed",
           message: responseData.message,
-          data: [],
+          data: undefined,
         };
       }
 
       return {
-        status: "false",
+        status: ApiStatus.FAILED,
         code: (error.response?.status as any) || 500,
         error: error.message || "Network error occurred",
-        data: [],
+        data: undefined,
       };
     }
 
     return {
-      status: "false",
+      status: ApiStatus.FAILED,
       code: 500,
       error: error instanceof Error ? error.message : "Unknown error occurred",
-      data: [],
+      data: undefined,
     };
   }
 }
