@@ -1,6 +1,5 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { ThemeProvider as MuiThemeProvider, CssBaseline } from "@mui/material";
-import { CacheProvider } from "@emotion/react";
 import theme from "./theme";
 
 interface ThemeProviderProps {
