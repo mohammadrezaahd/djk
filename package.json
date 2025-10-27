@@ -15,10 +15,12 @@
     "@mui/material": "^7.3.4",
     "@react-router/node": "^7.9.2",
     "@react-router/serve": "^7.9.2",
+    "@reduxjs/toolkit": "^2.9.2",
     "axios": "^1.12.2",
     "isbot": "^5.1.31",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-redux": "^9.2.0",
     "react-router": "^7.9.2"
   },
   "devDependencies": {
@@ -27,6 +29,7 @@
     "@types/node": "^22",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
+    "babel-plugin-import": "^1.13.8",
     "tailwindcss": "^4.1.13",
     "typescript": "^5.9.2",
     "vite": "^7.1.7",

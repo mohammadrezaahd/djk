@@ -6,8 +6,10 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import { Provider } from "react-redux";
 
 import { ThemeProvider } from "./theme";
+import { store } from "./store";
 import "./app.css";
 
 export const links = () => [
@@ -37,7 +39,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <Provider store={store}>
+          <ThemeProvider>{children}</ThemeProvider>
+        </Provider>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -49,7 +53,7 @@ export default function App() {
   return <Outlet />;
 }
 
-export function ErrorBoundary({ error }) {
+export function ErrorBoundary({ error }: { error: any }) {
   let message = "Oops!";
   let details = "An unexpected error occurred.";
   let stack: string | undefined;

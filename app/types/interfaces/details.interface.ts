@@ -19,7 +19,7 @@ export interface IDetailsBind {
   dimension_level: "product";
   product_classes: IBindProductClass[];
   dimension_config?: any;
-  category_mefa_type: "general";
+  category_mefa_type: "general" | "specified";
   category_product_types: IBindCPT[];
 }
 

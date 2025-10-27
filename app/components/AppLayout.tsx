@@ -17,20 +17,19 @@ import {
   useTheme,
   Menu,
 } from "@mui/material";
-import {
-  Menu as MenuIcon,
-  Article,
-  Widgets,
-  PhotoLibrary,
-  LocalShipping,
-  Sell,
-  ExpandLess,
-  ExpandMore,
-  ChevronLeft,
-  ChevronRight,
-  MenuOpen,
-  Dashboard as DashboardIcon,
-} from "@mui/icons-material";
+// Import icons individually for better tree shaking
+import MenuIcon from "@mui/icons-material/Menu";
+import ArticleIcon from "@mui/icons-material/Article";
+import WidgetsIcon from "@mui/icons-material/Widgets";
+import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
+import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import SellIcon from "@mui/icons-material/Sell";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import MenuOpenIcon from "@mui/icons-material/MenuOpen";
+import DashboardIcon from "@mui/icons-material/Dashboard";
 import { Link, useLocation } from "react-router";
 
 const drawerWidth = 280;
@@ -112,7 +111,7 @@ const Layout = ({ children }: LayoutProps) => {
             },
           }}
         >
-          <MenuOpen />
+          <MenuOpenIcon />
         </IconButton>
       </Toolbar>
       <Divider />
@@ -179,7 +178,7 @@ const Layout = ({ children }: LayoutProps) => {
                   theme.palette.primary.main : 'inherit',
               }}
             >
-              <Widgets />
+              <WidgetsIcon />
             </ListItemIcon>
             {!desktopCollapsed && (
               <>
@@ -195,7 +194,7 @@ const Layout = ({ children }: LayoutProps) => {
                     }
                   }} 
                 />
-                {productTemplatesOpen ? <ExpandLess /> : <ExpandMore />}
+                {productTemplatesOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
               </>
             )}
           </ListItemButton>
@@ -246,7 +245,7 @@ const Layout = ({ children }: LayoutProps) => {
                   },
                 }}
                 component={Link}
-                to="/templates/attrs/new"
+                to="/templates/new"
               >
                 <ListItemText
                   sx={{ 
@@ -287,7 +286,7 @@ const Layout = ({ children }: LayoutProps) => {
                   theme.palette.primary.main : 'inherit',
               }}
             >
-              <PhotoLibrary />
+              <PhotoLibraryIcon />
             </ListItemIcon>
             {!desktopCollapsed && (
               <ListItemText 
@@ -328,7 +327,7 @@ const Layout = ({ children }: LayoutProps) => {
                   theme.palette.primary.main : 'inherit',
               }}
             >
-              <LocalShipping />
+              <LocalShippingIcon />
             </ListItemIcon>
             {!desktopCollapsed && (
               <ListItemText
@@ -369,7 +368,7 @@ const Layout = ({ children }: LayoutProps) => {
                   theme.palette.primary.main : 'inherit',
               }}
             >
-              <Sell />
+              <SellIcon />
             </ListItemIcon>
             {!desktopCollapsed && (
               <ListItemText 
