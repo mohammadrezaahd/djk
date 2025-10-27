@@ -1,5 +1,5 @@
 import Dashboard from "~/components/Dashboard";
-import AppLayout from "~/components/AppLayout";
+import AppLayout from "~/components/layout/AppLayout";
 
 export function meta() {
   return [
@@ -8,10 +8,12 @@ export function meta() {
   ];
 }
 
-export default function Home() {
+const Home = () => {
   return (
     <AppLayout>
       <Dashboard />
     </AppLayout>
   );
-}
+};
+
+export default Home;

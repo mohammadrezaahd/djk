@@ -1,42 +1,43 @@
 import axios from "axios";
-import { apiUtils } from "./apiUtils.api";
-import type { ApiResponse } from "~/types";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
-// Request and Response Types
 export interface LoginRequest {
   username: string;
   password: string;
 }
 
 export interface LoginResponse {
-  token?: string;
-  user?: {
-    id: string | number;
-    username: string;
-    email?: string;
-    name?: string;
-  };
-  expires_at?: string;
-  refresh_token?: string;
+  access_token?: string;
+  token_type?: string;
 }
-
-/**
- * Login API call
- * @param credentials - Username and password
- * @returns Promise with login response
- */
 
 export const loginApi = async (
   credentials: LoginRequest
-): ApiResponse<LoginResponse> => {
-  return apiUtils(async () => {
-    const response = await axios.post(`${apiUrl}/v1/auth/login`, credentials, {
+): Promise<LoginResponse> => {
+  const formData = new URLSearchParams();
+  formData.append("grant_type", "password");
+  formData.append("username", credentials.username);
+  formData.append("password", credentials.password);
+  formData.append("scope", "");
+  formData.append("client_id", "string");
+  // formData.append("client_secret", "********");
+
+  const response = await axios.post<LoginResponse>(
+    `${apiUrl}/v1/auth/login`,
+    formData,
+    {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
       },
-    });
-    return response.data;
-  });
+    }
+  );
+
+  // ✅ ذخیره JWT در localStorage
+  console.log(response);
+  if (response.data.access_token) {
+    localStorage.setItem("access_token", response.data.access_token);
+  }
+
+  return response.data;
 };

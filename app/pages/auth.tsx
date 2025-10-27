@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import type { Route } from "./+types/auth";
 import {
   Container,
@@ -8,9 +8,9 @@ import {
   Typography,
   Box,
   Alert,
-  CircularProgress
-} from '@mui/material';
-import { loginApi } from '~/api/auth.api';
+  CircularProgress,
+} from "@mui/material";
+import { loginApi } from "~/api/auth.api";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -19,59 +19,57 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export default function Auth() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<{username?: string; password?: string}>({});
+const Auth = () => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState<{
+    username?: string;
+    password?: string;
+  }>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [apiError, setApiError] = useState<string>('');
-  const [successMessage, setSuccessMessage] = useState<string>('');
+  const [apiError, setApiError] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Reset messages
-    setApiError('');
-    setSuccessMessage('');
-    
+    setApiError("");
+    setSuccessMessage("");
+
     // Simple validation
-    const newErrors: {username?: string; password?: string} = {};
-    
+    const newErrors: { username?: string; password?: string } = {};
+
     if (!username) {
-      newErrors.username = 'نام کاربری الزامی است';
+      newErrors.username = "نام کاربری الزامی است";
     }
-    
+
     if (!password) {
-      newErrors.password = 'رمز عبور الزامی است';
+      newErrors.password = "رمز عبور الزامی است";
     } else if (password.length < 3) {
-      newErrors.password = 'رمز عبور باید حداقل ۳ کاراکتر باشد';
+      newErrors.password = "رمز عبور باید حداقل ۳ کاراکتر باشد";
     }
 
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
       setIsLoading(true);
-      
+
       try {
         const result = await loginApi({ username, password });
-        
-        if (result.status === "true") {
-          setSuccessMessage('ورود موفقیت آمیز بود!');
-          console.log('Login successful:', result.data);
-          
-          // Clear form
-          setUsername('');
-          setPassword('');
-          
-          // Here you can handle successful login (redirect, store token, etc.)
-          // Example: localStorage.setItem('token', result.data?.token);
-          
-        } else {
-          setApiError(result.error || result.message || 'خطایی در ورود رخ داد');
-        }
-      } catch (error) {
-        setApiError('خطای شبکه رخ داد');
-        console.error('Login error:', error);
+
+        setSuccessMessage("ورود موفقیت آمیز بود!");
+        console.log("Login successful:", result);
+
+        // Clear form
+        setUsername("");
+        setPassword("");
+
+        // Here you can handle successful login (redirect, store token, etc.)
+        // Example: localStorage.setItem('token', result.access_token);
+      } catch (error: any) {
+        setApiError(error.response?.data?.message || error.message || "خطایی در ورود رخ داد");
+        console.error("Login error:", error);
       } finally {
         setIsLoading(false);
       }
@@ -81,30 +79,36 @@ export default function Auth() {
   return (
     <Container maxWidth="sm" sx={{ mt: 8 }}>
       <Paper elevation={3} sx={{ p: 4 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
           <Typography component="h1" variant="h4" gutterBottom>
             ورود به سیستم
           </Typography>
-          
+
           <Typography variant="body1" color="textSecondary" sx={{ mb: 3 }}>
             لطفاً اطلاعات خود را وارد کنید
           </Typography>
 
           {/* Success Message */}
           {successMessage && (
-            <Alert severity="success" sx={{ width: '100%', mb: 2 }}>
+            <Alert severity="success" sx={{ width: "100%", mb: 2 }}>
               {successMessage}
             </Alert>
           )}
 
           {/* Error Message */}
           {apiError && (
-            <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
+            <Alert severity="error" sx={{ width: "100%", mb: 2 }}>
               {apiError}
             </Alert>
           )}
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
+          <Box component="form" onSubmit={handleSubmit} sx={{ width: "100%" }}>
             <TextField
               fullWidth
               margin="normal"
@@ -120,7 +124,7 @@ export default function Auth() {
               autoFocus
               disabled={isLoading}
             />
-            
+
             <TextField
               fullWidth
               margin="normal"
@@ -149,7 +153,7 @@ export default function Auth() {
                   در حال ورود...
                 </>
               ) : (
-                'ورود'
+                "ورود"
               )}
             </Button>
           </Box>
@@ -157,4 +161,5 @@ export default function Auth() {
       </Paper>
     </Container>
   );
-}
+};
+export default Auth;

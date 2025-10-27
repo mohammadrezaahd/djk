@@ -6,7 +6,6 @@ import {
   Typography,
   Grid,
 } from "@mui/material";
-import React from "react";
 import type { ICategoryList } from "~/types/interfaces/categories.interface";
 
 const SectionCard = ({ title, children, ...props }: any) => (
@@ -28,13 +27,13 @@ interface CategorySelectorProps {
   onSearchChange: (search: string) => void;
 }
 
-export default function CategorySelector({
+const CategorySelector = ({
   categories,
   selectedCategory,
   loadingCategories,
   onCategoryChange,
   onSearchChange,
-}: CategorySelectorProps) {
+}: CategorySelectorProps) => {
   return (
     <Grid size={{ xs: 12 }}>
       <SectionCard title="دسته‌بندی قالب">
@@ -67,4 +66,6 @@ export default function CategorySelector({
       </SectionCard>
     </Grid>
   );
-}
+};
+
+export default CategorySelector;

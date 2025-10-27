@@ -25,11 +25,11 @@ interface ActionButtonsProps {
   onReset: () => void;
 }
 
-export default function ActionButtons({
+const ActionButtons = ({
   activeTab,
   onSubmit,
   onReset,
-}: ActionButtonsProps) {
+}: ActionButtonsProps) => {
   return (
     <Grid size={{ xs: 12 }}>
       <SectionCard>
@@ -40,9 +40,7 @@ export default function ActionButtons({
             onClick={onSubmit}
             size="large"
           >
-            {activeTab === 0
-              ? "ذخیره قالب ویژگی‌ها"
-              : "ذخیره قالب اطلاعات"}
+            {activeTab === 0 ? "ذخیره قالب ویژگی‌ها" : "ذخیره قالب اطلاعات"}
           </Button>
           <Button
             variant="contained"
@@ -56,4 +54,6 @@ export default function ActionButtons({
       </SectionCard>
     </Grid>
   );
-}
+};
+
+export default ActionButtons;

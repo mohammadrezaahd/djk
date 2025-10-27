@@ -23,7 +23,7 @@ export interface IAttr {
   type: AttributeType;
   unit?: string;
   title: string;
-  value?: any;
+  value?: { [valueId: string]: IAttributeValue };
   values: {
     [valueId: string]: IAttributeValue;
   };

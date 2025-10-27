@@ -1,34 +1,27 @@
-import {
-  TextField,
-  Box,
-  Autocomplete,
-  Chip,
-} from "@mui/material";
+import { TextField, Box, Autocomplete, Chip } from "@mui/material";
 import React from "react";
 import {
   AttributeType,
   type IAttr,
 } from "~/types/interfaces/attributes.interface";
 
-interface AttributeFieldProps {
+interface AttributesFieldProps {
   attr: IAttr;
   value: any;
   onChange: (attrId: number, value: any) => void;
 }
 
-export default function AttributeField({
+export default function AttributesField({
   attr,
   value,
   onChange,
-}: AttributeFieldProps) {
+}: AttributesFieldProps) {
   const fieldId = attr.id.toString();
 
-  // تشخیص اینکه آیا یک attribute چندانتخابه است یا خیر
   const isMultiSelect = (attr: IAttr): boolean => {
     return attr.type === AttributeType.Checkbox;
   };
 
-  // تشخیص اینکه آیا یک attribute باید Autocomplete استفاده کند یا خیر
   const shouldUseAutocomplete = (attr: IAttr): boolean => {
     const valuesCount = Object.keys(attr.values).length;
     return (
@@ -68,7 +61,6 @@ export default function AttributeField({
 
         const isMulti = isMultiSelect(attr);
 
-        // برای single select
         if (!isMulti) {
           const selectedOption =
             options.find((option) => option.id === value) || null;
@@ -93,14 +85,11 @@ export default function AttributeField({
                   />
                 )}
                 noOptionsText="گزینه‌ای یافت نشد"
-                isOptionEqualToValue={(option, value) =>
-                  option.id === value.id
-                }
+                isOptionEqualToValue={(option, value) => option.id === value.id}
               />
             </Box>
           );
         } else {
-          // برای multi select
           const selectedOptions = options.filter(
             (option) => value?.includes(option.id) || false
           );
@@ -139,9 +128,7 @@ export default function AttributeField({
                   />
                 )}
                 noOptionsText="گزینه‌ای یافت نشد"
-                isOptionEqualToValue={(option, value) =>
-                  option.id === value.id
-                }
+                isOptionEqualToValue={(option, value) => option.id === value.id}
                 filterSelectedOptions
                 limitTags={3}
                 getLimitTagsText={(more) => `+${more} بیشتر`}
