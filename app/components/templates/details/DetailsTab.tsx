@@ -1,7 +1,7 @@
 import { Box, Typography, Card, CardContent, Grid } from "@mui/material";
 import { useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "~/store/hooks";
-import { updateFormField } from "~/store/slices/detailsSlice";
+import { useFormContext } from "react-hook-form";
+import { useAppSelector } from "~/store/hooks";
 import type { RootState } from "~/store";
 import DetailsField from "./DetailsField";
 
@@ -19,41 +19,34 @@ const SectionCard = ({ title, children, ...props }: any) => (
 interface DetailsTabProps {}
 
 const DetailsTab = ({}: DetailsTabProps) => {
-  const dispatch = useAppDispatch();
+  const { watch, setValue } = useFormContext();
   const detailsData = useAppSelector(
     (state: RootState) => (state.details as any)?.detailsData
-  );
-  const detailsFormData = useAppSelector(
-    (state: RootState) => (state.details as any)?.formData || {}
   );
   const loading = useAppSelector(
     (state: RootState) => (state.details as any)?.loading || false
   );
 
-  const handleDetailsChange = (fieldName: string, value: any) => {
-    dispatch(updateFormField({ fieldName, value }));
-  };
-
-  const isFakeProduct = detailsFormData?.is_fake_product === true;
+  const isFakeProduct = watch("is_fake_product") === true;
+  const idType = watch("id_type");
   const bind = detailsData?.bind;
 
   useEffect(() => {
     if (isFakeProduct && bind?.brands) {
       const miscBrand = bind.brands.find((brand: any) => brand.id === "719");
       if (miscBrand) {
-        handleDetailsChange("brand", "719");
+        setValue("brand", "719");
       }
     }
-  }, [isFakeProduct, bind?.brands]);
+  }, [isFakeProduct, bind?.brands, setValue]);
 
   useEffect(() => {
-    if (bind?.category_mefa_type && !detailsFormData?.id_type) {
-      handleDetailsChange("id_type", bind.category_mefa_type);
+    if (bind?.category_mefa_type && !idType) {
+      setValue("id_type", bind.category_mefa_type);
     }
-  }, [bind?.category_mefa_type, detailsFormData?.id_type]);
+  }, [bind?.category_mefa_type, idType, setValue]);
 
-  const isGeneralId =
-    (detailsFormData?.id_type || bind?.category_mefa_type) === "general";
+  const isGeneralId = (idType || bind?.category_mefa_type) === "general";
 
   if (!detailsData || !detailsData.bind) {
     return (
@@ -77,8 +70,6 @@ const DetailsTab = ({}: DetailsTabProps) => {
             <DetailsField
               fieldName="title"
               label="عنوان قالب اطلاعات"
-              value={detailsFormData?.title}
-              onChange={handleDetailsChange}
               isTextField
               required
               placeholder="عنوان قالب را وارد کنید..."
@@ -87,8 +78,6 @@ const DetailsTab = ({}: DetailsTabProps) => {
             <DetailsField
               fieldName="description"
               label="سایر توضیحات"
-              value={detailsFormData?.description}
-              onChange={handleDetailsChange}
               isTextField
               multiline
               rows={3}
@@ -109,13 +98,6 @@ const DetailsTab = ({}: DetailsTabProps) => {
                 { value: "fake", label: "فروش کالای غیر اصل" },
               ]}
               label=""
-              value={
-                detailsFormData?.is_fake_product === true ? "fake" : "original"
-              }
-              onChange={(fieldName: string, value: any) => {
-                const isFake = value === "fake";
-                handleDetailsChange("is_fake_product", isFake);
-              }}
               isRadioGroup
             />
           </SectionCard>
@@ -129,8 +111,6 @@ const DetailsTab = ({}: DetailsTabProps) => {
               fieldName="brand"
               fieldData={bind.brands}
               label={isFakeProduct ? "برند (متفرقه - غیر قابل ویرایش)" : "برند"}
-              value={detailsFormData?.brand}
-              onChange={handleDetailsChange}
               disabled={isFakeProduct}
               showBrandLogo
             />
@@ -145,8 +125,6 @@ const DetailsTab = ({}: DetailsTabProps) => {
               fieldName="status"
               fieldData={bind.statuses}
               label="وضعیت"
-              value={detailsFormData?.status}
-              onChange={handleDetailsChange}
             />
           </SectionCard>
         </Grid>
@@ -159,8 +137,6 @@ const DetailsTab = ({}: DetailsTabProps) => {
               fieldName="platform"
               fieldData={bind.platforms}
               label="پلتفرم"
-              value={detailsFormData?.platform}
-              onChange={handleDetailsChange}
             />
           </SectionCard>
         </Grid>
@@ -173,8 +149,6 @@ const DetailsTab = ({}: DetailsTabProps) => {
               fieldName="product_class"
               fieldData={bind.product_classes}
               label="کلاس محصول"
-              value={detailsFormData?.product_class}
-              onChange={handleDetailsChange}
             />
           </SectionCard>
         </Grid>
@@ -188,8 +162,6 @@ const DetailsTab = ({}: DetailsTabProps) => {
                 fieldName="category_product_type"
                 fieldData={bind.category_product_types}
                 label="نوع محصول"
-                value={detailsFormData?.category_product_type}
-                onChange={handleDetailsChange}
               />
             </SectionCard>
           </Grid>
@@ -202,8 +174,6 @@ const DetailsTab = ({}: DetailsTabProps) => {
               fieldName="fake_reason"
               fieldData={bind.fake_reasons}
               label="دلیل تقلبی"
-              value={detailsFormData?.fake_reason}
-              onChange={handleDetailsChange}
             />
           </SectionCard>
         </Grid>
@@ -216,8 +186,6 @@ const DetailsTab = ({}: DetailsTabProps) => {
               fieldName="theme"
               fieldData={bind.category_data.themes}
               label="تم"
-              value={detailsFormData?.theme}
-              onChange={handleDetailsChange}
             />
           </SectionCard>
         </Grid>
@@ -234,16 +202,6 @@ const DetailsTab = ({}: DetailsTabProps) => {
                   { value: "custom", label: "شناسه خصوصی" },
                 ]}
                 label=""
-                value={
-                  detailsFormData?.id_type ||
-                  bind?.category_mefa_type ||
-                  "general"
-                }
-                onChange={(fieldName: string, value: any) => {
-                  handleDetailsChange("id_type", value);
-                  handleDetailsChange("general_mefa_id", "");
-                  handleDetailsChange("custom_id", "");
-                }}
                 isRadioGroup
               />
 
@@ -252,16 +210,12 @@ const DetailsTab = ({}: DetailsTabProps) => {
                   fieldName="general_mefa_id"
                   fieldData={bind.general_mefa}
                   label="شناسه عمومی"
-                  value={detailsFormData?.general_mefa_id}
-                  onChange={handleDetailsChange}
                   isObjectData
                 />
               ) : (
                 <DetailsField
                   fieldName="custom_id"
                   label="شناسه خصوصی"
-                  value={detailsFormData?.custom_id}
-                  onChange={handleDetailsChange}
                   isTextField
                   placeholder="شناسه خصوصی را وارد کنید..."
                 />

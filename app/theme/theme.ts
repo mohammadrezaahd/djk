@@ -265,6 +265,16 @@ export const theme = createTheme({
         },
       },
     },
+    MuiFormHelperText: {
+      styleOverrides: {
+        root: {
+          '&.Mui-error': {
+            color: palette.error.main,
+            fontWeight: 500,
+          },
+        },
+      },
+    },
   },
 });
 

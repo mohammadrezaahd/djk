@@ -7,8 +7,16 @@ import {
   Tabs,
   Tab,
 } from "@mui/material";
-import React, { useState, useEffect } from "react";
-import { categoriesApi, useCategoriesList, useCategory } from "~/api/categories.api";
+import React, { useState, useEffect, useMemo } from "react";
+import { useForm, FormProvider } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { createAttributesSchema } from "~/validations/attributesSchema";
+import { createDetailsSchema } from "~/validations/detailsSchema";
+import {
+  categoriesApi,
+  useCategoriesList,
+  useCategory,
+} from "~/api/categories.api";
 import type { GetCategoriesOptions } from "~/api/categories.api";
 
 import AppLayout from "~/components/layout/AppLayout";
@@ -52,9 +60,37 @@ export default function NewProductTemplate() {
     useState<ICategoryList | null>(null);
   const [activeTab, setActiveTab] = useState(0); // 0 for ویژگی ها، 1 for اطلاعات
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryQueryOptions, setCategoryQueryOptions] = useState<GetCategoriesOptions>({
-    attributes: false,
-    details: false
+  const [categoryQueryOptions, setCategoryQueryOptions] =
+    useState<GetCategoriesOptions>({
+      attributes: false,
+      details: false,
+    });
+
+  const attributes = useMemo(() => {
+    if (!attributesStore.attributesData?.category_group_attributes) return [];
+    const allAttributes: any[] = [];
+    Object.values(
+      attributesStore.attributesData.category_group_attributes
+    ).forEach((categoryData) => {
+      Object.values(categoryData.attributes).forEach((attr) => {
+        if (attr.id !== 2233) {
+          allAttributes.push(attr);
+        }
+      });
+    });
+    return allAttributes;
+  }, [attributesStore.attributesData]);
+
+  const brands = useMemo(() => {
+    return detailsStore.detailsData?.bind?.brands || [];
+  }, [detailsStore.detailsData]);
+
+  const attributeMethods = useForm({
+    resolver: yupResolver(createAttributesSchema(attributes)),
+  });
+
+  const detailMethods = useForm({
+    resolver: yupResolver(createDetailsSchema(brands)),
   });
 
   // React Query hooks
@@ -72,11 +108,14 @@ export default function NewProductTemplate() {
   const {
     data: categoryData,
     isLoading: categoryLoading,
-    error: categoryError
+    error: categoryError,
   } = useCategory(
     selectedCategory?.id || 0,
     categoryQueryOptions,
-    !!(selectedCategory?.id && (categoryQueryOptions.attributes || categoryQueryOptions.details))
+    !!(
+      selectedCategory?.id &&
+      (categoryQueryOptions.attributes || categoryQueryOptions.details)
+    )
   );
 
   // استخراج categories از response
@@ -89,11 +128,18 @@ export default function NewProductTemplate() {
 
   // Update store when category data changes
   useEffect(() => {
-    if (categoryData?.status === ApiStatus.SUCCEEDED && categoryData.data && selectedCategory) {
+    if (
+      categoryData?.status === ApiStatus.SUCCEEDED &&
+      categoryData.data &&
+      selectedCategory
+    ) {
       const data = categoryData.data;
 
       // اگر attributes درخواست شده باشد
-      if (categoryQueryOptions.attributes && data.item.attributes?.category_group_attributes) {
+      if (
+        categoryQueryOptions.attributes &&
+        data.item.attributes?.category_group_attributes
+      ) {
         dispatch(
           setAttributesData({
             categoryId: selectedCategory.id,
@@ -114,104 +160,58 @@ export default function NewProductTemplate() {
     }
   }, [categoryData, selectedCategory, categoryQueryOptions, dispatch]);
 
-  const handleSubmit = async () => {
-    const tabName = activeTab === 0 ? "ویژگی‌ها" : "اطلاعات";
-    console.log(`✅ ذخیره قالب ${tabName} کلیک شد!`);
+  const onAttributesSubmit = async (data: any) => {
+    const finalAttributesData = getFinalAttributesObject({
+      attributes: attributesStore,
+    });
 
-    if (activeTab === 0) {
-      // تب ویژگی‌ها
-      const finalAttributesData = getFinalAttributesObject({
-        attributes: attributesStore,
-      });
-
-      if (!finalAttributesData) {
-        console.error(
-          "داده‌های attributes موجود نیست. ابتدا یک دسته‌بندی انتخاب کنید."
-        );
-        alert("ابتدا یک دسته‌بندی انتخاب کنید.");
-        return;
-      }
-
-      // بررسی title
-      if (!attributesStore.title.trim()) {
-        alert("لطفاً عنوان قالب را وارد کنید.");
-        return;
-      }
-
-      // استخراج formData از store (نه از attr.value)
-      const formData: { [key: string]: any } = attributesStore.formData || {};
-
-      console.log("📤 داده‌های پردازش شده ویژگی‌ها (کل ICategoryAttr):");
-      console.log("FormData از store:", formData);
-
-      // پردازش داده‌ها
-      const processedJSON = processAndConvertToJSON(
-        finalAttributesData,
-        formData
+    if (!finalAttributesData) {
+      console.error(
+        "داده‌های attributes موجود نیست. ابتدا یک دسته‌بندی انتخاب کنید."
       );
-      console.log(processedJSON);
+      alert("ابتدا یک دسته‌بندی انتخاب کنید.");
+      return;
+    }
 
-      // آماده‌سازی داده برای API
-      const apiData = {
-        title: attributesStore.title,
-        description: attributesStore.description || undefined, // اختیاری
-        category_id: attributesStore.currentCategoryId!,
-        data_json: JSON.parse(processedJSON),
-        images: [], // فعلاً خالی
-        source: "app" as const,
-      };
+    const processedJSON = processAndConvertToJSON(finalAttributesData, data);
+    const apiData = {
+      title: data.title,
+      description: data.description || undefined,
+      category_id: attributesStore.currentCategoryId!,
+      data_json: JSON.parse(processedJSON),
+      images: [],
+      source: "app" as const,
+    };
 
-      try {
-        console.log("🚀 ارسال به API...", apiData);
-        const result = await addAttributeMutation.mutateAsync(apiData);
-
-        if (result.status === "true" && result.data) {
-          alert(`قالب با موفقیت اضافه شد! شناسه: ${result.data.data.id}`);
-          console.log("✅ قالب با موفقیت ذخیره شد:", result);
-          // Reset form after successful submission
-          dispatch(resetAttributes());
-          setSelectedCategory(null);
-          setActiveTab(0);
-        } else {
-          alert(
-            "خطا در ذخیره قالب: " +
-              (result.error || result.message || "خطای نامشخص")
-          );
-          console.error("❌ خطا در ذخیره:", result);
-        }
-      } catch (error) {
-        console.error("❌ خطا در ارسال به API:", error);
-        alert("خطا در ارتباط با سرور. لطفاً دوباره تلاش کنید.");
+    try {
+      const result = await addAttributeMutation.mutateAsync(apiData);
+      if (result.status === "true" && result.data) {
+        alert(`قالب با موفقیت اضافه شد! شناسه: ${result.data.data.id}`);
+        handleReset();
+      } else {
+        alert(
+          "خطا در ذخیره قالب: " +
+            (result.error || result.message || "خطای نامشخص")
+        );
       }
-    } else {
-      // تب اطلاعات
-      const detailsFormData = detailsStore.formData || {};
+    } catch (error) {
+      console.error("❌ خطا در ارسال به API:", error);
+      alert("خطا در ارتباط با سرور. لطفاً دوباره تلاش کنید.");
+    }
+  };
 
-      if (Object.keys(detailsFormData).length === 0) {
-        console.error("داده‌های اطلاعات موجود نیست.");
-        alert("ابتدا اطلاعات محصول را تکمیل کنید.");
-        return;
-      }
+  const onDetailsSubmit = async (data: any) => {
+    if (!selectedCategory?.id) {
+      alert("دسته‌بندی انتخاب نشده است.");
+      return;
+    }
 
-      // بررسی title برای اطلاعات
-      if (!detailsFormData.title?.trim()) {
-        alert("لطفاً عنوان قالب اطلاعات را وارد کنید.");
-        return;
-      }
-
-      if (!selectedCategory?.id) {
-        alert("دسته‌بندی انتخاب نشده است.");
-        return;
-      }
-
-      try {
-        console.log("� ذخیره اطلاعات...");
-        await dispatch(saveDetails(selectedCategory.id, []));
-        console.log("✅ قالب اطلاعات با موفقیت ذخیره شد");
-      } catch (error) {
-        console.error("❌ خطا در ذخیره اطلاعات:", error);
-        // خطا توسط saveDetails نمایش داده می‌شود
-      }
+    try {
+      await dispatch(saveDetails(selectedCategory.id, data));
+      console.log("✅ قالب اطلاعات با موفقیت ذخیره شد");
+      handleReset();
+    } catch (error) {
+      console.error("❌ خطا در ذخیره اطلاعات:", error);
     }
   };
 
@@ -244,12 +244,13 @@ export default function NewProductTemplate() {
   };
 
   const handleReset = () => {
-    // ریست کردن store ها
     dispatch(resetAttributes());
     dispatch(resetDetails());
     setSelectedCategory(null);
     setActiveTab(0);
     setCategoryQueryOptions({ attributes: false, details: false });
+    attributeMethods.reset();
+    detailMethods.reset();
   };
 
   return (
@@ -269,7 +270,6 @@ export default function NewProductTemplate() {
               onSearchChange={handleSearchChange}
             />
 
-            {/* Tabs Section */}
             {selectedCategory && (
               <Grid size={{ xs: 12 }}>
                 <Card>
@@ -284,11 +284,18 @@ export default function NewProductTemplate() {
                         <Tab label="اطلاعات" />
                       </Tabs>
                     </Box>
-
                     <Box sx={{ mt: 3 }}>
                       <Grid container spacing={3}>
-                        {activeTab === 0 && <AttributesTab />}
-                        {activeTab === 1 && <DetailsTab />}
+                        {activeTab === 0 && (
+                          <FormProvider {...attributeMethods}>
+                            <AttributesTab />
+                          </FormProvider>
+                        )}
+                        {activeTab === 1 && (
+                          <FormProvider {...detailMethods}>
+                            <DetailsTab />
+                          </FormProvider>
+                        )}
                       </Grid>
                     </Box>
                   </CardContent>
@@ -296,16 +303,22 @@ export default function NewProductTemplate() {
               </Grid>
             )}
 
-            {/* Action Buttons */}
             {selectedCategory && (
               <ActionButtons
                 activeTab={activeTab}
-                onSubmit={handleSubmit}
+                onSubmit={
+                  activeTab === 0
+                    ? attributeMethods.handleSubmit(onAttributesSubmit)
+                    : detailMethods.handleSubmit(onDetailsSubmit)
+                }
                 onReset={handleReset}
                 loading={
                   activeTab === 0
                     ? categoryLoading || addAttributeMutation.isPending
-                    : categoryLoading || addDetailMutation.isPending || (detailsStore as any).saving || detailsStore.loading
+                    : categoryLoading ||
+                      addDetailMutation.isPending ||
+                      (detailsStore as any).saving ||
+                      detailsStore.loading
                 }
               />
             )}

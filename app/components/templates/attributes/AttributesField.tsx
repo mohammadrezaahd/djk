@@ -1,159 +1,106 @@
-import { TextField, Box, Autocomplete, Chip } from "@mui/material";
 import React from "react";
 import {
-  AttributeType,
-  type IAttr,
-} from "~/types/interfaces/attributes.interface";
+  TextField,
+  Autocomplete,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  Checkbox,
+  FormHelperText,
+} from "@mui/material";
+import { useFormContext, Controller } from "react-hook-form";
+import type { IAttr } from "~/types/interfaces/attributes.interface";
 
 interface AttributesFieldProps {
   attr: IAttr;
-  value: any;
-  onChange: (attrId: number, value: any) => void;
 }
 
-export default function AttributesField({
-  attr,
-  value,
-  onChange,
-}: AttributesFieldProps) {
-  const fieldId = attr.id.toString();
+const AttributesField: React.FC<AttributesFieldProps> = ({ attr }) => {
+  const {
+    control,
+    formState: { errors },
+  } = useFormContext();
 
-  const isMultiSelect = (attr: IAttr): boolean => {
-    return attr.type === AttributeType.Checkbox;
-  };
+  const fieldName = attr.id.toString();
 
-  const shouldUseAutocomplete = (attr: IAttr): boolean => {
-    const valuesCount = Object.keys(attr.values).length;
-    return (
-      (attr.type === AttributeType.Select ||
-        attr.type === AttributeType.Checkbox) &&
-      valuesCount > 0
-    );
-  };
-
-  switch (attr.type) {
-    case AttributeType.Input:
-      return (
-        <TextField
-          fullWidth
-          type="number"
-          label={attr.title + (attr.required ? " *" : "")}
-          helperText={attr.hint}
-          value={value || ""}
-          onChange={(e) => onChange(attr.id, e.target.value)}
-          required={attr.required}
-          InputProps={{
-            endAdornment: attr.postfix || attr.unit,
-          }}
-        />
-      );
-
-    case AttributeType.Select:
-    case AttributeType.Checkbox:
-      if (shouldUseAutocomplete(attr)) {
-        const options = Object.entries(attr.values).map(
-          ([valueId, valueData]) => ({
-            id: valueId,
-            label: valueData.text,
-            value: valueId,
-          })
+  const renderField = (field: any) => {
+    switch (attr.element_type) {
+      case "text":
+      case "number":
+        return (
+          <TextField
+            {...field}
+            fullWidth
+            label={attr.title}
+            placeholder={attr.placeholder || ""}
+            type={attr.element_type}
+            error={!!errors[fieldName]}
+            helperText={errors[fieldName]?.message}
+          />
         );
-
-        const isMulti = isMultiSelect(attr);
-
-        if (!isMulti) {
-          const selectedOption =
-            options.find((option) => option.id === value) || null;
-
-          return (
-            <Box>
-              <Autocomplete
-                fullWidth
-                options={options}
-                getOptionLabel={(option) => option.label}
-                value={selectedOption}
-                onChange={(_, newValue) => {
-                  onChange(attr.id, newValue?.id || "");
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label={attr.title + (attr.required ? " *" : "")}
-                    required={attr.required}
-                    helperText={attr.hint}
-                    placeholder="انتخاب کنید..."
-                  />
-                )}
-                noOptionsText="گزینه‌ای یافت نشد"
-                isOptionEqualToValue={(option, value) => option.id === value.id}
+      case "select":
+        return (
+          <Autocomplete
+            {...field}
+            multiple={attr.max_selection > 1}
+            options={attr.options.map((opt) => opt.id.toString())}
+            getOptionLabel={(option) =>
+              attr.options.find((opt) => opt.id.toString() === option)
+                ?.option || ""
+            }
+            onChange={(_, value) => field.onChange(value)}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label={attr.title}
+                placeholder={attr.placeholder || ""}
+                error={!!errors[fieldName]}
+                helperText={errors[fieldName]?.message}
               />
-            </Box>
-          );
-        } else {
-          const selectedOptions = options.filter(
-            (option) => value?.includes(option.id) || false
-          );
+            )}
+          />
+        );
+      case "radio":
+        return (
+          <FormControl component="fieldset" error={!!errors[fieldName]}>
+            <FormLabel component="legend">{attr.title}</FormLabel>
+            <RadioGroup {...field}>
+              {attr.options.map((opt) => (
+                <FormControlLabel
+                  key={opt.id}
+                  value={opt.id.toString()}
+                  control={<Radio />}
+                  label={opt.option}
+                />
+              ))}
+            </RadioGroup>
+            {errors[fieldName] && (
+              <FormHelperText>{errors[fieldName].message}</FormHelperText>
+            )}
+          </FormControl>
+        );
+      case "checkbox":
+        return (
+          <FormControlLabel
+            control={<Checkbox {...field} checked={!!field.value} />}
+            label={attr.title}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
-          return (
-            <Box>
-              <Autocomplete
-                multiple
-                fullWidth
-                options={options}
-                getOptionLabel={(option) => option.label}
-                value={selectedOptions}
-                onChange={(_, newValues) => {
-                  const selectedIds = newValues.map((item) => item.id);
-                  onChange(attr.id, selectedIds);
-                }}
-                disableCloseOnSelect
-                renderTags={(value, getTagProps) =>
-                  value.map((option, index) => (
-                    <Chip
-                      variant="outlined"
-                      label={option.label}
-                      {...getTagProps({ index })}
-                      key={option.id}
-                      size="small"
-                    />
-                  ))
-                }
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label={attr.title + (attr.required ? " *" : "")}
-                    required={attr.required}
-                    helperText={attr.hint}
-                    placeholder="انتخاب کنید..."
-                  />
-                )}
-                noOptionsText="گزینه‌ای یافت نشد"
-                isOptionEqualToValue={(option, value) => option.id === value.id}
-                filterSelectedOptions
-                limitTags={3}
-                getLimitTagsText={(more) => `+${more} بیشتر`}
-              />
-            </Box>
-          );
-        }
-      }
-      return null;
+  return (
+    <Controller
+      name={fieldName}
+      control={control}
+      defaultValue={attr.max_selection > 1 ? [] : ""}
+      render={({ field }) => renderField(field)}
+    />
+  );
+};
 
-    case AttributeType.Text:
-      return (
-        <TextField
-          fullWidth
-          multiline
-          rows={3}
-          label={attr.title + (attr.required ? " *" : "")}
-          helperText={attr.hint}
-          value={value || ""}
-          onChange={(e) => onChange(attr.id, e.target.value)}
-          required={attr.required}
-        />
-      );
-
-    default:
-      return null;
-  }
-}
+export default AttributesField;
