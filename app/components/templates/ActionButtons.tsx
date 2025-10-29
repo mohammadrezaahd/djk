@@ -23,12 +23,14 @@ interface ActionButtonsProps {
   activeTab: number;
   onSubmit: () => void;
   onReset: () => void;
+  loading?: boolean;
 }
 
 const ActionButtons = ({
   activeTab,
   onSubmit,
   onReset,
+  loading = false,
 }: ActionButtonsProps) => {
   return (
     <Grid size={{ xs: 12 }}>
@@ -39,14 +41,19 @@ const ActionButtons = ({
             color="primary"
             onClick={onSubmit}
             size="large"
+            disabled={loading}
           >
-            {activeTab === 0 ? "ذخیره قالب ویژگی‌ها" : "ذخیره قالب اطلاعات"}
+            {loading 
+              ? (activeTab === 0 ? "در حال ذخیره ویژگی‌ها..." : "در حال ذخیره اطلاعات...")
+              : (activeTab === 0 ? "ذخیره قالب ویژگی‌ها" : "ذخیره قالب اطلاعات")
+            }
           </Button>
           <Button
             variant="contained"
             color="secondary"
             size="large"
             onClick={onReset}
+            disabled={loading}
           >
             انصراف از افزودن
           </Button>

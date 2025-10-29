@@ -99,11 +99,21 @@ const DetailsField = ({
       })
     );
   } else if (Array.isArray(fieldData)) {
-    options = fieldData.map((item: any, index: number) => ({
-      id: item.value || item.id || item.text || index.toString(),
-      label: item.text || item.title || item.label || `${label} ${index + 1}`,
-      data: item,
-    }));
+    options = fieldData.map((item: any, index: number) => {
+      if (fieldName === "fake_reason") {
+        return {
+          id: item.text || index.toString(), // text همان id است
+          label: item.value || `${label} ${index + 1}`, // value همان متن قابل نمایش است
+          data: item,
+        };
+      }
+
+      return {
+        id: item.value || item.id || item.text || index.toString(),
+        label: item.text || item.title || item.label || `${label} ${index + 1}`,
+        data: item,
+      };
+    });
   }
 
   if (options.length === 0) return null;

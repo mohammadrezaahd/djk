@@ -11,6 +11,7 @@ import { Provider } from "react-redux";
 import { ThemeProvider } from "./theme";
 import { store } from "./store";
 import "./app.css";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export const links = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -29,6 +30,8 @@ export const links = () => [
   },
 ];
 
+const queryClient = new QueryClient();
+
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fa" dir="rtl">
@@ -40,7 +43,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <Provider store={store}>
-          <ThemeProvider>{children}</ThemeProvider>
+          <QueryClientProvider client={queryClient}>
+            <ThemeProvider>{children}</ThemeProvider>
+          </QueryClientProvider>
         </Provider>
         <ScrollRestoration />
         <Scripts />

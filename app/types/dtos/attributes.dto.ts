@@ -1,11 +1,6 @@
 import type { ICategoryAttr } from "../interfaces/attributes.interface";
+import type { IPostTemplateBase } from "./templates.dto";
 
-export interface  IPostAttr {
-  title: string;
-  description?: string;
-  category_id: number;
+export interface IPostAttr extends IPostTemplateBase {
   data_json: ICategoryAttr;
-  images: number[];
-  source: "app";
-  tag?: string;
 }

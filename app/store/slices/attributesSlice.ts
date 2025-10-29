@@ -128,37 +128,39 @@ export const getFinalAttributesObject = (state: {
               break;
 
             case "select":
+              // Reset all selected states first
+              Object.keys(attr.values).forEach((valueId) => {
+                attr.values[valueId].selected = false;
+              });
+              
+              // Set the selected value
               if (formValue && attr.values[formValue]) {
-                const selectedValue = attr.values[formValue];
-                attr.values = {
-                  [formValue]: {
-                    ...selectedValue,
-                    selected: true,
-                  },
-                };
+                attr.values[formValue].selected = true;
               }
               break;
 
             case "checkbox":
+              // Reset all selected states first
+              Object.keys(attr.values).forEach((valueId) => {
+                attr.values[valueId].selected = false;
+              });
+              
+              // Set selected values
               if (Array.isArray(formValue) && formValue.length > 0) {
-                const newValues: any = {};
                 formValue.forEach((valueId: string) => {
                   if (attr.values[valueId]) {
-                    newValues[valueId] = {
-                      ...attr.values[valueId],
-                      selected: true,
-                    };
+                    attr.values[valueId].selected = true;
                   }
                 });
-                attr.values = newValues;
-              } else {
-                attr.values = {};
               }
               break;
           }
         } else {
+          // Reset selection state for select/checkbox when no value is set
           if (attr.type === "select" || attr.type === "checkbox") {
-            attr.values = {};
+            Object.keys(attr.values).forEach((valueId) => {
+              attr.values[valueId].selected = false;
+            });
           } else if (attr.type === "input" || attr.type === "text") {
             attr.value = "";
           }

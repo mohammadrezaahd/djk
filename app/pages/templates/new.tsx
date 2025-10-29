@@ -8,7 +8,8 @@ import {
   Tab,
 } from "@mui/material";
 import React, { useState, useEffect } from "react";
-import { categoriesApi } from "~/api/categories.api";
+import { categoriesApi, useCategoriesList, useCategory } from "~/api/categories.api";
+import type { GetCategoriesOptions } from "~/api/categories.api";
 
 import AppLayout from "~/components/layout/AppLayout";
 import { ApiStatus } from "~/types";
@@ -24,9 +25,11 @@ import {
   setDetailsData,
   setLoading as setDetailsLoading,
   resetDetails,
+  saveDetails,
 } from "~/store/slices/detailsSlice";
 import { processAndConvertToJSON } from "~/utils/dataProcessor";
-import { attrsApi } from "~/api/attributes.api";
+import { useAddAttribute } from "~/api/attributes.api";
+import { useAddDetail } from "~/api/details.api";
 import type { ICategoryList } from "~/types/interfaces/categories.interface";
 import CategorySelector from "~/components/templates/CategorySelector";
 import ActionButtons from "~/components/templates/ActionButtons";
@@ -45,105 +48,71 @@ export default function NewProductTemplate() {
   const attributesStore = useAppSelector((state) => state.attributes);
   const detailsStore = useAppSelector((state) => state.details);
 
-  const [categories, setCategories] = useState<ICategoryList[]>([]);
   const [selectedCategory, setSelectedCategory] =
     useState<ICategoryList | null>(null);
-  const [loadingCategories, setLoadingCategories] = useState(false);
   const [activeTab, setActiveTab] = useState(0); // 0 for ویژگی ها، 1 for اطلاعات
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryQueryOptions, setCategoryQueryOptions] = useState<GetCategoriesOptions>({
+    attributes: false,
+    details: false
+  });
 
-  // لود کردن لیست دسته‌بندی‌ها
-  const loadCategories = async (search: string = "") => {
-    setLoadingCategories(true);
-    try {
-      const res = await categoriesApi.getCategoriesList(search, 1, 50);
-      if (res.status === ApiStatus.SUCCEEDED && res.data) {
-        setCategories(res.data.items);
-      }
-    } catch (error) {
-      console.error("Error loading categories:", error);
-    } finally {
-      setLoadingCategories(false);
-    }
+  // React Query hooks
+  const {
+    data: categoriesResponse,
+    error,
+    isLoading: loadingCategories,
+  } = useCategoriesList(searchTerm, 1, 50);
+
+  // Mutations
+  const addAttributeMutation = useAddAttribute();
+  const addDetailMutation = useAddDetail();
+
+  // Category details query
+  const {
+    data: categoryData,
+    isLoading: categoryLoading,
+    error: categoryError
+  } = useCategory(
+    selectedCategory?.id || 0,
+    categoryQueryOptions,
+    !!(selectedCategory?.id && (categoryQueryOptions.attributes || categoryQueryOptions.details))
+  );
+
+  // استخراج categories از response
+  const categories = categoriesResponse?.data?.items || [];
+
+  // تابع برای جستجو در categories
+  const handleSearchChange = (search: string) => {
+    setSearchTerm(search);
   };
 
-  // بارگذاری اولیه دسته‌بندی‌ها
+  // Update store when category data changes
   useEffect(() => {
-    loadCategories();
-  }, []);
+    if (categoryData?.status === ApiStatus.SUCCEEDED && categoryData.data && selectedCategory) {
+      const data = categoryData.data;
 
-  const fetcher = async (
-    categoryId: number,
-    includeOptions?: { attributes?: boolean; details?: boolean }
-  ) => {
-    if (!categoryId) {
-      return;
-    }
-
-    const defaultOptions = { attributes: true, details: false };
-    const options = includeOptions || defaultOptions;
-
-    try {
-      // بررسی کنیم که آیا این categoryId در store موجود است یا نه
-      const shouldFetchAttributes =
-        options.attributes &&
-        (attributesStore as any).currentCategoryId !== categoryId;
-
-      const shouldFetchDetails =
-        options.details &&
-        (detailsStore as any).currentCategoryId !== categoryId;
-
-      // اگر هیچ کدام نیازی به fetch ندارند، return کن
-      if (!shouldFetchAttributes && !shouldFetchDetails) {
-        return;
+      // اگر attributes درخواست شده باشد
+      if (categoryQueryOptions.attributes && data.item.attributes?.category_group_attributes) {
+        dispatch(
+          setAttributesData({
+            categoryId: selectedCategory.id,
+            data: data.item.attributes,
+          })
+        );
       }
 
-      if (shouldFetchAttributes) {
-        dispatch(setAttributesLoading(true));
-      }
-
-      if (shouldFetchDetails) {
-        dispatch(setDetailsLoading(true));
-      }
-
-      const res = await categoriesApi.getCategories(categoryId, options);
-      if (res.status === ApiStatus.SUCCEEDED && res.data) {
-        const data = res.data;
-
-        // اگر attributes درخواست شده باشد و نیاز به fetch داشته باشیم
-        if (
-          shouldFetchAttributes &&
-          data.item.attributes?.category_group_attributes
-        ) {
-          dispatch(
-            setAttributesData({
-              categoryId,
-              data: data.item.attributes,
-            })
-          );
-        }
-
-        // اگر details درخواست شده باشد و نیاز به fetch داشته باشیم
-        if (shouldFetchDetails && data.item.details) {
-          dispatch(
-            setDetailsData({
-              categoryId,
-              data: data.item.details,
-            })
-          );
-        }
-      }
-    } catch (error) {
-      console.error("Error loading category data:", error);
-    } finally {
-      if (options.attributes) {
-        dispatch(setAttributesLoading(false));
-      }
-
-      if (options.details) {
-        dispatch(setDetailsLoading(false));
+      // اگر details درخواست شده باشد
+      if (categoryQueryOptions.details && data.item.details) {
+        dispatch(
+          setDetailsData({
+            categoryId: selectedCategory.id,
+            data: data.item.details,
+          })
+        );
       }
     }
-  };
+  }, [categoryData, selectedCategory, categoryQueryOptions, dispatch]);
 
   const handleSubmit = async () => {
     const tabName = activeTab === 0 ? "ویژگی‌ها" : "اطلاعات";
@@ -194,11 +163,15 @@ export default function NewProductTemplate() {
 
       try {
         console.log("🚀 ارسال به API...", apiData);
-        const result = await attrsApi.addNewAttr(apiData);
+        const result = await addAttributeMutation.mutateAsync(apiData);
 
         if (result.status === "true" && result.data) {
           alert(`قالب با موفقیت اضافه شد! شناسه: ${result.data.data.id}`);
           console.log("✅ قالب با موفقیت ذخیره شد:", result);
+          // Reset form after successful submission
+          dispatch(resetAttributes());
+          setSelectedCategory(null);
+          setActiveTab(0);
         } else {
           alert(
             "خطا در ذخیره قالب: " +
@@ -226,9 +199,19 @@ export default function NewProductTemplate() {
         return;
       }
 
-      console.log("📤 داده‌های پردازش شده اطلاعات:");
-      const processedJSON = processAndConvertToJSON({}, {}, detailsFormData);
-      console.log(processedJSON);
+      if (!selectedCategory?.id) {
+        alert("دسته‌بندی انتخاب نشده است.");
+        return;
+      }
+
+      try {
+        console.log("� ذخیره اطلاعات...");
+        await dispatch(saveDetails(selectedCategory.id, []));
+        console.log("✅ قالب اطلاعات با موفقیت ذخیره شد");
+      } catch (error) {
+        console.error("❌ خطا در ذخیره اطلاعات:", error);
+        // خطا توسط saveDetails نمایش داده می‌شود
+      }
     }
   };
 
@@ -239,10 +222,10 @@ export default function NewProductTemplate() {
     if (selectedCategory) {
       if (newValue === 0) {
         // تب ویژگی‌ها - attributes: true, details: false
-        fetcher(selectedCategory.id, { attributes: true, details: false });
+        setCategoryQueryOptions({ attributes: true, details: false });
       } else if (newValue === 1) {
         // تب اطلاعات - attributes: false, details: true
-        fetcher(selectedCategory.id, { attributes: false, details: true });
+        setCategoryQueryOptions({ attributes: false, details: true });
       }
     }
   };
@@ -251,14 +234,12 @@ export default function NewProductTemplate() {
     setSelectedCategory(category);
     if (category) {
       // پیش‌فرض تب ویژگی‌ها - attributes: true, details: false
-      fetcher(category.id, {
-        attributes: true,
-        details: false,
-      });
+      setCategoryQueryOptions({ attributes: true, details: false });
     } else {
       // ریست کردن store ها
       dispatch(resetAttributes());
       dispatch(resetDetails());
+      setCategoryQueryOptions({ attributes: false, details: false });
     }
   };
 
@@ -268,6 +249,7 @@ export default function NewProductTemplate() {
     dispatch(resetDetails());
     setSelectedCategory(null);
     setActiveTab(0);
+    setCategoryQueryOptions({ attributes: false, details: false });
   };
 
   return (
@@ -284,7 +266,7 @@ export default function NewProductTemplate() {
               selectedCategory={selectedCategory}
               loadingCategories={loadingCategories}
               onCategoryChange={handleCategoryChange}
-              onSearchChange={loadCategories}
+              onSearchChange={handleSearchChange}
             />
 
             {/* Tabs Section */}
@@ -320,6 +302,11 @@ export default function NewProductTemplate() {
                 activeTab={activeTab}
                 onSubmit={handleSubmit}
                 onReset={handleReset}
+                loading={
+                  activeTab === 0
+                    ? categoryLoading || addAttributeMutation.isPending
+                    : categoryLoading || addDetailMutation.isPending || (detailsStore as any).saving || detailsStore.loading
+                }
               />
             )}
           </Grid>

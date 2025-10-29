@@ -108,7 +108,7 @@ const DetailsTab = ({}: DetailsTabProps) => {
                 { value: "original", label: "فروش کالای اصل" },
                 { value: "fake", label: "فروش کالای غیر اصل" },
               ]}
-              label="نوع کالا"
+              label=""
               value={
                 detailsFormData?.is_fake_product === true ? "fake" : "original"
               }
@@ -233,7 +233,7 @@ const DetailsTab = ({}: DetailsTabProps) => {
                   { value: "general", label: "شناسه عمومی" },
                   { value: "custom", label: "شناسه خصوصی" },
                 ]}
-                label="نوع شناسه کالا"
+                label=""
                 value={
                   detailsFormData?.id_type ||
                   bind?.category_mefa_type ||

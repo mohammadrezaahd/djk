@@ -2,6 +2,19 @@ export interface ICategoryDetails {
   bind: IDetailsBind;
   errors?: any;
   isValid: boolean;
+  isFake: boolean;
+  // Static form fields (not in IPostTemplateBase)
+  is_fake_product?: boolean;
+  brand?: string;
+  status?: string;
+  platform?: string;
+  product_class?: string;
+  category_product_type?: string;
+  fake_reason?: string;
+  theme?: string;
+  id_type?: "general" | "custom";
+  general_mefa_id?: string;
+  custom_id?: string;
 }
 
 export interface IDetailsBind {
@@ -29,6 +42,7 @@ export interface IBindBrand {
   logo_id: string;
   title_en: string;
   title_fa: string;
+  selected: boolean;
 }
 
 export interface IBindStatus {
