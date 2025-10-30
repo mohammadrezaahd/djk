@@ -3,8 +3,8 @@ import { apiUtils } from "./apiUtils.api";
 import type { IPostDetail } from "~/types/dtos/details.dto";
 import { authorizedPost } from "~/utils/authorizeReq";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { ITemplateList } from "~/types/interfaces/templates.interface";
 
-// افزودن جزئیات جدید با استفاده از authorizedPost
 const addNewDetail = async (data: IPostDetail) => {
   return apiUtils<{ data: { id: number } }>(async () => {
     const response = await authorizedPost("/v1/details/save", data);
@@ -16,7 +16,20 @@ const addNewDetail = async (data: IPostDetail) => {
     };
   });
 };
-
+const getDetailsList = async ({
+  skip = 0,
+  limit = 100,
+}: {
+  skip?: number;
+  limit?: number;
+}) => {
+  return apiUtils<{ list: ITemplateList[] }>(async () => {
+    const response = await authorizedPost(
+      `/v1/details/list?skip=${skip}&limit=${limit}`
+    );
+    return response.data;
+  });
+};
 // React Query mutation hook برای افزودن detail
 export const useAddDetail = () => {
   const queryClient = useQueryClient();
@@ -33,5 +46,16 @@ export const useAddDetail = () => {
     },
   });
 };
-
-export const detailsApi = { addNewDetail };
+export const useDetails = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: getDetailsList,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["attributes list"] });
+    },
+    onError: (error) => {
+      console.error("❌ Error fetching attributes list:", error);
+    },
+  });
+};
+export const detailsApi = { addNewDetail, getDetailsList };

@@ -7,3 +7,7 @@ export interface IPostTemplateBase {
   source: "app";
   tag?: string;
 }
+
+export enum TemplateSource {
+  App = "app",
+}

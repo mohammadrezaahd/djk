@@ -43,7 +43,7 @@ export function meta() {
   ];
 }
 
-export default function NewProductTemplate() {
+const NewTemplatePage = () => {
   const dispatch = useAppDispatch();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -340,4 +340,6 @@ export default function NewProductTemplate() {
       </Grid>
     </AppLayout>
   );
-}
+};
+
+export default NewTemplatePage;

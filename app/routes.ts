@@ -4,4 +4,5 @@ export default [
   index("pages/home.tsx"),
   route("/auth", "pages/auth.tsx"),
   route("/templates/new", "pages/templates/new.tsx"),
+  route("/templates/list", "pages/templates/list.tsx"),
 ] satisfies RouteConfig;

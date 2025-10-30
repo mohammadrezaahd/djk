@@ -1,3 +1,5 @@
+import type { TemplateSource } from "../dtos/templates.dto";
+
 export interface ICategoryAttr {
   has_height: boolean;
   weight_attribute: boolean;
