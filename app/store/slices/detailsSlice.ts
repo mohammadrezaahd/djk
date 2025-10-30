@@ -189,7 +189,7 @@ export const getFinalDetailsObject = (state: { details: DetailsState }) => {
 };
 
 // Async thunk for saving details
-export const saveDetails = (categoryId: number, images: number[] = []) => 
+export const saveDetails = (categoryId: number, enqueueSnackbar: any, images: number[] = []) => 
   async (dispatch: any, getState: any) => {
     dispatch(setSaving(true));
     dispatch(clearSaveStatus());
@@ -223,7 +223,7 @@ export const saveDetails = (categoryId: number, images: number[] = []) =>
       
       if (result.status === 'true') {
         dispatch(setSaveSuccess(true));
-        alert('قالب اطلاعات با موفقیت ذخیره شد');
+        enqueueSnackbar('قالب اطلاعات با موفقیت ذخیره شد', { variant: 'success' });
         return result.data;
       } else {
         throw new Error('خطا در ذخیره اطلاعات');
@@ -231,7 +231,7 @@ export const saveDetails = (categoryId: number, images: number[] = []) =>
     } catch (error: any) {
       const errorMessage = error.message || 'خطا در ذخیره اطلاعات';
       dispatch(setSaveError(errorMessage));
-      alert(`خطا: ${errorMessage}`);
+      enqueueSnackbar(`خطا: ${errorMessage}`, { variant: 'error' });
       throw error;
     } finally {
       dispatch(setSaving(false));

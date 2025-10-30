@@ -9,12 +9,14 @@ interface AttributesFieldProps {
   attr: IAttr;
   value: any;
   onChange: (attrId: number, value: any) => void;
+  error?: string;
 }
 
 export default function AttributesField({
   attr,
   value,
   onChange,
+  error,
 }: AttributesFieldProps) {
   const fieldId = attr.id.toString();
 
@@ -38,10 +40,11 @@ export default function AttributesField({
           fullWidth
           type="number"
           label={attr.title + (attr.required ? " *" : "")}
-          helperText={attr.hint}
+          helperText={error || attr.hint}
           value={value || ""}
           onChange={(e) => onChange(attr.id, e.target.value)}
           required={attr.required}
+          error={!!error}
           InputProps={{
             endAdornment: attr.postfix || attr.unit,
           }}
@@ -80,8 +83,9 @@ export default function AttributesField({
                     {...params}
                     label={attr.title + (attr.required ? " *" : "")}
                     required={attr.required}
-                    helperText={attr.hint}
+                    helperText={error || attr.hint}
                     placeholder="انتخاب کنید..."
+                    error={!!error}
                   />
                 )}
                 noOptionsText="گزینه‌ای یافت نشد"
@@ -123,8 +127,9 @@ export default function AttributesField({
                     {...params}
                     label={attr.title + (attr.required ? " *" : "")}
                     required={attr.required}
-                    helperText={attr.hint}
+                    helperText={error || attr.hint}
                     placeholder="انتخاب کنید..."
+                    error={!!error}
                   />
                 )}
                 noOptionsText="گزینه‌ای یافت نشد"
@@ -146,10 +151,11 @@ export default function AttributesField({
           multiline
           rows={3}
           label={attr.title + (attr.required ? " *" : "")}
-          helperText={attr.hint}
+          helperText={error || attr.hint}
           value={value || ""}
           onChange={(e) => onChange(attr.id, e.target.value)}
           required={attr.required}
+          error={!!error}
         />
       );
 

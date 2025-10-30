@@ -26,6 +26,7 @@ interface DetailsFieldProps {
   rows?: number;
   placeholder?: string;
   helperText?: string;
+  error?: string;
 }
 const DetailsField = ({
   fieldName,
@@ -43,6 +44,7 @@ const DetailsField = ({
   rows = 1,
   placeholder = "",
   helperText = "",
+  error = "",
 }: DetailsFieldProps) => {
   if (isTextField) {
     return (
@@ -55,7 +57,8 @@ const DetailsField = ({
         value={value || ""}
         onChange={(e) => onChange(fieldName, e.target.value)}
         required={required}
-        helperText={helperText}
+        helperText={error || helperText}
+        error={!!error}
       />
     );
   }
@@ -159,6 +162,8 @@ const DetailsField = ({
       label={label + (required ? " *" : "")}
       placeholder="انتخاب کنید..."
       required={required}
+      helperText={error || helperText}
+      error={!!error}
       InputProps={{
         ...params.InputProps,
         endAdornment: selectedOption?.data?.logo_id ? (
@@ -203,6 +208,8 @@ const DetailsField = ({
                 label={label + (required ? " *" : "")}
                 placeholder="انتخاب کنید..."
                 required={required}
+                helperText={error || helperText}
+                error={!!error}
               />
             )
       }

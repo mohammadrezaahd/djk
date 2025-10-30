@@ -24,6 +24,7 @@ interface ActionButtonsProps {
   onSubmit: () => void;
   onReset: () => void;
   loading?: boolean;
+  isFormValid?: boolean;
 }
 
 const ActionButtons = ({
@@ -31,6 +32,7 @@ const ActionButtons = ({
   onSubmit,
   onReset,
   loading = false,
+  isFormValid = false,
 }: ActionButtonsProps) => {
   return (
     <Grid size={{ xs: 12 }}>
@@ -41,7 +43,10 @@ const ActionButtons = ({
             color="primary"
             onClick={onSubmit}
             size="large"
-            disabled={loading}
+            disabled={loading || !isFormValid}
+            sx={{
+              opacity: !isFormValid ? 0.6 : 1,
+            }}
           >
             {loading 
               ? (activeTab === 0 ? "در حال ذخیره ویژگی‌ها..." : "در حال ذخیره اطلاعات...")

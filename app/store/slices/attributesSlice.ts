@@ -1,6 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import type { ICategoryAttr } from "~/types/interfaces/attributes.interface";
+import { attrsApi } from "~/api/attributes.api";
+import type { IPostAttr } from "~/types/dtos/attributes.dto";
+import { processAndConvertToJSON } from "~/utils/dataProcessor";
 
 interface AttributesState {
   currentCategoryId: number | null;
@@ -9,6 +12,9 @@ interface AttributesState {
   title: string;
   description: string;
   loading: boolean;
+  saving: boolean;
+  saveSuccess: boolean;
+  saveError: string | null;
 }
 
 const initialState: AttributesState = {
@@ -18,6 +24,9 @@ const initialState: AttributesState = {
   title: "",
   description: "",
   loading: false,
+  saving: false,
+  saveSuccess: false,
+  saveError: null,
 };
 
 const attributesSlice = createSlice({
@@ -26,6 +35,29 @@ const attributesSlice = createSlice({
   reducers: {
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
+    },
+    
+    setSaving: (state, action: PayloadAction<boolean>) => {
+      state.saving = action.payload;
+    },
+    
+    setSaveSuccess: (state, action: PayloadAction<boolean>) => {
+      state.saveSuccess = action.payload;
+      if (action.payload) {
+        state.saveError = null;
+      }
+    },
+    
+    setSaveError: (state, action: PayloadAction<string | null>) => {
+      state.saveError = action.payload;
+      if (action.payload) {
+        state.saveSuccess = false;
+      }
+    },
+    
+    clearSaveStatus: (state) => {
+      state.saveSuccess = false;
+      state.saveError = null;
     },
 
     setAttributesData: (
@@ -92,12 +124,19 @@ const attributesSlice = createSlice({
       state.title = "";
       state.description = "";
       state.loading = false;
+      state.saving = false;
+      state.saveSuccess = false;
+      state.saveError = null;
     },
   },
 });
 
 export const {
   setLoading,
+  setSaving,
+  setSaveSuccess,
+  setSaveError,
+  clearSaveStatus,
   setAttributesData,
   updateFormField,
   setTitle,
@@ -171,5 +210,60 @@ export const getFinalAttributesObject = (state: {
 
   return finalData;
 };
+
+// Async thunk for saving attributes
+export const saveAttributes = (categoryId: number, enqueueSnackbar: any, images: number[] = []) => 
+  async (dispatch: any, getState: any) => {
+    dispatch(setSaving(true));
+    dispatch(clearSaveStatus());
+
+    try {
+      const state = getState();
+      const attributesState = state.attributes;
+      
+      // Validate required fields
+      if (!attributesState.title || attributesState.title.trim() === '') {
+        throw new Error('عنوان قالب الزامی است');
+      }
+
+      const finalAttributesData = getFinalAttributesObject(state);
+      
+      if (!finalAttributesData) {
+        throw new Error('اطلاعات قالب در دسترس نیست');
+      }
+
+      // Process the data using existing processor
+      const processedJSON = processAndConvertToJSON(
+        finalAttributesData,
+        attributesState.formData
+      );
+
+      const postData: IPostAttr = {
+        title: attributesState.title.trim(),
+        description: attributesState.description?.trim() || undefined,
+        category_id: categoryId,
+        data_json: JSON.parse(processedJSON),
+        images,
+        source: 'app' as const,
+      };
+
+      const result = await attrsApi.addNewAttr(postData);
+      
+      if (result.status === 'true') {
+        dispatch(setSaveSuccess(true));
+        enqueueSnackbar('قالب ویژگی با موفقیت ذخیره شد', { variant: 'success' });
+        return result.data;
+      } else {
+        throw new Error('خطا در ذخیره ویژگی‌ها');
+      }
+    } catch (error: any) {
+      const errorMessage = error.message || 'خطا در ذخیره ویژگی‌ها';
+      dispatch(setSaveError(errorMessage));
+      enqueueSnackbar(`خطا: ${errorMessage}`, { variant: 'error' });
+      throw error;
+    } finally {
+      dispatch(setSaving(false));
+    }
+  };
 
 export default attributesSlice.reducer;

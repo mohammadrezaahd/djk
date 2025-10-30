@@ -12,6 +12,9 @@ import { ThemeProvider } from "./theme";
 import { store } from "./store";
 import "./app.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SnackbarProvider, closeSnackbar } from "notistack";
+import { IconButton } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 export const links = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -44,7 +47,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body>
         <Provider store={store}>
           <QueryClientProvider client={queryClient}>
-            <ThemeProvider>{children}</ThemeProvider>
+            <SnackbarProvider
+              maxSnack={5}
+              autoHideDuration={4000}
+              action={(snackbarId) => (
+                <IconButton
+                  onClick={() => closeSnackbar(snackbarId)}
+                  size="small"
+                  sx={{ color: "#fff" }}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              )}
+            >
+              <ThemeProvider>{children}</ThemeProvider>
+            </SnackbarProvider>
           </QueryClientProvider>
         </Provider>
         <ScrollRestoration />
