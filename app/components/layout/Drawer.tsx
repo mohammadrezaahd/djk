@@ -187,7 +187,7 @@ const Drawer = ({
               <ListItemButton
                 sx={{
                   pl: 4,
-                  backgroundColor: isPathActive("/templates")
+                  backgroundColor: isPathActive("/templates/list")
                     ? theme.palette.action.selected
                     : "transparent",
                   "&:hover": {
@@ -195,16 +195,16 @@ const Drawer = ({
                   },
                 }}
                 component={Link}
-                to="/templates"
+                to="/templates/list"
               >
                 <ListItemText
                   sx={{
                     textAlign: "start",
                     "& .MuiListItemText-primary": {
-                      color: isPathActive("/templates")
+                      color: isPathActive("/templates/list")
                         ? theme.palette.primary.main
                         : "inherit",
-                      fontWeight: isPathActive("/templates")
+                      fontWeight: isPathActive("/templates/list")
                         ? "bold"
                         : "normal",
                     },

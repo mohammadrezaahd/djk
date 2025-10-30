@@ -2,10 +2,8 @@ import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
-  Grid,
   Card,
   CardContent,
-  Button,
   Table,
   TableBody,
   TableCell,
@@ -20,12 +18,16 @@ import {
   FormControl,
   InputLabel,
   Pagination,
-  CircularProgress,
   Alert,
   ToggleButton,
   ToggleButtonGroup,
   Skeleton,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -35,8 +37,8 @@ import {
   Refresh as RefreshIcon,
 } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
-import { useAttrs } from "~/api/attributes.api";
-import { useDetails } from "~/api/details.api";
+import { useAttrs, useRemoveAttr } from "~/api/attributes.api";
+import { useDetails, useRemoveDetail } from "~/api/details.api";
 import type { ITemplateList } from "~/types/interfaces/templates.interface";
 import AppLayout from "~/components/layout/AppLayout";
 
@@ -55,6 +57,19 @@ const TemplatesList = () => {
   const [detailsList, setDetailsList] = useState<ITemplateList[]>([]);
   const [attributesTotal, setAttributesTotal] = useState<number>(0);
   const [detailsTotal, setDetailsTotal] = useState<number>(0);
+  
+  // Delete confirmation dialog state
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    id: number | null;
+    type: TemplateType | null;
+    title: string;
+  }>({
+    open: false,
+    id: null,
+    type: null,
+    title: "",
+  });
 
   const { enqueueSnackbar } = useSnackbar();
 
@@ -70,6 +85,17 @@ const TemplatesList = () => {
     isPending: isDetailFetching,
     error: detailsError,
   } = useDetails();
+
+  // Delete mutations
+  const {
+    mutateAsync: removeAttribute,
+    isPending: isRemovingAttribute,
+  } = useRemoveAttr();
+
+  const {
+    mutateAsync: removeDetail,
+    isPending: isRemovingDetail,
+  } = useRemoveDetail();
 
   // Calculate skip values based on current page
   const attributesSkip = (attributesPage - 1) * attributesLimit;
@@ -165,7 +191,7 @@ const TemplatesList = () => {
     setDetailsPage(1); // Reset to first page
   };
 
-  // Handle edit and delete actions (placeholder)
+  // Handle edit and delete actions
   const handleEdit = (id: number, type: TemplateType) => {
     enqueueSnackbar(
       `ویرایش ${type === "attributes" ? "ویژگی" : "اطلاعات"} با ID: ${id}`,
@@ -176,12 +202,45 @@ const TemplatesList = () => {
   };
 
   const handleDelete = (id: number, type: TemplateType) => {
-    enqueueSnackbar(
-      `حذف ${type === "attributes" ? "ویژگی" : "اطلاعات"} با ID: ${id}`,
-      {
-        variant: "warning",
+    const item = type === "attributes" 
+      ? attributesList.find(attr => attr.id === id)
+      : detailsList.find(detail => detail.id === id);
+      
+    setDeleteDialog({
+      open: true,
+      id,
+      type,
+      title: item?.title || `${type === "attributes" ? "ویژگی" : "اطلاعات"} انتخاب شده`,
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteDialog.id || !deleteDialog.type) return;
+
+    try {
+      if (deleteDialog.type === "attributes") {
+        await removeAttribute(deleteDialog.id);
+        enqueueSnackbar("ویژگی با موفقیت حذف شد", { variant: "success" });
+        // Refresh the attributes list
+        await fetchAttributes();
+      } else {
+        await removeDetail(deleteDialog.id);
+        enqueueSnackbar("اطلاعات با موفقیت حذف شد", { variant: "success" });
+        // Refresh the details list
+        await fetchDetails();
       }
-    );
+    } catch (error: any) {
+      enqueueSnackbar(
+        `خطا در حذف ${deleteDialog.type === "attributes" ? "ویژگی" : "اطلاعات"}: ${error.message}`,
+        { variant: "error" }
+      );
+    } finally {
+      setDeleteDialog({ open: false, id: null, type: null, title: "" });
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialog({ open: false, id: null, type: null, title: "" });
   };
 
   // Handle refresh
@@ -265,14 +324,15 @@ const TemplatesList = () => {
                 onChange={handleTemplateTypeChange}
                 aria-label="template type"
                 size="small"
+                dir="ltr"
               >
-                <ToggleButton value="attributes" aria-label="attributes">
-                  <AttributesIcon sx={{ mr: 1 }} />
-                  ویژگی‌ها
-                </ToggleButton>
                 <ToggleButton value="details" aria-label="details">
                   <DetailsIcon sx={{ mr: 1 }} />
                   اطلاعات
+                </ToggleButton>
+                <ToggleButton value="attributes" aria-label="attributes">
+                  <AttributesIcon sx={{ mr: 1 }} />
+                  ویژگی‌ها
                 </ToggleButton>
               </ToggleButtonGroup>
 
@@ -374,6 +434,7 @@ const TemplatesList = () => {
                               onClick={() =>
                                 handleDelete(item.id, templateType)
                               }
+                              disabled={isRemovingAttribute || isRemovingDetail}
                             >
                               <DeleteIcon fontSize="small" />
                             </IconButton>
@@ -426,6 +487,39 @@ const TemplatesList = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialog.open}
+        onClose={handleCancelDelete}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          تایید حذف {deleteDialog.type === "attributes" ? "ویژگی" : "اطلاعات"}
+        </DialogTitle>
+        <DialogContent>
+          <Typography>
+            آیا از حذف "{deleteDialog.title}" اطمینان دارید؟
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            این عمل قابل بازگشت نیست.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete} color="inherit">
+            لغو
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            color="error"
+            variant="contained"
+            disabled={isRemovingAttribute || isRemovingDetail}
+          >
+            {isRemovingAttribute || isRemovingDetail ? "در حال حذف..." : "حذف"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AppLayout>
   );
 };

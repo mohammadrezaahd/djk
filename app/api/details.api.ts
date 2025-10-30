@@ -1,7 +1,7 @@
 import type { IPostAttr } from "~/types/dtos/attributes.dto";
 import { apiUtils } from "./apiUtils.api";
 import type { IPostDetail } from "~/types/dtos/details.dto";
-import { authorizedPost } from "~/utils/authorizeReq";
+import { authorizedDelete, authorizedPost } from "~/utils/authorizeReq";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ITemplateList } from "~/types/interfaces/templates.interface";
 
@@ -16,6 +16,7 @@ const addNewDetail = async (data: IPostDetail) => {
     };
   });
 };
+
 const getDetailsList = async ({
   skip = 0,
   limit = 100,
@@ -30,6 +31,14 @@ const getDetailsList = async ({
     return response.data;
   });
 };
+
+const removeDetail = async (id: number) => {
+  return apiUtils<{ status: string }>(async () => {
+    const response = await authorizedDelete(`/v1/details/remove/${id}`);
+    return response.data;
+  });
+};
+
 // React Query mutation hook برای افزودن detail
 export const useAddDetail = () => {
   const queryClient = useQueryClient();
@@ -46,16 +55,33 @@ export const useAddDetail = () => {
     },
   });
 };
+
 export const useDetails = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: getDetailsList,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["attributes list"] });
+      queryClient.invalidateQueries({ queryKey: ["details list"] });
     },
     onError: (error) => {
-      console.error("❌ Error fetching attributes list:", error);
+      console.error("❌ Error fetching details list:", error);
     },
   });
 };
+
+export const useRemoveDetail = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: removeDetail,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["details list"] });
+      queryClient.invalidateQueries({ queryKey: ["detail remove"] });
+    },
+    onError: (error) => {
+      console.error("❌ Error removing detail:", error);
+    },
+  });
+};
+
 export const detailsApi = { addNewDetail, getDetailsList };

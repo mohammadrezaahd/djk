@@ -1,6 +1,6 @@
 import type { IPostAttr } from "~/types/dtos/attributes.dto";
 import { apiUtils } from "./apiUtils.api";
-import { authorizedPost } from "~/utils/authorizeReq";
+import { authorizedDelete, authorizedPost } from "~/utils/authorizeReq";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ITemplateList } from "~/types/interfaces/templates.interface";
 
@@ -27,6 +27,13 @@ const getAttrList = async ({
     const response = await authorizedPost(
       `/v1/attributes/list?skip=${skip}&limit=${limit}`
     );
+    return response.data;
+  });
+};
+
+const removeAttr = async (id: number) => {
+  return apiUtils<{ status: string }>(async () => {
+    const response = await authorizedDelete(`/v1/attributes/remove/${id}`);
     return response.data;
   });
 };
@@ -59,4 +66,19 @@ export const useAttrs = () => {
   });
 };
 
-export const attrsApi = { addNewAttr, getAttrList };
+export const useRemoveAttr = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: removeAttr,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["attributes list"] });
+      queryClient.invalidateQueries({ queryKey: ["attributes remove"] });
+    },
+    onError: (error) => {
+      console.error("❌ Error removing attribute:", error);
+    },
+  });
+};
+
+export const attrsApi = { addNewAttr, getAttrList, removeAttr };
