@@ -30,15 +30,25 @@ const SectionCard = ({ title, children, ...props }: any) => (
 
 interface AttributesTabProps {
   onValidationChange?: (isValid: boolean) => void;
+  isLoading: boolean;
 }
 
-export default function AttributesTab({ onValidationChange }: AttributesTabProps) {
+export default function AttributesTab({
+  onValidationChange,
+  isLoading,
+}: AttributesTabProps) {
   const dispatch = useAppDispatch();
-  const { attributesData, formData, loading, title, description } =
-    useAppSelector((state) => state.attributes);
+  const { attributesData, formData, title, description } = useAppSelector(
+    (state) => state.attributes
+  );
 
   // Use validation hook
-  const form = useAttributesValidation(attributesData, formData, title, description);
+  const form = useAttributesValidation(
+    attributesData,
+    formData,
+    title,
+    description
+  );
 
   // Notify parent component about validation state changes
   useEffect(() => {
@@ -48,11 +58,11 @@ export default function AttributesTab({ onValidationChange }: AttributesTabProps
   // Update store when form values change
   useEffect(() => {
     const subscription = form.watch((value: any, { name }: any) => {
-      if (name === 'title') {
-        dispatch(setTitle(value.title || ''));
-      } else if (name === 'description') {
-        dispatch(setDescription(value.description || ''));
-      } else if (name && name !== 'title' && name !== 'description') {
+      if (name === "title") {
+        dispatch(setTitle(value.title || ""));
+      } else if (name === "description") {
+        dispatch(setDescription(value.description || ""));
+      } else if (name && name !== "title" && name !== "description") {
         dispatch(updateFormField({ fieldId: name, value: value[name] }));
       }
     });
@@ -84,7 +94,10 @@ export default function AttributesTab({ onValidationChange }: AttributesTabProps
 
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = event.target.value;
-    form.setValue('title', newTitle, { shouldValidate: true, shouldDirty: true });
+    form.setValue("title", newTitle, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
     dispatch(setTitle(newTitle));
   };
 
@@ -92,11 +105,14 @@ export default function AttributesTab({ onValidationChange }: AttributesTabProps
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const newDescription = event.target.value;
-    form.setValue('description', newDescription, { shouldValidate: true, shouldDirty: true });
+    form.setValue("description", newDescription, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
     dispatch(setDescription(newDescription));
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Grid size={{ xs: 12 }}>
         <SectionCard title="اطلاعات محصول">
@@ -129,11 +145,14 @@ export default function AttributesTab({ onValidationChange }: AttributesTabProps
               fullWidth
               label="عنوان قالب ویژگی‌ها"
               placeholder="عنوان قالب را وارد کنید..."
-              value={form.watch('title') || ''}
+              value={form.watch("title") || ""}
               onChange={handleTitleChange}
               required
               error={!!form.formState.errors.title}
-              helperText={form.formState.errors.title?.message || "این عنوان برای شناسایی قالب استفاده خواهد شد"}
+              helperText={
+                form.formState.errors.title?.message ||
+                "این عنوان برای شناسایی قالب استفاده خواهد شد"
+              }
             />
             <TextField
               fullWidth
@@ -141,10 +160,13 @@ export default function AttributesTab({ onValidationChange }: AttributesTabProps
               rows={3}
               label="سایر توضیحات"
               placeholder="توضیحات اضافی درباره قالب..."
-              value={form.watch('description') || ''}
+              value={form.watch("description") || ""}
               onChange={handleDescriptionChange}
               error={!!form.formState.errors.description}
-              helperText={form.formState.errors.description?.message || "توضیحات اختیاری درباره قالب و نحوه استفاده از آن"}
+              helperText={
+                form.formState.errors.description?.message ||
+                "توضیحات اختیاری درباره قالب و نحوه استفاده از آن"
+              }
             />
           </Box>
         </SectionCard>
@@ -159,7 +181,9 @@ export default function AttributesTab({ onValidationChange }: AttributesTabProps
                   attr={attr}
                   value={form.watch(attr.id.toString())}
                   onChange={handleInputChange}
-                  error={form.formState.errors[attr.id.toString()]?.message as string}
+                  error={
+                    form.formState.errors[attr.id.toString()]?.message as string
+                  }
                 />
               </Grid>
             ))}

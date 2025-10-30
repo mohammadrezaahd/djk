@@ -18,8 +18,6 @@ export default function AttributesField({
   onChange,
   error,
 }: AttributesFieldProps) {
-  const fieldId = attr.id.toString();
-
   const isMultiSelect = (attr: IAttr): boolean => {
     return attr.type === AttributeType.Checkbox;
   };

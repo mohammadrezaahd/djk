@@ -139,13 +139,13 @@ export const createDetailsFormSchema = (
   }
 
   // Theme validation
-  if (bind.category_data?.themes && bind.category_data.themes.length > 0) {
-    dynamicFields.theme = createOptionValidation(
-      bind.category_data.themes,
-      true,
-      "id"
-    );
-  }
+  // if (bind.category_data?.themes && bind.category_data.themes.length >= 0) {
+  //   dynamicFields.theme = createOptionValidation(
+  //     bind.category_data.themes,
+  //     true,
+  //     "id"
+  //   );
+  // }
 
   // ID type validation
   if (bind.general_mefa && Object.keys(bind.general_mefa).length > 0) {

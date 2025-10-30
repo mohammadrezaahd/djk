@@ -1,80 +1,43 @@
-import { createSlice } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
-import type { ICategoryDetails } from '~/types/interfaces/details.interface';
-import { detailsApi } from '~/api/details.api';
-import type { IPostDetail } from '~/types/dtos/details.dto';
+import { createSlice } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
+import type { ICategoryDetails } from "~/types/interfaces/details.interface";
 
 interface DetailsState {
   currentCategoryId: number | null;
   detailsData: ICategoryDetails | null;
   formData: { [key: string]: any };
-  loading: boolean;
-  saving: boolean;
-  saveSuccess: boolean;
-  saveError: string | null;
 }
 
 const initialState: DetailsState = {
   currentCategoryId: null,
   detailsData: null,
   formData: {},
-  loading: false,
-  saving: false,
-  saveSuccess: false,
-  saveError: null,
 };
 
 const detailsSlice = createSlice({
-  name: 'details',
+  name: "details",
   initialState,
   reducers: {
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.loading = action.payload;
-    },
-    
-    setSaving: (state, action: PayloadAction<boolean>) => {
-      state.saving = action.payload;
-    },
-    
-    setSaveSuccess: (state, action: PayloadAction<boolean>) => {
-      state.saveSuccess = action.payload;
-      if (action.payload) {
-        state.saveError = null;
-      }
-    },
-    
-    setSaveError: (state, action: PayloadAction<string | null>) => {
-      state.saveError = action.payload;
-      if (action.payload) {
-        state.saveSuccess = false;
-      }
-    },
-    
-    clearSaveStatus: (state) => {
-      state.saveSuccess = false;
-      state.saveError = null;
-    },
-    
     setDetailsData: (
       state,
       action: PayloadAction<{ categoryId: number; data: ICategoryDetails }>
     ) => {
       const { categoryId, data } = action.payload;
-      
+
       // اگر دسته‌بندی عوض شده باشد، فرم داده‌ها را پاک کن
       if (state.currentCategoryId !== categoryId) {
         state.formData = {};
         state.currentCategoryId = categoryId;
       }
-      
+
       state.detailsData = data;
-      
+
       // مقداردهی اولیه فرم بر اساس category_mefa_type
       if (data.bind?.category_mefa_type && !state.formData.id_type) {
         state.formData.id_type = data.bind.category_mefa_type;
       }
     },
-    
+
     updateFormField: (
       state,
       action: PayloadAction<{ fieldName: string; value: any }>
@@ -82,25 +45,16 @@ const detailsSlice = createSlice({
       const { fieldName, value } = action.payload;
       state.formData[fieldName] = value;
     },
-    
+
     resetDetails: (state) => {
       state.currentCategoryId = null;
       state.detailsData = null;
       state.formData = {};
-      state.loading = false;
-      state.saving = false;
-      state.saveSuccess = false;
-      state.saveError = null;
     },
   },
 });
 
 export const {
-  setLoading,
-  setSaving,
-  setSaveSuccess,
-  setSaveError,
-  clearSaveStatus,
   setDetailsData,
   updateFormField,
   resetDetails,
@@ -115,18 +69,33 @@ export const getFinalDetailsObject = (state: { details: DetailsState }) => {
   const formData = state.details.formData;
 
   // Add static form fields to the root of finalData (excluding title/description which go to IPostTemplateBase)
-  const staticFields = ['is_fake_product', 'brand', 'status', 'platform', 'product_class', 
-                       'category_product_type', 'fake_reason', 'theme', 'id_type', 'general_mefa_id', 'custom_id'];
-  
-  staticFields.forEach(field => {
-    if (formData[field] !== undefined && formData[field] !== null && formData[field] !== '') {
+  const staticFields = [
+    "is_fake_product",
+    "brand",
+    "status",
+    "platform",
+    "product_class",
+    "category_product_type",
+    "fake_reason",
+    "theme",
+    "id_type",
+    "general_mefa_id",
+    "custom_id",
+  ];
+
+  staticFields.forEach((field) => {
+    if (
+      formData[field] !== undefined &&
+      formData[field] !== null &&
+      formData[field] !== ""
+    ) {
       (finalData as any)[field] = formData[field];
     }
   });
 
   // Update selected values for dynamic fields in bind
   const bind = finalData.bind;
-  
+
   if (bind) {
     // Update brands selected
     if (bind.brands && formData.brand) {
@@ -179,7 +148,7 @@ export const getFinalDetailsObject = (state: { details: DetailsState }) => {
 
     // Update general_mefa selected
     if (bind.general_mefa && formData.general_mefa_id) {
-      Object.keys(bind.general_mefa).forEach(key => {
+      Object.keys(bind.general_mefa).forEach((key) => {
         bind.general_mefa[key].selected = key === formData.general_mefa_id;
       });
     }
@@ -187,55 +156,5 @@ export const getFinalDetailsObject = (state: { details: DetailsState }) => {
 
   return finalData;
 };
-
-// Async thunk for saving details
-export const saveDetails = (categoryId: number, enqueueSnackbar: any, images: number[] = []) => 
-  async (dispatch: any, getState: any) => {
-    dispatch(setSaving(true));
-    dispatch(clearSaveStatus());
-
-    try {
-      const state = getState();
-      const formData = state.details.formData;
-      
-      // Validate required fields
-      if (!formData.title || formData.title.trim() === '') {
-        throw new Error('عنوان قالب الزامی است');
-      }
-
-      const finalDataJson = getFinalDetailsObject(state);
-      
-      if (!finalDataJson) {
-        throw new Error('اطلاعات قالب در دسترس نیست');
-      }
-
-      const postData: IPostDetail = {
-        title: formData.title.trim(),
-        description: formData.description?.trim() || '',
-        category_id: categoryId,
-        data_json: finalDataJson,
-        images,
-        source: 'app' as const,
-        tag: formData.tag?.trim() || undefined,
-      };
-
-      const result = await detailsApi.addNewDetail(postData);
-      
-      if (result.status === 'true') {
-        dispatch(setSaveSuccess(true));
-        enqueueSnackbar('قالب اطلاعات با موفقیت ذخیره شد', { variant: 'success' });
-        return result.data;
-      } else {
-        throw new Error('خطا در ذخیره اطلاعات');
-      }
-    } catch (error: any) {
-      const errorMessage = error.message || 'خطا در ذخیره اطلاعات';
-      dispatch(setSaveError(errorMessage));
-      enqueueSnackbar(`خطا: ${errorMessage}`, { variant: 'error' });
-      throw error;
-    } finally {
-      dispatch(setSaving(false));
-    }
-  };
 
 export default detailsSlice.reducer;

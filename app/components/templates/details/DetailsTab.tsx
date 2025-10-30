@@ -19,18 +19,16 @@ const SectionCard = ({ title, children, ...props }: any) => (
 
 interface DetailsTabProps {
   onValidationChange?: (isValid: boolean) => void;
+  isLoading: boolean;
 }
 
-const DetailsTab = ({ onValidationChange }: DetailsTabProps) => {
+const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
   const dispatch = useAppDispatch();
   const detailsData = useAppSelector(
     (state: RootState) => (state.details as any)?.detailsData
   );
   const detailsFormData = useAppSelector(
     (state: RootState) => (state.details as any)?.formData || {}
-  );
-  const loading = useAppSelector(
-    (state: RootState) => (state.details as any)?.loading || false
   );
 
   // Use validation hook
@@ -52,11 +50,14 @@ const DetailsTab = ({ onValidationChange }: DetailsTabProps) => {
   }, [form.watch, dispatch]);
 
   const handleDetailsChange = (fieldName: string, value: any) => {
-    form.setValue(fieldName as any, value, { shouldValidate: true, shouldDirty: true });
+    form.setValue(fieldName as any, value, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
     dispatch(updateFormField({ fieldName, value }));
   };
 
-  const isFakeProduct = form.watch('is_fake_product') === true;
+  const isFakeProduct = form.watch("is_fake_product") === true;
   const bind = detailsData?.bind;
 
   useEffect(() => {
@@ -69,19 +70,20 @@ const DetailsTab = ({ onValidationChange }: DetailsTabProps) => {
   }, [isFakeProduct, bind?.brands]);
 
   useEffect(() => {
-    if (bind?.category_mefa_type && !form.watch('id_type')) {
+    if (bind?.category_mefa_type && !form.watch("id_type")) {
       handleDetailsChange("id_type", bind.category_mefa_type);
     }
-  }, [bind?.category_mefa_type, form.watch('id_type')]);
+  }, [bind?.category_mefa_type, form.watch("id_type")]);
 
-  const isGeneralId = (form.watch('id_type') || bind?.category_mefa_type) === "general";
+  const isGeneralId =
+    (form.watch("id_type") || bind?.category_mefa_type) === "general";
 
   if (!detailsData || !detailsData.bind) {
     return (
       <Grid size={{ xs: 12 }}>
         <SectionCard title="اطلاعات محصول">
           <Typography variant="body1" color="text.secondary">
-            {loading
+            {isLoading
               ? "در حال بارگیری اطلاعات..."
               : "اطلاعات محصول در دسترس نیست"}
           </Typography>
@@ -98,7 +100,7 @@ const DetailsTab = ({ onValidationChange }: DetailsTabProps) => {
             <DetailsField
               fieldName="title"
               label="عنوان قالب اطلاعات"
-              value={form.watch('title')}
+              value={form.watch("title")}
               onChange={handleDetailsChange}
               isTextField
               required
@@ -109,7 +111,7 @@ const DetailsTab = ({ onValidationChange }: DetailsTabProps) => {
             <DetailsField
               fieldName="description"
               label="سایر توضیحات"
-              value={form.watch('description')}
+              value={form.watch("description")}
               onChange={handleDetailsChange}
               isTextField
               multiline
@@ -133,7 +135,7 @@ const DetailsTab = ({ onValidationChange }: DetailsTabProps) => {
               ]}
               label=""
               value={
-                form.watch('is_fake_product') === true ? "fake" : "original"
+                form.watch("is_fake_product") === true ? "fake" : "original"
               }
               onChange={(fieldName: string, value: any) => {
                 const isFake = value === "fake";
@@ -153,7 +155,7 @@ const DetailsTab = ({ onValidationChange }: DetailsTabProps) => {
               fieldName="brand"
               fieldData={bind.brands}
               label={isFakeProduct ? "برند (متفرقه - غیر قابل ویرایش)" : "برند"}
-              value={form.watch('brand')}
+              value={form.watch("brand")}
               onChange={handleDetailsChange}
               disabled={isFakeProduct}
               showBrandLogo
@@ -171,7 +173,7 @@ const DetailsTab = ({ onValidationChange }: DetailsTabProps) => {
               fieldName="status"
               fieldData={bind.statuses}
               label="وضعیت"
-              value={form.watch('status')}
+              value={form.watch("status")}
               onChange={handleDetailsChange}
               error={form.formState.errors.status?.message as string}
             />
@@ -186,7 +188,7 @@ const DetailsTab = ({ onValidationChange }: DetailsTabProps) => {
               fieldName="platform"
               fieldData={bind.platforms}
               label="پلتفرم"
-              value={form.watch('platform')}
+              value={form.watch("platform")}
               onChange={handleDetailsChange}
               error={form.formState.errors.platform?.message as string}
             />
@@ -201,7 +203,7 @@ const DetailsTab = ({ onValidationChange }: DetailsTabProps) => {
               fieldName="product_class"
               fieldData={bind.product_classes}
               label="کلاس محصول"
-              value={form.watch('product_class')}
+              value={form.watch("product_class")}
               onChange={handleDetailsChange}
               error={form.formState.errors.product_class?.message as string}
             />
@@ -217,9 +219,11 @@ const DetailsTab = ({ onValidationChange }: DetailsTabProps) => {
                 fieldName="category_product_type"
                 fieldData={bind.category_product_types}
                 label="نوع محصول"
-                value={form.watch('category_product_type')}
+                value={form.watch("category_product_type")}
                 onChange={handleDetailsChange}
-                error={form.formState.errors.category_product_type?.message as string}
+                error={
+                  form.formState.errors.category_product_type?.message as string
+                }
               />
             </SectionCard>
           </Grid>
@@ -232,7 +236,7 @@ const DetailsTab = ({ onValidationChange }: DetailsTabProps) => {
               fieldName="fake_reason"
               fieldData={bind.fake_reasons}
               label="دلیل تقلبی"
-              value={form.watch('fake_reason')}
+              value={form.watch("fake_reason")}
               onChange={handleDetailsChange}
               error={form.formState.errors.fake_reason?.message as string}
             />
@@ -247,7 +251,7 @@ const DetailsTab = ({ onValidationChange }: DetailsTabProps) => {
               fieldName="theme"
               fieldData={bind.category_data.themes}
               label="تم"
-              value={form.watch('theme')}
+              value={form.watch("theme")}
               onChange={handleDetailsChange}
               error={form.formState.errors.theme?.message as string}
             />
@@ -267,9 +271,7 @@ const DetailsTab = ({ onValidationChange }: DetailsTabProps) => {
                 ]}
                 label=""
                 value={
-                  form.watch('id_type') ||
-                  bind?.category_mefa_type ||
-                  "general"
+                  form.watch("id_type") || bind?.category_mefa_type || "general"
                 }
                 onChange={(fieldName: string, value: any) => {
                   handleDetailsChange("id_type", value);
@@ -285,16 +287,18 @@ const DetailsTab = ({ onValidationChange }: DetailsTabProps) => {
                   fieldName="general_mefa_id"
                   fieldData={bind.general_mefa}
                   label="شناسه عمومی"
-                  value={form.watch('general_mefa_id')}
+                  value={form.watch("general_mefa_id")}
                   onChange={handleDetailsChange}
                   isObjectData
-                  error={form.formState.errors.general_mefa_id?.message as string}
+                  error={
+                    form.formState.errors.general_mefa_id?.message as string
+                  }
                 />
               ) : (
                 <DetailsField
                   fieldName="custom_id"
                   label="شناسه خصوصی"
-                  value={form.watch('custom_id')}
+                  value={form.watch("custom_id")}
                   onChange={handleDetailsChange}
                   isTextField
                   placeholder="شناسه خصوصی را وارد کنید..."
