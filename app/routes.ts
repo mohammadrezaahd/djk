@@ -6,4 +6,5 @@ export default [
   route("/templates/new", "pages/templates/new.tsx"),
   route("/templates/list", "pages/templates/list.tsx"),
   route("/templates/edit", "pages/templates/edit.tsx"),
+  route("/gallery", "pages/gallery.tsx"),
 ] satisfies RouteConfig;

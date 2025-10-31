@@ -43,6 +43,38 @@ const authorizedPost = async <T = any>(
   return axios.post(`${apiUrl}${endpoint}`, data, authConfig);
 };
 
+// تابع کمکی برای File Upload با Query Parameters
+const authorizedPostFileWithQuery = async <T = any>(
+  endpoint: string,
+  file: File,
+  queryParams: Record<string, string | boolean>,
+  config?: AxiosRequestConfig
+): Promise<AxiosResponse<T>> => {
+  const token = getToken();
+  
+  // Create FormData for file
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  // Create query string from parameters
+  const queryString = Object.entries(queryParams)
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+    .join('&');
+  
+  const urlWithQuery = `${apiUrl}${endpoint}?${queryString}`;
+  
+  const authConfig: AxiosRequestConfig = {
+    ...config,
+    headers: {
+      ...(token && { Authorization: `Bearer ${token}` }),
+      // Don't set Content-Type for FormData - let browser set it with boundary
+      ...config?.headers,
+    },
+  };
+  
+  return axios.post(urlWithQuery, formData, authConfig);
+};
+
 // تابع کمکی برای GET request با Authorization
 const authorizedGet = async <T = any>(
   endpoint: string,
@@ -86,6 +118,7 @@ export {
   createAuthHeaders,
   createAuthConfig,
   authorizedPost,
+  authorizedPostFileWithQuery,
   authorizedGet,
   authorizedPut,
   authorizedDelete,
