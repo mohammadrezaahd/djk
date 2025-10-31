@@ -1,4 +1,4 @@
-import type { TemplateSource } from "../dtos/templates.dto";
+import type { ITemplateBase } from "./templates.interface";
 
 export interface ICategoryAttr {
   has_height: boolean;
@@ -57,4 +57,8 @@ export enum AttributeType {
   Select = "select",
   Checkbox = "checkbox",
   Text = "text",
+}
+
+export interface IGetAttrTemplate extends ITemplateBase {
+  data_json: ICategoryAttr;
 }

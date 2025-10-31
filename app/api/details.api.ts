@@ -1,9 +1,14 @@
-import type { IPostAttr } from "~/types/dtos/attributes.dto";
 import { apiUtils } from "./apiUtils.api";
 import type { IPostDetail } from "~/types/dtos/details.dto";
-import { authorizedDelete, authorizedPost } from "~/utils/authorizeReq";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  authorizedDelete,
+  authorizedGet,
+  authorizedPost,
+  authorizedPut,
+} from "~/utils/authorizeReq";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ITemplateList } from "~/types/interfaces/templates.interface";
+import type { IGetDetailTemplate } from "~/types/interfaces/details.interface";
 
 const addNewDetail = async (data: IPostDetail) => {
   return apiUtils<{ data: { id: number } }>(async () => {
@@ -35,6 +40,20 @@ const getDetailsList = async ({
 const removeDetail = async (id: number) => {
   return apiUtils<{ status: string }>(async () => {
     const response = await authorizedDelete(`/v1/details/remove/${id}`);
+    return response.data;
+  });
+};
+
+const getDetail = async (id: number) => {
+  return apiUtils<IGetDetailTemplate>(async () => {
+    const response = await authorizedGet(`/v1/details/get/${id}`);
+    return response.data;
+  });
+};
+
+const editDetail = async ({ id, data }: { id: number; data: IPostDetail }) => {
+  return apiUtils<{ status: string }>(async () => {
+    const response = await authorizedPut(`/v1/details/edit/${id}`, data);
     return response.data;
   });
 };
@@ -84,4 +103,35 @@ export const useRemoveDetail = () => {
   });
 };
 
-export const detailsApi = { addNewDetail, getDetailsList };
+export const useDetail = (id: number) => {
+  return useQuery({
+    queryKey: ["detailes", id],
+    queryFn: () => getDetail(id),
+    enabled: !!id,
+    staleTime: 30 * 60 * 1000, // 30 minutes
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useEditDetail = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: editDetail,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["details modify"] });
+      // console.log("✅ Attribute added successfully:", data);
+    },
+    onError: (error) => {
+      console.error("❌ Error adding attribute:", error);
+    },
+  });
+};
+
+export const detailsApi = {
+  addNewDetail,
+  getDetailsList,
+  removeDetail,
+  getDetail,
+  editDetail,
+};

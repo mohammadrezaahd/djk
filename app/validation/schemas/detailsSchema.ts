@@ -187,6 +187,7 @@ export const createDetailsFormSchema = (
 export type DetailsFormData = {
   title: string;
   description?: string;
+  tag?: string;
   is_fake_product?: boolean;
   brand?: string;
   status?: string;
@@ -207,10 +208,15 @@ export const getDetailsDefaultValues = (
   detailsData: ICategoryDetails | null,
   currentFormData: { [key: string]: any } = {}
 ): DetailsFormData => {
+  console.log("🔍 getDetailsDefaultValues - currentFormData:", currentFormData);
+  
   const defaultValues: DetailsFormData = {
     title: currentFormData.title || "",
     description: currentFormData.description || "",
+    tag: currentFormData.tag || "",
   };
+
+  console.log("🔍 getDetailsDefaultValues - defaultValues.title:", defaultValues.title);
 
   if (!detailsData?.bind) {
     return defaultValues;
@@ -233,5 +239,7 @@ export const getDetailsDefaultValues = (
   defaultValues.general_mefa_id = currentFormData.general_mefa_id || "";
   defaultValues.custom_id = currentFormData.custom_id || "";
 
+  console.log("🔍 getDetailsDefaultValues - final defaultValues:", defaultValues);
+  
   return defaultValues;
 };

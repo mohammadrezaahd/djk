@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import type { ICategoryAttr } from "~/types/interfaces/attributes.interface";
+import type { IPostAttr } from "~/types/dtos/attributes.dto";
 
 interface AttributesState {
   currentCategoryId: number | null;
@@ -99,8 +100,8 @@ export const {
 
 export const getFinalAttributesObject = (state: {
   attributes: AttributesState;
-}) => {
-  if (!state.attributes.attributesData) return null;
+}): IPostAttr | null => {
+  if (!state.attributes.attributesData || !state.attributes.currentCategoryId) return null;
 
   const finalData = JSON.parse(JSON.stringify(state.attributes.attributesData));
 
@@ -161,7 +162,15 @@ export const getFinalAttributesObject = (state: {
     });
   }
 
-  return finalData;
+  // Return IPostAttr object
+  return {
+    title: state.attributes.title.trim(),
+    description: state.attributes.description?.trim() || undefined,
+    category_id: state.attributes.currentCategoryId,
+    data_json: finalData,
+    images: [],
+    source: "app" as const,
+  };
 };
 
 export default attributesSlice.reducer;

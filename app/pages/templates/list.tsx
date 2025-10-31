@@ -37,6 +37,7 @@ import {
   Refresh as RefreshIcon,
 } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
+import { useNavigate } from "react-router";
 import { useAttrs, useRemoveAttr } from "~/api/attributes.api";
 import { useDetails, useRemoveDetail } from "~/api/details.api";
 import type { ITemplateList } from "~/types/interfaces/templates.interface";
@@ -72,6 +73,7 @@ const TemplatesList = () => {
   });
 
   const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
 
   // React Query mutations
   const {
@@ -193,12 +195,7 @@ const TemplatesList = () => {
 
   // Handle edit and delete actions
   const handleEdit = (id: number, type: TemplateType) => {
-    enqueueSnackbar(
-      `ویرایش ${type === "attributes" ? "ویژگی" : "اطلاعات"} با ID: ${id}`,
-      {
-        variant: "info",
-      }
-    );
+    navigate(`/templates/edit?id=${id}&type=${type}`);
   };
 
   const handleDelete = (id: number, type: TemplateType) => {

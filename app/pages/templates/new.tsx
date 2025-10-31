@@ -27,14 +27,12 @@ import {
   getFinalDetailsObject,
 } from "~/store/slices/detailsSlice";
 import type { ICategoryList } from "~/types/interfaces/categories.interface";
-import type { IPostAttr } from "~/types/dtos/attributes.dto";
-import type { IPostDetail } from "~/types/dtos/details.dto";
 import CategorySelector from "~/components/templates/CategorySelector";
 import ActionButtons from "~/components/templates/ActionButtons";
 import AttributesTab from "~/components/templates/attributes/AttributesTab";
 import DetailsTab from "~/components/templates/details/DetailsTab";
 import { useSnackbar } from "notistack";
-import { processAndConvertToJSON } from "~/utils/dataProcessor";
+import { ApiStatus } from "~/types";
 
 export function meta() {
   return [
@@ -49,21 +47,6 @@ const NewTemplatePage = () => {
 
   const attributesStore = useAppSelector((state) => state.attributes);
   const detailsStore = useAppSelector((state) => state.details);
-
-  // React Query mutations
-  const {
-    mutateAsync: saveAttributes,
-    isPending: isAttributesSaving,
-    error: attributesError,
-    isSuccess: attributesSuccess,
-  } = useAddAttribute();
-
-  const {
-    mutateAsync: saveDetails,
-    isPending: isDetailsSaving,
-    error: detailsError,
-    isSuccess: detailsSuccess,
-  } = useAddDetail();
 
   const [selectedCategory, setSelectedCategory] =
     useState<ICategoryList | null>(null);
@@ -90,7 +73,6 @@ const NewTemplatePage = () => {
     isLoading: loadingCategories,
   } = useCategoriesList(searchTerm, 1, 50);
 
-  // Category details query
   const {
     data: categoryData,
     isLoading: categoryLoading,
@@ -104,6 +86,21 @@ const NewTemplatePage = () => {
     )
   );
 
+  // React Query mutations
+  const {
+    mutateAsync: saveAttributes,
+    isPending: isAttributesSaving,
+    error: attributesError,
+    isSuccess: attributesSuccess,
+  } = useAddAttribute();
+
+  const {
+    mutateAsync: saveDetails,
+    isPending: isDetailsSaving,
+    error: detailsError,
+    isSuccess: detailsSuccess,
+  } = useAddDetail();
+
   // استخراج categories از response
   const categories = categoriesResponse?.data?.items || [];
 
@@ -115,7 +112,7 @@ const NewTemplatePage = () => {
   // Update store when category data changes
   useEffect(() => {
     if (
-      categoryData?.status === "true" &&
+      categoryData?.status === ApiStatus.SUCCEEDED &&
       categoryData.data &&
       selectedCategory
     ) {
@@ -126,6 +123,7 @@ const NewTemplatePage = () => {
         categoryQueryOptions.attributes &&
         data.item.attributes?.category_group_attributes
       ) {
+        // TARGET
         dispatch(
           setAttributesData({
             categoryId: selectedCategory.id,
@@ -161,29 +159,14 @@ const NewTemplatePage = () => {
           return;
         }
 
-        const finalAttributesData = getFinalAttributesObject({
+        const postData = getFinalAttributesObject({
           attributes: attributesStore,
         });
 
-        if (!finalAttributesData) {
+        if (!postData) {
           enqueueSnackbar("اطلاعات قالب در دسترس نیست", { variant: "error" });
           return;
         }
-
-        // Process the data using existing processor
-        const processedJSON = processAndConvertToJSON(
-          finalAttributesData,
-          attributesStore.formData
-        );
-
-        const postData: IPostAttr = {
-          title: attributesStore.title.trim(),
-          description: attributesStore.description?.trim() || undefined,
-          category_id: selectedCategory.id,
-          data_json: JSON.parse(processedJSON),
-          images: [],
-          source: "app" as const,
-        };
 
         await saveAttributes(postData);
         enqueueSnackbar("قالب ویژگی با موفقیت ذخیره شد", {
@@ -200,22 +183,12 @@ const NewTemplatePage = () => {
           return;
         }
 
-        const finalDataJson = getFinalDetailsObject({ details: detailsStore });
+        const postData = getFinalDetailsObject({ details: detailsStore });
 
-        if (!finalDataJson) {
+        if (!postData) {
           enqueueSnackbar("اطلاعات قالب در دسترس نیست", { variant: "error" });
           return;
         }
-
-        const postData: IPostDetail = {
-          title: detailsStore.formData.title.trim(),
-          description: detailsStore.formData.description?.trim() || "",
-          category_id: selectedCategory.id,
-          data_json: finalDataJson,
-          images: [],
-          source: "app" as const,
-          tag: detailsStore.formData.tag?.trim() || undefined,
-        };
 
         await saveDetails(postData);
         enqueueSnackbar("قالب اطلاعات با موفقیت ذخیره شد", {

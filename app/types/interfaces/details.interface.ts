@@ -1,3 +1,5 @@
+import type { ITemplateBase } from "./templates.interface";
+
 export interface ICategoryDetails {
   bind: IDetailsBind;
   errors?: any;
@@ -119,4 +121,8 @@ export interface ICDThemes {
   labeel: string;
   active: boolean;
   themeType: "colored";
+}
+
+export interface IGetDetailTemplate extends ITemplateBase {
+  data_json: ICategoryDetails;
 }

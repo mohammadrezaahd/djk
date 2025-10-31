@@ -40,7 +40,11 @@ export default function AttributesField({
           label={attr.title + (attr.required ? " *" : "")}
           helperText={error || attr.hint}
           value={value || ""}
-          onChange={(e) => onChange(attr.id, e.target.value)}
+          onChange={(e) => {
+            // Convert string to number for number inputs, keep as string if empty
+            const numValue = e.target.value === "" ? "" : parseFloat(e.target.value) || e.target.value;
+            onChange(attr.id, numValue);
+          }}
           required={attr.required}
           error={!!error}
           InputProps={{

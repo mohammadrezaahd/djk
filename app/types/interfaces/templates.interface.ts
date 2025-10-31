@@ -6,3 +6,9 @@ export interface ITemplateList {
   category_id: number;
   source: TemplateSource;
 }
+
+export interface ITemplateBase {
+  id: number;
+  title: string;
+  description?: string;
+}

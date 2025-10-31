@@ -31,7 +31,10 @@ const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
     (state: RootState) => (state.details as any)?.formData || {}
   );
 
-  // Use validation hook
+  console.log("🔍 DetailsTab formData:", detailsFormData);
+  console.log("🔍 Title in formData:", detailsFormData.title);
+
+  // Use validation hook only when form data is ready
   const form = useDetailsValidation(detailsData, detailsFormData);
 
   // Notify parent component about validation state changes

@@ -25,6 +25,7 @@ interface ActionButtonsProps {
   onReset: () => void;
   loading?: boolean;
   isFormValid?: boolean;
+  isEditMode?: boolean;
 }
 
 const ActionButtons = ({
@@ -33,6 +34,7 @@ const ActionButtons = ({
   onReset,
   loading = false,
   isFormValid = false,
+  isEditMode = false,
 }: ActionButtonsProps) => {
   return (
     <Grid size={{ xs: 12 }}>
@@ -49,8 +51,8 @@ const ActionButtons = ({
             }}
           >
             {loading 
-              ? (activeTab === 0 ? "در حال ذخیره ویژگی‌ها..." : "در حال ذخیره اطلاعات...")
-              : (activeTab === 0 ? "ذخیره قالب ویژگی‌ها" : "ذخیره قالب اطلاعات")
+              ? (activeTab === 0 ? (isEditMode ? "در حال ویرایش ویژگی‌ها..." : "در حال ذخیره ویژگی‌ها...") : (isEditMode ? "در حال ویرایش اطلاعات..." : "در حال ذخیره اطلاعات..."))
+              : (activeTab === 0 ? (isEditMode ? "ویرایش قالب ویژگی‌ها" : "ذخیره قالب ویژگی‌ها") : (isEditMode ? "ویرایش قالب اطلاعات" : "ذخیره قالب اطلاعات"))
             }
           </Button>
           <Button
@@ -60,7 +62,7 @@ const ActionButtons = ({
             onClick={onReset}
             disabled={loading}
           >
-            انصراف از افزودن
+            {isEditMode ? "انصراف از ویرایش" : "انصراف از افزودن"}
           </Button>
         </Box>
       </SectionCard>

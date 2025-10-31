@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import type { ICategoryDetails } from "~/types/interfaces/details.interface";
+import type { IPostDetail } from "~/types/dtos/details.dto";
 
 interface DetailsState {
   currentCategoryId: number | null;
@@ -60,9 +61,9 @@ export const {
   resetDetails,
 } = detailsSlice.actions;
 
-// Helper function to transform formData to final data_json structure
-export const getFinalDetailsObject = (state: { details: DetailsState }) => {
-  if (!state.details.detailsData) return null;
+// Helper function to transform formData to final IPostDetail structure
+export const getFinalDetailsObject = (state: { details: DetailsState }): IPostDetail | null => {
+  if (!state.details.detailsData || !state.details.currentCategoryId) return null;
 
   // Deep clone the original data
   const finalData = JSON.parse(JSON.stringify(state.details.detailsData));
@@ -154,7 +155,16 @@ export const getFinalDetailsObject = (state: { details: DetailsState }) => {
     }
   }
 
-  return finalData;
+  // Return IPostDetail object
+  return {
+    title: formData.title?.trim() || "",
+    description: formData.description?.trim() || "",
+    category_id: state.details.currentCategoryId,
+    data_json: finalData,
+    images: [],
+    source: "app" as const,
+    tag: formData.tag?.trim() || undefined,
+  };
 };
 
 export default detailsSlice.reducer;
