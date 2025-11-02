@@ -12,25 +12,45 @@ import {
   Tooltip,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import DownloadIcon from "@mui/icons-material/Download";
-import ThreeDRotationIcon from "@mui/icons-material/ThreeDRotation";
-import ImageIcon from "@mui/icons-material/Image";
-import type { IMediaFile } from "~/types";
+import EditIcon from "@mui/icons-material/Edit";
+import { PageSizeSelector, PaginationControls } from "~/components/common";
+import type { SelectChangeEvent } from "@mui/material";
+
+// Media file interface matching MediaManager
+interface IMediaFile {
+  _id: string;
+  filename: string;
+  filepath: string;
+  size: number;
+  mimetype: string;
+  createdAt: string;
+}
 
 interface MediaGridProps {
   media: IMediaFile[];
   onDelete?: (id: string) => void;
-  onSelect?: (media: IMediaFile) => void;
+  onEdit?: (id: string) => void;
   loading?: boolean;
-  selectedMedia?: IMediaFile[];
+  // Pagination props
+  currentPage: number;
+  totalItems: number;
+  pageSize: number;
+  onPageChange: (event: React.ChangeEvent<unknown>, value: number) => void;
+  onPageSizeChange: (event: SelectChangeEvent<number>) => void;
+  pageSizeOptions?: number[];
 }
 
 const MediaGrid: React.FC<MediaGridProps> = ({
   media,
   onDelete,
-  onSelect,
+  onEdit,
   loading = false,
-  selectedMedia = [],
+  currentPage,
+  totalItems,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
+  pageSizeOptions = [12, 24, 48],
 }) => {
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes";
@@ -40,43 +60,19 @@ const MediaGrid: React.FC<MediaGridProps> = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
-  const getFileType = (
-    mimetype: string,
-    filename: string
-  ): "image" | "model" | "other" => {
-    if (mimetype.startsWith("image/")) return "image";
-    if (
-      filename.toLowerCase().endsWith(".glb") ||
-      mimetype === "model/gltf-binary"
-    )
-      return "model";
-    return "other";
-  };
-
-  const getFileIcon = (type: "image" | "model" | "other") => {
-    switch (type) {
-      case "image":
-        return <ImageIcon />;
-      case "model":
-        return <ThreeDRotationIcon />;
-      default:
-        return <ImageIcon />;
+  const handleEdit = (media: IMediaFile) => {
+    if (onEdit) {
+      onEdit(media._id);
     }
   };
 
-  const handleDownload = (media: IMediaFile) => {
-    const link = document.createElement("a");
-    link.href = media.filepath;
-    link.download = media.filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  // Calculate total pages
+  const totalPages = Math.ceil(totalItems / pageSize);
 
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-        <Typography>Loading...</Typography>
+        <Typography>در حال بارگیری...</Typography>
       </Box>
     );
   }
@@ -85,10 +81,10 @@ const MediaGrid: React.FC<MediaGridProps> = ({
     return (
       <Box sx={{ textAlign: "center", py: 8 }}>
         <Typography variant="h6" color="text.secondary">
-          No files found
+          هیچ فایلی یافت نشد
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Upload some files to get started
+          برای شروع چند فایل آپلود کنید
         </Typography>
       </Box>
     );
@@ -96,14 +92,34 @@ const MediaGrid: React.FC<MediaGridProps> = ({
 
   return (
     <Box sx={{ flexGrow: 1 }}>
+      {/* Page Size Selector and Total Items Display */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            تعداد آیتم در صفحه:
+          </Typography>
+          <PageSizeSelector
+            value={pageSize}
+            onChange={onPageSizeChange}
+            options={pageSizeOptions}
+            disabled={loading}
+          />
+        </Box>
+        <Typography variant="body2" color="text.secondary">
+          مجموع: {totalItems} آیتم
+        </Typography>
+      </Box>
+
+      {/* Media Grid */}
       <Grid container spacing={3}>
         {media.map((item) => {
-          const fileType = getFileType(item.mimetype, item.filename);
-          const isImage = fileType === "image";
-          const isSelected = selectedMedia.some(
-            (selected) => selected._id === item._id
-          );
-
           return (
             <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={item._id}>
               <Card
@@ -111,19 +127,7 @@ const MediaGrid: React.FC<MediaGridProps> = ({
                   height: "100%",
                   display: "flex",
                   flexDirection: "column",
-                  cursor: onSelect ? "pointer" : "default",
-                  border: isSelected ? 2 : 1,
-                  borderColor: isSelected ? "primary.main" : "divider",
-                  bgcolor: isSelected ? "primary.50" : "background.paper",
-                  "&:hover": onSelect
-                    ? {
-                        boxShadow: 4,
-                        transform: "translateY(-2px)",
-                        transition: "all 0.2s ease-in-out",
-                      }
-                    : {},
                 }}
-                onClick={() => onSelect && onSelect(item)}
               >
                 {/* Media Preview */}
                 <Box
@@ -133,45 +137,40 @@ const MediaGrid: React.FC<MediaGridProps> = ({
                     bgcolor: "grey.100",
                   }}
                 >
-                  {isImage ? (
-                    <CardMedia
-                      component="img"
-                      image={item.filepath}
-                      alt={item.filename}
-                      sx={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  ) : (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        bgcolor: "grey.50",
-                      }}
-                    >
-                      {getFileIcon(fileType)}
-                    </Box>
-                  )}
+                  <CardMedia
+                    component="img"
+                    image={item.filepath}
+                    alt={item.filename}
+                    sx={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                    onError={(e) => {
+                      // Fallback to icon if image fails to load
+                      const target = e.target as HTMLElement;
+                      target.style.display = "none";
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = `
+                          <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: #f5f5f5;">
+                            <svg style="width: 48px; height: 48px; color: #999;" viewBox="0 0 24 24">
+                              <path fill="currentColor" d="M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19M19,19H5V5H19V19Z"/>
+                            </svg>
+                          </div>
+                        `;
+                      }
+                    }}
+                  />
 
                   {/* File Type Badge */}
                   <Chip
-                    label={
-                      fileType === "model" ? "GLB" : fileType.toUpperCase()
-                    }
+                    label="تصویر"
                     size="small"
-                    color={fileType === "model" ? "secondary" : "primary"}
+                    color="primary"
                     sx={{
                       position: "absolute",
                       top: 8,
@@ -179,29 +178,6 @@ const MediaGrid: React.FC<MediaGridProps> = ({
                       fontWeight: "bold",
                     }}
                   />
-
-                  {/* Selection Indicator */}
-                  {onSelect && isSelected && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: 8,
-                        left: 8,
-                        width: 24,
-                        height: 24,
-                        borderRadius: "50%",
-                        bgcolor: "primary.main",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "white",
-                        fontSize: "14px",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      ✓
-                    </Box>
-                  )}
                 </Box>
 
                 {/* Content */}
@@ -219,43 +195,47 @@ const MediaGrid: React.FC<MediaGridProps> = ({
                       {item.filename}
                     </Typography>
                   </Tooltip>
+                  {item.size > 0 && (
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                    >
+                      {formatFileSize(item.size)}
+                    </Typography>
+                  )}
                   <Typography
                     variant="caption"
                     color="text.secondary"
                     display="block"
                   >
-                    {formatFileSize(item.size)}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    display="block"
-                  >
-                    {new Date(item.createdAt).toLocaleDateString()}
+                    {new Date(item.createdAt).toLocaleDateString("fa-IR")}
                   </Typography>
                 </CardContent>
 
                 {/* Actions */}
                 <CardActions sx={{ pt: 0, justifyContent: "space-between" }}>
                   <Box>
-                    <Tooltip title="Download">
+                    <Tooltip title="ویرایش">
                       <IconButton
                         size="small"
+                        disabled={true} // Disabled as requested
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDownload(item);
+                          handleEdit(item);
                         }}
                       >
-                        <DownloadIcon fontSize="small" />
+                        <EditIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                   </Box>
 
                   {onDelete && (
-                    <Tooltip title="Delete">
+                    <Tooltip title="حذف">
                       <IconButton
                         size="small"
                         color="error"
+                        disabled={true} // Disabled as requested
                         onClick={(e) => {
                           e.stopPropagation();
                           onDelete(item._id);
@@ -271,7 +251,19 @@ const MediaGrid: React.FC<MediaGridProps> = ({
           );
         })}
       </Grid>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          onPageChange={onPageChange}
+          disabled={loading}
+        />
+      )}
     </Box>
   );
 };
+
 export default MediaGrid;

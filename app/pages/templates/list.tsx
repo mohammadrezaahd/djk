@@ -13,11 +13,6 @@ import {
   Paper,
   IconButton,
   Chip,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Pagination,
   Alert,
   ToggleButton,
   ToggleButtonGroup,
@@ -42,6 +37,7 @@ import { useAttrs, useRemoveAttr } from "~/api/attributes.api";
 import { useDetails, useRemoveDetail } from "~/api/details.api";
 import type { ITemplateList } from "~/types/interfaces/templates.interface";
 import AppLayout from "~/components/layout/AppLayout";
+import { PageSizeSelector, PaginationControls, SearchInput } from "~/components/common";
 
 type TemplateType = "attributes" | "details";
 
@@ -52,6 +48,7 @@ const TemplatesList = () => {
   const [detailsPage, setDetailsPage] = useState<number>(1);
   const [attributesLimit, setAttributesLimit] = useState<number>(10);
   const [detailsLimit, setDetailsLimit] = useState<number>(10);
+  const [searchValue, setSearchValue] = useState<string>("");
 
   // Data state
   const [attributesList, setAttributesList] = useState<ITemplateList[]>([]);
@@ -193,6 +190,28 @@ const TemplatesList = () => {
     setDetailsPage(1); // Reset to first page
   };
 
+  // Pagination handlers for the common components
+  const handleAttributesPageChangeForPagination = (
+    event: React.ChangeEvent<unknown>,
+    value: number
+  ) => {
+    setAttributesPage(value);
+  };
+
+  const handleDetailsPageChangeForPagination = (
+    event: React.ChangeEvent<unknown>,
+    value: number
+  ) => {
+    setDetailsPage(value);
+  };
+
+  const handleSearchChange = (searchValue: string) => {
+    setSearchValue(searchValue);
+    // Reset both pages when searching
+    setAttributesPage(1);
+    setDetailsPage(1);
+  };
+
   // Handle edit and delete actions
   const handleEdit = (id: number, type: TemplateType) => {
     navigate(`/templates/edit?id=${id}&type=${type}`);
@@ -260,7 +279,16 @@ const TemplatesList = () => {
     templateType === "attributes" ? attributesLimit : detailsLimit;
   const currentTotal =
     templateType === "attributes" ? attributesTotal : detailsTotal;
-  const totalPages = Math.ceil(currentTotal / currentLimit);
+
+  // Filter data based on search
+  const filteredData = currentData.filter((item) => {
+    if (searchValue && !item.title.toLowerCase().includes(searchValue.toLowerCase())) {
+      return false;
+    }
+    return true;
+  });
+
+  const totalPages = Math.ceil(filteredData.length / currentLimit);
 
   // Loading skeleton
   const LoadingSkeleton = () => (
@@ -314,7 +342,7 @@ const TemplatesList = () => {
               gap: 2,
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
               <ToggleButtonGroup
                 value={templateType}
                 exclusive
@@ -333,23 +361,22 @@ const TemplatesList = () => {
                 </ToggleButton>
               </ToggleButtonGroup>
 
-              <FormControl size="small" sx={{ minWidth: 120 }}>
-                <InputLabel>تعداد نمایش</InputLabel>
-                <Select
-                  value={currentLimit}
-                  onChange={
-                    templateType === "attributes"
-                      ? handleAttributesLimitChange
-                      : handleDetailsLimitChange
-                  }
-                  label="تعداد نمایش"
-                >
-                  <MenuItem value={5}>5</MenuItem>
-                  <MenuItem value={10}>10</MenuItem>
-                  <MenuItem value={20}>20</MenuItem>
-                  <MenuItem value={50}>50</MenuItem>
-                </Select>
-              </FormControl>
+              <PageSizeSelector
+                value={currentLimit}
+                onChange={
+                  templateType === "attributes"
+                    ? handleAttributesLimitChange
+                    : handleDetailsLimitChange
+                }
+                options={[5, 10, 20, 50]}
+              />
+
+              <SearchInput
+                onSearchChange={handleSearchChange}
+                label="جستجو در قالب‌ها"
+                placeholder="نام قالب را جستجو کنید..."
+                size="small"
+              />
             </Box>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -359,7 +386,8 @@ const TemplatesList = () => {
                 </IconButton>
               </Tooltip>
               <Typography variant="body2" color="text.secondary">
-                مجموع: {currentTotal} مورد
+                مجموع: {filteredData.length} مورد
+                {searchValue && ` از ${currentTotal}`}
               </Typography>
             </Box>
           </Box>
@@ -389,8 +417,8 @@ const TemplatesList = () => {
               <TableBody>
                 {isLoading ? (
                   <LoadingSkeleton />
-                ) : currentData.length > 0 ? (
-                  currentData.map((item) => (
+                ) : filteredData.length > 0 ? (
+                  filteredData.map((item) => (
                     <TableRow key={item.id} hover>
                       <TableCell>{item.id}</TableCell>
                       <TableCell>
@@ -444,7 +472,7 @@ const TemplatesList = () => {
                   <TableRow>
                     <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
                       <Typography variant="body2" color="text.secondary">
-                        هیچ قالبی یافت نشد
+                        {searchValue ? "نتیجه‌ای یافت نشد" : "هیچ قالبی یافت نشد"}
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -454,33 +482,18 @@ const TemplatesList = () => {
           </TableContainer>
 
           {/* Pagination */}
-          {currentData.length > 0 && totalPages > 1 && (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                mt: 3,
-                gap: 2,
-              }}
-            >
-              <Pagination
-                count={totalPages}
-                page={currentPage}
-                onChange={
-                  templateType === "attributes"
-                    ? handleAttributesPageChange
-                    : handleDetailsPageChange
-                }
-                color="primary"
-                showFirstButton
-                showLastButton
-                disabled={isLoading}
-              />
-              <Typography variant="body2" color="text.secondary">
-                صفحه {currentPage} از {totalPages}
-              </Typography>
-            </Box>
+          {filteredData.length > 0 && totalPages > 1 && (
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={filteredData.length}
+              onPageChange={
+                templateType === "attributes"
+                  ? handleAttributesPageChangeForPagination
+                  : handleDetailsPageChangeForPagination
+              }
+              disabled={isLoading}
+            />
           )}
         </CardContent>
       </Card>

@@ -5,33 +5,40 @@ import {
   Box,
   Alert,
   CircularProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  TextField,
+  Paper,
   Button,
-  IconButton,
-  Checkbox,
-  FormControlLabel,
-  Pagination,
   FormControl,
   Select,
   MenuItem,
-  TextField,
-  Paper,
+  Card,
+  CardMedia,
+  Stack,
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
-import {
-  Close as CloseIcon,
-  CloudUpload as CloudUploadIcon,
-} from "@mui/icons-material";
-import type { IMediaFile, IMediaQueryParams } from "~/types";
-import { ApiStatus } from "~/types";
-import { useAddImage } from "~/api/gallery.api";
-import MediaFilters from "./MediaFilters";
+import { useSnackbar } from "notistack";
+import type { IGallery } from "~/types/interfaces/gallery.interface";
+import { useImages, useAddImage } from "~/api/gallery.api";
 import MediaGrid from "./MediaGrid";
+import { SearchInput } from "~/components/common";
+import { ApiStatus } from "~/types";
 
-// Inline FileUpload Component
+interface IMediaFile {
+  _id: string;
+  filename: string;
+  filepath: string;
+  size: number;
+  mimetype: string;
+  createdAt: string;
+}
+
+interface MediaManagerProps {
+  allowedType?: "packaging" | "product" | "none";
+  showUpload?: boolean;
+  title?: string;
+}
+
+// File Upload Component
 const FileUpload: React.FC<{
   allowedType?: "packaging" | "product" | "none";
   onUploadSuccess?: () => void;
@@ -43,8 +50,10 @@ const FileUpload: React.FC<{
   const [currentAllowedType, setCurrentAllowedType] = useState<
     "packaging" | "product" | "none"
   >(allowedType);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
 
   const addImageMutation = useAddImage();
+  const { enqueueSnackbar } = useSnackbar();
 
   const MEDIA_FILTER_TYPES = [
     {
@@ -72,6 +81,8 @@ const FileUpload: React.FC<{
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setError("");
+    setPreviewUrl("");
+
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
 
@@ -84,6 +95,15 @@ const FileUpload: React.FC<{
       }
 
       setSelectedFile(file);
+
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          setPreviewUrl(e.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -91,6 +111,7 @@ const FileUpload: React.FC<{
     if (!selectedFile || !title.trim()) {
       const errorMsg = "لطفاً فایل و عنوان را وارد کنید";
       setError(errorMsg);
+      enqueueSnackbar(errorMsg, { variant: "error" });
       if (onUploadError) onUploadError(errorMsg);
       return;
     }
@@ -109,24 +130,38 @@ const FileUpload: React.FC<{
         product,
         source: "app" as any,
         tag: "test",
-        file: selectedFile, // Send File object directly
+        file: selectedFile,
       };
 
-      await addImageMutation.mutateAsync(uploadData);
+      const result = await addImageMutation.mutateAsync(uploadData);
 
-      setSelectedFile(null);
-      setTitle("");
-      setError("");
+      // بررسی موفقیت با ApiStatus
+      if (result.status === ApiStatus.SUCCEEDED) {
+        // Reset form after successful upload
+        setSelectedFile(null);
+        setTitle("");
+        setError("");
+        setPreviewUrl("");
 
-      const fileInput = document.querySelector(
-        'input[type="file"]'
-      ) as HTMLInputElement;
-      if (fileInput) fileInput.value = "";
+        const fileInput = document.querySelector(
+          'input[type="file"]'
+        ) as HTMLInputElement;
+        if (fileInput) fileInput.value = "";
 
-      if (onUploadSuccess) onUploadSuccess();
+        // نمایش snackbar موفقیت
+        enqueueSnackbar("تصویر با موفقیت آپلود شد!", { variant: "success" });
+
+        if (onUploadSuccess) onUploadSuccess();
+      } else {
+        throw new Error(result.message || "آپلود ناموفق بود");
+      }
     } catch (error: any) {
       const errorMsg = error.message || "آپلود ناموفق بود";
       setError(errorMsg);
+
+      // نمایش snackbar خطا
+      enqueueSnackbar(errorMsg, { variant: "error" });
+
       if (onUploadError) onUploadError(errorMsg);
     }
   };
@@ -134,18 +169,8 @@ const FileUpload: React.FC<{
   const handleAllowedTypeChange = (event: SelectChangeEvent<string>) => {
     const newType = event.target.value as "packaging" | "product" | "none";
     setCurrentAllowedType(newType);
-    setSelectedFile(null);
-    setTitle("");
+    // فقط خطا رو پاک می‌کنیم، بقیه input ها رو دست نمی‌زنیم
     setError("");
-
-    const fileInput = document.querySelector(
-      'input[type="file"]'
-    ) as HTMLInputElement;
-    if (fileInput) fileInput.value = "";
-  };
-
-  const getAcceptAttribute = (): string => {
-    return ".jpg,.jpeg,.png,.gif,.webp,.svg";
   };
 
   const getSelectedFilterType = () => {
@@ -158,76 +183,227 @@ const FileUpload: React.FC<{
         آپلود تصویر
       </Typography>
 
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <FormControl variant="outlined" size="small" sx={{ maxWidth: 300 }}>
-          <Typography variant="body2" gutterBottom>
-            نوع تصویر
-          </Typography>
-          <Select value={currentAllowedType} onChange={handleAllowedTypeChange}>
-            {MEDIA_FILTER_TYPES.map((filterType) => (
-              <MenuItem key={filterType.value} value={filterType.value}>
-                {filterType.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <TextField
-          label="عنوان تصویر"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          variant="outlined"
-          size="small"
-          sx={{ maxWidth: 300 }}
-          disabled={addImageMutation.isPending}
-          required
-          helperText="عنوان تصویر را وارد کنید"
-        />
-
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        {/* ردیف بالا: مربع آپلود + نوع تصویر + عنوان تصویر */}
         <Box
           sx={{
-            display: "flex",
-            gap: 2,
+            display: "grid",
+            gridTemplateColumns: { 
+              xs: "1fr", 
+              sm: "auto auto", 
+              md: "auto 1fr 1fr" 
+            },
+            gap: 3,
             alignItems: "start",
-            flexWrap: "wrap",
           }}
         >
-          <TextField
-            type="file"
-            onChange={handleFileChange}
-            sx={{ minWidth: 250 }}
-            size="small"
-            disabled={addImageMutation.isPending}
-            helperText={
-              getSelectedFilterType()
-                ? `فرمت‌های پشتیبانی شده: ${getSelectedFilterType()?.extensions.join(", ")}`
-                : ""
-            }
-            inputProps={{
-              accept: getAcceptAttribute(),
-            }}
-          />
+          {/* مربع انتخاب فایل */}
+          <Box sx={{ position: "relative", gridRow: { xs: "1", sm: "1 / 3", md: "1" } }}>
+            <input
+              type="file"
+              id="file-upload"
+              onChange={handleFileChange}
+              style={{ display: "none" }}
+              disabled={addImageMutation.isPending}
+              accept=".jpg,.jpeg,.png,.gif,.webp,.svg"
+            />
+            <label htmlFor="file-upload">
+              <Card
+                sx={{
+                  width: 140,
+                  height: 140,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: addImageMutation.isPending
+                    ? "not-allowed"
+                    : "pointer",
+                  border: "2px dashed",
+                  borderColor: selectedFile ? "primary.main" : "grey.400",
+                  backgroundColor: selectedFile ? "action.hover" : "grey.50",
+                  transition: "all 0.2s ease",
+                  "&:hover": {
+                    borderColor: "primary.main",
+                    backgroundColor: "action.hover",
+                    transform: "scale(1.02)",
+                  },
+                }}
+              >
+                {previewUrl ? (
+                  <CardMedia
+                    component="img"
+                    image={previewUrl}
+                    alt="پیش‌نمایش"
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      borderRadius: 1,
+                    }}
+                  />
+                ) : (
+                  <Box
+                    sx={{
+                      textAlign: "center",
+                      color: "text.secondary",
+                      p: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: "bold", mb: 0.5 }}
+                    >
+                      انتخاب فایل
+                    </Typography>
+                    <Typography variant="caption">کلیک کنید</Typography>
+                  </Box>
+                )}
+              </Card>
+            </label>
+          </Box>
 
-          <Button
-            variant="contained"
-            onClick={handleUpload}
-            disabled={
-              !selectedFile || !title.trim() || addImageMutation.isPending
-            }
-            startIcon={<CloudUploadIcon />}
-          >
-            {addImageMutation.isPending ? "در حال آپلود..." : "آپلود تصویر"}
-          </Button>
+          {/* نوع تصویر */}
+          <Box sx={{ minWidth: 200 }}>
+            <Typography variant="body2" gutterBottom sx={{ fontWeight: 500 }}>
+              نوع تصویر
+            </Typography>
+            <FormControl variant="outlined" size="small" fullWidth>
+              <Select
+                value={currentAllowedType}
+                onChange={handleAllowedTypeChange}
+              >
+                {MEDIA_FILTER_TYPES.map((filterType) => (
+                  <MenuItem key={filterType.value} value={filterType.value}>
+                    {filterType.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* عنوان تصویر */}
+          <Box sx={{ minWidth: 200 }}>
+            <Typography variant="body2" gutterBottom sx={{ fontWeight: 500 }}>
+              عنوان تصویر
+            </Typography>
+            <TextField
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              variant="outlined"
+              size="small"
+              disabled={addImageMutation.isPending}
+              required
+              placeholder="عنوان تصویر را وارد کنید"
+              fullWidth
+            />
+          </Box>
         </Box>
 
-        {selectedFile && (
-          <Box sx={{ mt: 1 }}>
-            <Typography variant="body2" color="text.secondary">
-              فایل انتخاب شده: {selectedFile.name}(
-              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+        {/* ردیف پایین: فرمت‌های پشتیبانی و اطلاعات فایل */}
+        <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+          {/* فرمت‌های پشتیبانی شده */}
+          {getSelectedFilterType() && (
+            <Box
+              sx={{
+                p: 2,
+                backgroundColor: "info.main",
+                color: "info.contrastText",
+                borderRadius: 1,
+                opacity: 0.9,
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: "bold", display: "block", mb: 1 }}
+              >
+                فرمت‌های پشتیبانی شده:
+              </Typography>
+              <Typography variant="body2">
+                {getSelectedFilterType()?.extensions.join(" • ")}
+              </Typography>
+            </Box>
+          )}
+
+          {/* اطلاعات فایل انتخاب شده */}
+          <Box
+            sx={{
+              p: 2,
+              backgroundColor: selectedFile ? "action.hover" : "grey.100",
+              borderRadius: 1,
+              border: "1px solid",
+              borderColor: selectedFile ? "divider" : "grey.300",
+              opacity: selectedFile ? 1 : 0.6,
+            }}
+          >
+            <Typography
+              variant="body2"
+              sx={{ fontWeight: "bold", display: "block", mb: 1 }}
+            >
+              {selectedFile ? "فایل انتخاب شده:" : "هیچ فایلی انتخاب نشده"}
             </Typography>
+            {selectedFile ? (
+              <Box>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    wordBreak: "break-word",
+                    mb: 0.5,
+                  }}
+                >
+                  {selectedFile.name}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                >
+                  حجم: {(selectedFile.size / 1024 / 1024).toFixed(2)} مگابایت
+                </Typography>
+              </Box>
+            ) : (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+              >
+                لطفاً فایل را انتخاب کنید
+              </Typography>
+            )}
           </Box>
-        )}
+        </Box>
+
+        {/* دکمه آپلود در پایین به صورت full width */}
+        <Button
+          variant="contained"
+          size="large"
+          onClick={handleUpload}
+          disabled={
+            !selectedFile || !title.trim() || addImageMutation.isPending
+          }
+          fullWidth
+          sx={{
+            minHeight: 56,
+            fontWeight: "bold",
+            fontSize: "1.1rem",
+            boxShadow: 3,
+            mt: 1,
+            "&:hover": {
+              boxShadow: 6,
+              transform: "translateY(-2px)",
+            },
+            "&:disabled": {
+              boxShadow: 1,
+            },
+          }}
+        >
+          {addImageMutation.isPending ? (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <CircularProgress size={24} color="inherit" />
+              در حال آپلود...
+            </Box>
+          ) : (
+            "آپلود تصویر"
+          )}
+        </Button>
       </Box>
 
       {error && (
@@ -239,328 +415,131 @@ const FileUpload: React.FC<{
   );
 };
 
-interface MediaManagerProps {
-  // Modal mode props
-  open?: boolean;
-  onClose?: () => void;
-  onSelect?: (selectedMedia: IMediaFile[]) => void;
-  multiple?: boolean;
-  mediaType?: "packaging" | "product" | "none";
-  title?: string;
-
-  // Page mode props
-  allowedType?: "packaging" | "product" | "none";
-  showUpload?: boolean;
-}
-
 const MediaManager: React.FC<MediaManagerProps> = ({
-  // Modal mode
-  open,
-  onClose,
-  onSelect,
-  multiple = false,
-  mediaType = "none",
-  title = "مدیریت رسانه",
-
-  // Page mode
-  allowedType,
+  allowedType = "none",
   showUpload = true,
+  title = "مدیریت رسانه",
 }) => {
-  // Determine if we're in modal mode or page mode
-  const isModalMode = open !== undefined;
-  const finalMediaType = isModalMode ? mediaType : allowedType || "none";
-
-  const [media, setMedia] = useState<IMediaFile[]>([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
-  const [selectedMedia, setSelectedMedia] = useState<IMediaFile[]>([]);
-  const [filters, setFilters] = useState<IMediaQueryParams>({
-    page: 1,
-    limit: 12,
-    search: "",
-    type: finalMediaType,
+  const [page, setPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(12);
+  const [apiSearchValue, setApiSearchValue] = useState<string>(""); // فقط مقدار برای API
+
+  const skip = (page - 1) * pageSize;
+
+  const {
+    data: imagesData,
+    isLoading,
+    error: apiError,
+    refetch,
+  } = useImages({
+    skip,
+    limit: pageSize,
+    search_title: apiSearchValue,
   });
 
-  // Update filters when mediaType changes
   useEffect(() => {
-    setFilters((prev: IMediaQueryParams) => ({
-      ...prev,
-      type: finalMediaType,
-      page: 1, // Reset to first page when type changes
-    }));
-  }, [finalMediaType]);
+    setPage(1);
+  }, [allowedType]);
 
-  // Clear selected media when modal opens/closes or target changes
-  useEffect(() => {
-    setSelectedMedia([]);
-  }, [open, mediaType]);
-
-  const [pagination, setPagination] = useState({
-    totalItems: 0,
-    totalPages: 1,
-    currentPage: 1,
-    itemsPerPage: 12,
-  });
-
-  const fetchMedia = React.useCallback(async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      // Mock data for now - این باید به gallery API متصل شود
-      setMedia([]);
-      setPagination({
-        totalItems: 0,
-        totalPages: 1,
-        currentPage: 1,
-        itemsPerPage: 12,
-      });
-    } catch {
-      setError("خطا در بارگیری رسانه‌ها");
-      setMedia([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [filters]);
-
-  useEffect(() => {
-    fetchMedia();
-  }, [fetchMedia]);
-
-  const handleFiltersChange = (newFilters: IMediaQueryParams) => {
-    setFilters(newFilters);
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    newPage: number
+  ) => {
+    setPage(newPage);
   };
 
-  const handlePageChange = (page: number) => {
-    setFilters((prev: IMediaQueryParams) => ({ ...prev, page }));
-  };
-
-  const handleItemsPerPageChange = (event: SelectChangeEvent<string>) => {
-    const itemsPerPage = parseInt(event.target.value);
-    setFilters((prev: IMediaQueryParams) => ({
-      ...prev,
-      limit: itemsPerPage,
-      page: 1,
-    }));
+  const handlePageSizeChange = (event: SelectChangeEvent<number>) => {
+    const newPageSize = event.target.value as number;
+    setPageSize(newPageSize);
+    setPage(1);
   };
 
   const handleUploadSuccess = () => {
-    fetchMedia();
+    refetch();
   };
 
   const handleUploadError = (errorMessage: string) => {
     setError(errorMessage);
   };
 
+  const handleSearchChange = (searchValue: string) => {
+    setApiSearchValue(searchValue);
+    setPage(1); // Reset to first page when searching
+  };
+
+  const handleEdit = (id: string) => {
+    console.log("Edit image with id:", id);
+  };
+
   const handleDelete = async (id: string) => {
-    if (!confirm("آیا مطمئن هستید که می‌خواهید این فایل را حذف کنید؟")) return;
-
-    try {
-      // Mock delete for now - این باید به gallery API متصل شود
-      fetchMedia();
-    } catch {
-      setError("خطا در حذف فایل");
-    }
+    console.log("Delete image with id:", id);
   };
 
-  const handleMediaClick = (mediaFile: IMediaFile) => {
-    if (isModalMode && onSelect) {
-      if (multiple) {
-        const isSelected = selectedMedia.some(
-          (item) => item._id === mediaFile._id
-        );
-        if (isSelected) {
-          setSelectedMedia((prev) =>
-            prev.filter((item) => item._id !== mediaFile._id)
-          );
-        } else {
-          setSelectedMedia((prev) => [...prev, mediaFile]);
-        }
-      } else {
-        onSelect([mediaFile]);
-        onClose?.();
-      }
-    }
-  };
+  const galleryData = imagesData?.data?.list || [];
+  
+  // بررسی خطا در دریافت لیست عکس‌ها
+  const hasImagesFetchError = imagesData?.status !== ApiStatus.SUCCEEDED && imagesData?.status !== undefined;
+  
+  const mediaFiles: IMediaFile[] = galleryData.map((item: IGallery) => ({
+    _id: item.id.toString(),
+    filename: item.title,
+    filepath: item.image_url,
+    size: 0,
+    mimetype: "image/jpeg",
+    createdAt: new Date().toISOString(),
+  }));
 
-  const handleSelectButtonClick = () => {
-    if (isModalMode && onSelect) {
-      onSelect(selectedMedia);
-      onClose?.();
-    }
-  };
+  const totalItems = mediaFiles.length;
 
-  // Inline pagination component
-  const renderPagination = () => {
-    if (pagination.totalPages <= 1) return null;
+  return (
+    <Container maxWidth="lg">
+      <Typography variant="h4" gutterBottom>
+        {title}
+      </Typography>
 
-    return (
-      <Box
-        sx={{
-          mt: 3,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Typography variant="body2" color="text.secondary">
-            تعداد آیتم در صفحه:
-          </Typography>
-          <FormControl size="small" sx={{ minWidth: 80 }}>
-            <Select
-              value={filters.limit?.toString() || "12"}
-              onChange={handleItemsPerPageChange}
-              variant="outlined"
-            >
-              <MenuItem value="12">12</MenuItem>
-              <MenuItem value="24">24</MenuItem>
-              <MenuItem value="48">48</MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
-
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Typography variant="body2" color="text.secondary">
-            صفحه {pagination.currentPage} از {pagination.totalPages}(
-            {pagination.totalItems} آیتم)
-          </Typography>
-          <Pagination
-            count={pagination.totalPages}
-            page={pagination.currentPage}
-            onChange={(_, page) => handlePageChange(page)}
-            color="primary"
-            showFirstButton
-            showLastButton
-          />
-        </Box>
-      </Box>
-    );
-  };
-
-  const renderContent = () => (
-    <>
-      {/* Error Display */}
-      {error && (
+      {(error || hasImagesFetchError) && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError("")}>
-          {error}
+          {error || (hasImagesFetchError && imagesData?.message) || "خطا در بارگیری داده‌ها"}
         </Alert>
       )}
 
       {/* File Upload */}
       {showUpload && (
         <FileUpload
-          allowedType={finalMediaType === "none" ? undefined : finalMediaType}
+          allowedType={allowedType === "none" ? undefined : allowedType}
           onUploadSuccess={handleUploadSuccess}
           onUploadError={handleUploadError}
         />
       )}
 
-      {/* Filters */}
-      <Box sx={{ mb: 2 }}>
-        <MediaFilters
-          filters={filters}
-          onFiltersChange={handleFiltersChange}
-          totalItems={pagination.totalItems}
-        />
-      </Box>
+      {/* Search Filter */}
+      <SearchInput
+        onSearchChange={handleSearchChange}
+        label="جستجو در عناوین"
+        placeholder="عنوان تصویر را جستجو کنید..."
+        sx={{ mb: 2, maxWidth: 300 }}
+      />
 
-      {/* Loading State */}
-      {loading && (
+      {isLoading && (
         <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
           <CircularProgress />
         </Box>
       )}
 
-      {/* Media Grid */}
-      {!loading && (
+      {!isLoading && (
         <MediaGrid
-          media={media}
-          onDelete={isModalMode ? undefined : handleDelete}
-          onSelect={handleMediaClick}
-          loading={loading}
-          selectedMedia={isModalMode ? selectedMedia : undefined}
+          media={mediaFiles}
+          onDelete={handleDelete}
+          onEdit={handleEdit}
+          loading={false}
+          currentPage={page}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
         />
       )}
-
-      {/* Pagination */}
-      {!loading && renderPagination()}
-    </>
-  );
-
-  // Modal Mode
-  if (isModalMode) {
-    return (
-      <Dialog open={open || false} onClose={onClose} maxWidth="lg" fullWidth>
-        <DialogTitle
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          {title}
-          <IconButton onClick={onClose} size="small">
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-
-        <DialogContent>{renderContent()}</DialogContent>
-
-        <DialogActions sx={{ justifyContent: "space-between", p: 3 }}>
-          <Box>
-            {multiple && (
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={
-                      selectedMedia.length === media.length && media.length > 0
-                    }
-                    indeterminate={
-                      selectedMedia.length > 0 &&
-                      selectedMedia.length < media.length
-                    }
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedMedia([...media]);
-                      } else {
-                        setSelectedMedia([]);
-                      }
-                    }}
-                  />
-                }
-                label={`انتخاب همه (${selectedMedia.length} انتخاب شده)`}
-              />
-            )}
-          </Box>
-
-          <Box>
-            <Button onClick={onClose} sx={{ mr: 1 }}>
-              لغو
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleSelectButtonClick}
-              disabled={selectedMedia.length === 0}
-            >
-              انتخاب{" "}
-              {multiple && selectedMedia.length > 0
-                ? `(${selectedMedia.length})`
-                : ""}
-            </Button>
-          </Box>
-        </DialogActions>
-      </Dialog>
-    );
-  }
-
-  // Page Mode
-  return (
-    <Container maxWidth="lg">
-      <Typography variant="h4" gutterBottom>
-        {title}
-      </Typography>
-      {renderContent()}
     </Container>
   );
 };

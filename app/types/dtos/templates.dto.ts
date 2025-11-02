@@ -4,7 +4,7 @@ export interface IPostTemplateBase {
   category_id: number;
   data_json: unknown;
   images: number[];
-  source: "app";
+  source: TemplateSource;
   tag?: string;
 }
 

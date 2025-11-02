@@ -10,22 +10,24 @@ export default defineConfig(({ command, mode, isSsrBuild }) => ({
       "@mui/material",
       "@mui/icons-material",
       "@emotion/react",
-      "@emotion/styled"
+      "@emotion/styled",
     ],
   },
   build: {
     rollupOptions: {
-      output: isSsrBuild ? undefined : {
-        manualChunks: {
-          'mui-core': ['@mui/material'],
-          'mui-icons': ['@mui/icons-material'],
-        },
-      },
+      output: isSsrBuild
+        ? undefined
+        : {
+            manualChunks: {
+              "mui-core": ["@mui/material"],
+              "mui-icons": ["@mui/icons-material"],
+            },
+          },
     },
   },
   server: {
     fs: {
-      strict: false
-    }
-  }
+      strict: false,
+    },
+  },
 }));
