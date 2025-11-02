@@ -10,6 +10,7 @@ import {
   Chip,
   Box,
   Tooltip,
+  Skeleton,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -24,6 +25,8 @@ interface IMediaFile {
   size: number;
   mimetype: string;
   createdAt: string;
+  packaging?: boolean;
+  product?: boolean;
 }
 
 interface MediaGridProps {
@@ -60,6 +63,25 @@ const MediaGrid: React.FC<MediaGridProps> = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
+  const getImageTypeInfo = (media: IMediaFile) => {
+    if (media.packaging) {
+      return {
+        label: "عکس دسته‌بندی",
+        color: "secondary" as const,
+      };
+    } else if (media.product) {
+      return {
+        label: "عکس محصول",
+        color: "primary" as const,
+      };
+    } else {
+      return {
+        label: "عکس عمومی",
+        color: "default" as const,
+      };
+    }
+  };
+
   const handleEdit = (media: IMediaFile) => {
     if (onEdit) {
       onEdit(media._id);
@@ -69,10 +91,88 @@ const MediaGrid: React.FC<MediaGridProps> = ({
   // Calculate total pages
   const totalPages = Math.ceil(totalItems / pageSize);
 
+  // Loading skeleton component
+  const LoadingSkeleton = () => (
+    <Grid container spacing={3}>
+      {[...Array(pageSize)].map((_, index) => (
+        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={index}>
+          <Card
+            sx={{
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {/* Image Skeleton */}
+            <Box
+              sx={{
+                position: "relative",
+                paddingTop: "66.67%",
+                bgcolor: "grey.100",
+              }}
+            >
+              <Skeleton
+                variant="rectangular"
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                }}
+              />
+              {/* Badge Skeleton */}
+              <Skeleton
+                variant="rectangular"
+                width={80}
+                height={24}
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  borderRadius: "12px",
+                }}
+              />
+            </Box>
+
+            {/* Content Skeleton */}
+            <CardContent sx={{ flexGrow: 1, pb: 1 }}>
+              <Skeleton variant="text" width="80%" height={20} sx={{ mb: 0.5 }} />
+              <Skeleton variant="text" width="40%" height={14} sx={{ mb: 0.5 }} />
+              <Skeleton variant="text" width="60%" height={14} />
+            </CardContent>
+
+            {/* Actions Skeleton */}
+            <CardActions sx={{ pt: 0, justifyContent: "space-between" }}>
+              <Skeleton variant="circular" width={32} height={32} />
+              <Skeleton variant="circular" width={32} height={32} />
+            </CardActions>
+          </Card>
+        </Grid>
+      ))}
+    </Grid>
+  );
+
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-        <Typography>در حال بارگیری...</Typography>
+      <Box sx={{ flexGrow: 1 }}>
+        {/* Page Size Selector Skeleton */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 3,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Skeleton variant="text" width={120} height={20} />
+            <Skeleton variant="rectangular" width={80} height={32} />
+          </Box>
+          <Skeleton variant="text" width={100} height={20} />
+        </Box>
+
+        <LoadingSkeleton />
       </Box>
     );
   }
@@ -120,6 +220,8 @@ const MediaGrid: React.FC<MediaGridProps> = ({
       {/* Media Grid */}
       <Grid container spacing={3}>
         {media.map((item) => {
+          const imageTypeInfo = getImageTypeInfo(item);
+          
           return (
             <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={item._id}>
               <Card
@@ -166,11 +268,11 @@ const MediaGrid: React.FC<MediaGridProps> = ({
                     }}
                   />
 
-                  {/* File Type Badge */}
+                  {/* Image Type Badge */}
                   <Chip
-                    label="تصویر"
+                    label={imageTypeInfo.label}
                     size="small"
-                    color="primary"
+                    color={imageTypeInfo.color}
                     sx={{
                       position: "absolute",
                       top: 8,
@@ -235,7 +337,6 @@ const MediaGrid: React.FC<MediaGridProps> = ({
                       <IconButton
                         size="small"
                         color="error"
-                        disabled={true} // Disabled as requested
                         onClick={(e) => {
                           e.stopPropagation();
                           onDelete(item._id);

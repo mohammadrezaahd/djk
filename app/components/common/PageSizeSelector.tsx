@@ -31,6 +31,32 @@ const PageSizeSelector: React.FC<PageSizeSelectorProps> = ({
         value={value}
         onChange={onChange}
         label={label}
+        MenuProps={{
+          disablePortal: true,
+          PaperProps: {
+            sx: {
+              borderRadius: 2,
+              mt: 1,
+              maxHeight: 240,
+              overflow: 'auto',
+            },
+          },
+          anchorOrigin: {
+            vertical: 'bottom',
+            horizontal: 'left',
+          },
+          transformOrigin: {
+            vertical: 'top',
+            horizontal: 'left',
+          },
+          slotProps: {
+            backdrop: {
+              sx: {
+                backgroundColor: 'transparent',
+              },
+            },
+          },
+        }}
       >
         {options.map((option) => (
           <MenuItem key={option} value={option}>

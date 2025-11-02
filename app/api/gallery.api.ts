@@ -1,6 +1,7 @@
 import type { IPostImage } from "~/types/dtos/gallery.dto";
 import { apiUtils } from "./apiUtils.api";
 import {
+  authorizedDelete,
   authorizedPost,
   authorizedPostFileWithQuery,
 } from "~/utils/authorizeReq";
@@ -39,6 +40,13 @@ const getImages = async ({
   });
 };
 
+const removeImage = async (id: number) => {
+  return apiUtils<{ status: string }>(async () => {
+    const response = await authorizedDelete(`/v1/images/remove/${id}`);
+    return response.data;
+  });
+};
+
 export const useAddImage = () => {
   const queryClient = useQueryClient();
 
@@ -69,5 +77,19 @@ export const useImages = ({
     queryFn: () => getImages({ skip, limit, search_title, source }),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
+  });
+};
+
+export const useRemoveImage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: removeImage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["images remove"] });
+    },
+    onError: (error) => {
+      console.error("❌ Error removing image:", error);
+    },
   });
 };

@@ -155,6 +155,16 @@ export const theme = createTheme({
   spacing,
   shape,
   breakpoints,
+  zIndex: {
+    mobileStepper: 1000,
+    fab: 1050,
+    speedDial: 1050,
+    appBar: 1100,
+    drawer: 1200,
+    modal: 1300,
+    snackbar: 1400,
+    tooltip: 1500,
+  },
   components: {
     // تنظیمات کامپوننت‌ها
     MuiCssBaseline: {
@@ -212,6 +222,57 @@ export const theme = createTheme({
             }
         }
     },
+    MuiSelect: {
+      styleOverrides: {
+        root: {
+          borderRadius: shape.borderRadius,
+          backgroundColor: palette.background.paper,
+        },
+      },
+      defaultProps: {
+        MenuProps: {
+          disablePortal: false,
+          PaperProps: {
+            sx: {
+              borderRadius: shape.borderRadius,
+              boxShadow: `0 0 2px 0 rgba(145, 158, 171, 0.2), 0 12px 24px -4px rgba(145, 158, 171, 0.12)`,
+              mt: 1,
+              maxHeight: 240,
+            },
+          },
+          MenuListProps: {
+            sx: {
+              py: 1,
+            },
+          },
+          slotProps: {
+            backdrop: {
+              sx: {
+                backgroundColor: 'transparent',
+              },
+            },
+          },
+        },
+      },
+    },
+    MuiMenuItem: {
+      styleOverrides: {
+        root: {
+          borderRadius: shape.borderRadius / 2,
+          margin: '2px 8px',
+          '&:hover': {
+            backgroundColor: palette.grey[100],
+          },
+          '&.Mui-selected': {
+            backgroundColor: palette.primary.main,
+            color: palette.primary.contrastText,
+            '&:hover': {
+              backgroundColor: palette.primary.dark,
+            },
+          },
+        },
+      },
+    },
     MuiAutocomplete: {
         styleOverrides: {
             root: {
@@ -262,6 +323,31 @@ export const theme = createTheme({
               color: palette.primary.contrastText,
             },
           },
+        },
+      },
+    },
+    MuiModal: {
+      styleOverrides: {
+        root: {
+          '&.MuiModal-root': {
+            zIndex: 1300,
+          },
+        },
+      },
+    },
+    MuiBackdrop: {
+      styleOverrides: {
+        root: {
+          '&.MuiSelect-backdrop': {
+            backgroundColor: 'transparent',
+          },
+        },
+      },
+    },
+    MuiPopper: {
+      styleOverrides: {
+        root: {
+          zIndex: 1400,
         },
       },
     },

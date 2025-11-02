@@ -87,6 +87,32 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
             value={filters.type || "none"}
             onChange={handleTypeChange}
             label="نوع فایل"
+            MenuProps={{
+              disablePortal: true,
+              PaperProps: {
+                sx: {
+                  borderRadius: 2,
+                  mt: 1,
+                  maxHeight: 240,
+                  overflow: 'auto',
+                },
+              },
+              anchorOrigin: {
+                vertical: 'bottom',
+                horizontal: 'left',
+              },
+              transformOrigin: {
+                vertical: 'top',
+                horizontal: 'left',
+              },
+              slotProps: {
+                backdrop: {
+                  sx: {
+                    backgroundColor: 'transparent',
+                  },
+                },
+              },
+            }}
           >
             {MEDIA_FILTER_TYPES.map((filterType) => (
               <MenuItem key={filterType.value} value={filterType.value}>

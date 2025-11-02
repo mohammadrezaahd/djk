@@ -7,4 +7,6 @@ export interface IGallery {
   source: TemplateSource;
   dimensions: string;
   size: string;
+  packaging?: boolean;
+  product?: boolean;
 }
