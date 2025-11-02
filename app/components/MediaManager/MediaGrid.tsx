@@ -100,11 +100,11 @@ const MediaGrid: React.FC<MediaGridProps> = ({
 
   const handleSelectionToggle = (id: string) => {
     if (!selectionMode || !onSelectionChange) return;
-    
+
     const newSelection = selectedItems.includes(id)
-      ? selectedItems.filter(item => item !== id)
+      ? selectedItems.filter((item) => item !== id)
       : [...selectedItems, id];
-    
+
     onSelectionChange(newSelection);
   };
 
@@ -159,8 +159,18 @@ const MediaGrid: React.FC<MediaGridProps> = ({
 
             {/* Content Skeleton */}
             <CardContent sx={{ flexGrow: 1, pb: 1 }}>
-              <Skeleton variant="text" width="80%" height={20} sx={{ mb: 0.5 }} />
-              <Skeleton variant="text" width="40%" height={14} sx={{ mb: 0.5 }} />
+              <Skeleton
+                variant="text"
+                width="80%"
+                height={20}
+                sx={{ mb: 0.5 }}
+              />
+              <Skeleton
+                variant="text"
+                width="40%"
+                height={14}
+                sx={{ mb: 0.5 }}
+              />
               <Skeleton variant="text" width="60%" height={14} />
             </CardContent>
 
@@ -243,7 +253,7 @@ const MediaGrid: React.FC<MediaGridProps> = ({
       <Grid container spacing={3}>
         {media.map((item) => {
           const imageTypeInfo = getImageTypeInfo(item);
-          
+
           return (
             <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={item._id}>
               <Card
@@ -253,14 +263,23 @@ const MediaGrid: React.FC<MediaGridProps> = ({
                   flexDirection: "column",
                   cursor: selectionMode ? "pointer" : "default",
                   border: selectionMode && isSelected(item._id) ? 2 : 1,
-                  borderColor: selectionMode && isSelected(item._id) ? "primary.main" : "divider",
-                  "&:hover": selectionMode ? {
-                    borderColor: "primary.main",
-                    transform: "translateY(-2px)",
-                    transition: "all 0.2s ease-in-out",
-                  } : {},
+                  borderColor:
+                    selectionMode && isSelected(item._id)
+                      ? "primary.main"
+                      : "divider",
+                  "&:hover": selectionMode
+                    ? {
+                        borderColor: "primary.main",
+                        transform: "translateY(-2px)",
+                        transition: "all 0.2s ease-in-out",
+                      }
+                    : {},
                 }}
-                onClick={selectionMode ? () => handleSelectionToggle(item._id) : undefined}
+                onClick={
+                  selectionMode
+                    ? () => handleSelectionToggle(item._id)
+                    : undefined
+                }
               >
                 {/* Media Preview */}
                 <Box

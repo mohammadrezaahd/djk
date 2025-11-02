@@ -17,7 +17,7 @@ const MainContent = ({ children, currentDrawerWidth }: MainContentProps) => {
         p: 3,
         backgroundColor: theme.palette.background.default,
         minHeight: "100vh",
-        width: { sm: `calc(100% - ${currentDrawerWidth}px)` },
+        width: "100%",
         transition: theme.transitions.create(["width", "margin"], {
           easing: theme.transitions.easing.sharp,
           duration: theme.transitions.duration.enteringScreen,

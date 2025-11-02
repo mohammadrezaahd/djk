@@ -85,7 +85,7 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
   // Initialize temp selection when dialog opens
   useEffect(() => {
     if (open) {
-      setTempSelectedImages(selectedImages.map(id => id.toString()));
+      setTempSelectedImages(selectedImages.map((id) => id.toString()));
     }
   }, [open, selectedImages]);
 
@@ -112,32 +112,36 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
   };
 
   const handleConfirm = () => {
-    const numericIds = tempSelectedImages.map(id => parseInt(id));
+    const numericIds = tempSelectedImages.map((id) => parseInt(id));
     onImagesChange(numericIds);
     setOpen(false);
   };
 
   const handleCancel = () => {
-    setTempSelectedImages(selectedImages.map(id => id.toString()));
+    setTempSelectedImages(selectedImages.map((id) => id.toString()));
     setOpen(false);
   };
 
   const handleRemoveImage = (imageId: number) => {
-    const newImages = selectedImages.filter(id => id !== imageId);
+    const newImages = selectedImages.filter((id) => id !== imageId);
     onImagesChange(newImages);
   };
 
   // Get selected image details for preview
-  const selectedImageDetails = selectedImages.map(id => {
-    const item = galleryData.find((img: IGallery) => img.id === id);
-    return item ? {
-      id: item.id,
-      title: item.title,
-      image_url: fixImageUrl(item.image_url),
-      packaging: item.packaging,
-      product: item.product,
-    } : null;
-  }).filter(Boolean);
+  const selectedImageDetails = selectedImages
+    .map((id) => {
+      const item = galleryData.find((img: IGallery) => img.id === id);
+      return item
+        ? {
+            id: item.id,
+            title: item.title,
+            image_url: fixImageUrl(item.image_url),
+            packaging: item.packaging,
+            product: item.product,
+          }
+        : null;
+    })
+    .filter(Boolean);
 
   return (
     <Box>
@@ -149,10 +153,9 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
         fullWidth
         sx={{ mb: 2, py: 1.5 }}
       >
-        {selectedImages.length > 0 
-          ? `${selectedImages.length} تصویر انتخاب شده` 
-          : label
-        }
+        {selectedImages.length > 0
+          ? `${selectedImages.length} تصویر انتخاب شده`
+          : label}
       </Button>
 
       {/* Selected images preview */}
@@ -162,78 +165,79 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
             تصاویر انتخاب شده:
           </Typography>
           <Grid container spacing={2}>
-            {selectedImageDetails.map((image) => (
-              image && (
-                <Grid key={image.id} size={{ xs: 6, sm: 4, md: 3 }}>
-                  <Card sx={{ position: "relative" }}>
-                    <CardMedia
-                      component="img"
-                      height="100"
-                      image={image.image_url}
-                      alt={image.title}
-                      sx={{ objectFit: "cover" }}
-                    />
-                    
-                    {/* Image type badge */}
-                    <Chip
-                      label={
-                        image.packaging 
-                          ? "عکس دسته‌بندی" 
-                          : image.product 
-                            ? "عکس محصول" 
-                            : "عکس عمومی"
-                      }
-                      size="small"
-                      color={
-                        image.packaging 
-                          ? "secondary" 
-                          : image.product 
-                            ? "primary" 
-                            : "default"
-                      }
-                      sx={{
-                        position: "absolute",
-                        top: 4,
-                        right: 4,
-                        fontSize: "0.6rem",
-                      }}
-                    />
+            {selectedImageDetails.map(
+              (image) =>
+                image && (
+                  <Grid key={image.id} size={{ xs: 6, sm: 4, md: 3 }}>
+                    <Card sx={{ position: "relative" }}>
+                      <CardMedia
+                        component="img"
+                        height="100"
+                        image={image.image_url}
+                        alt={image.title}
+                        sx={{ objectFit: "cover" }}
+                      />
 
-                    {/* Remove button */}
-                    <IconButton
-                      size="small"
-                      color="error"
-                      onClick={() => handleRemoveImage(image.id)}
-                      sx={{
-                        position: "absolute",
-                        top: 4,
-                        left: 4,
-                        bgcolor: "rgba(255, 255, 255, 0.9)",
-                        "&:hover": {
-                          bgcolor: "rgba(255, 255, 255, 1)",
-                        },
-                      }}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                    
-                    <Box sx={{ p: 1 }}>
-                      <Typography 
-                        variant="caption" 
-                        sx={{ 
-                          display: "block",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap"
+                      {/* Image type badge */}
+                      <Chip
+                        label={
+                          image.packaging
+                            ? "عکس دسته‌بندی"
+                            : image.product
+                              ? "عکس محصول"
+                              : "عکس عمومی"
+                        }
+                        size="small"
+                        color={
+                          image.packaging
+                            ? "secondary"
+                            : image.product
+                              ? "primary"
+                              : "default"
+                        }
+                        sx={{
+                          position: "absolute",
+                          top: 4,
+                          right: 4,
+                          fontSize: "0.6rem",
+                        }}
+                      />
+
+                      {/* Remove button */}
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => handleRemoveImage(image.id)}
+                        sx={{
+                          position: "absolute",
+                          top: 4,
+                          left: 4,
+                          bgcolor: "rgba(255, 255, 255, 0.9)",
+                          "&:hover": {
+                            bgcolor: "rgba(255, 255, 255, 1)",
+                          },
                         }}
                       >
-                        {image.title}
-                      </Typography>
-                    </Box>
-                  </Card>
-                </Grid>
-              )
-            ))}
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+
+                      <Box sx={{ p: 1 }}>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            display: "block",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {image.title}
+                        </Typography>
+                      </Box>
+                    </Card>
+                  </Grid>
+                )
+            )}
           </Grid>
         </Box>
       )}
@@ -251,12 +255,11 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
         maxWidth="lg"
         fullWidth
         sx={{ "& .MuiDialog-paper": { height: "80vh" } }}
+        disableScrollLock={true}
       >
-        <DialogTitle>
-          انتخاب تصاویر
-        </DialogTitle>
-        
-        <DialogContent>
+        <DialogTitle>انتخاب تصاویر</DialogTitle>
+
+        <DialogContent sx={{ scrollbarWidth: "none" }}>
           {apiError && (
             <Alert severity="error" sx={{ mb: 2 }}>
               خطا در بارگیری تصاویر
@@ -298,11 +301,7 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
           <Button onClick={handleCancel} color="inherit">
             لغو
           </Button>
-          <Button 
-            onClick={handleConfirm} 
-            variant="contained" 
-            color="primary"
-          >
+          <Button onClick={handleConfirm} variant="contained" color="primary">
             تایید ({tempSelectedImages.length} تصویر)
           </Button>
         </DialogActions>

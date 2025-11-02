@@ -37,7 +37,11 @@ import { useAttrs, useRemoveAttr } from "~/api/attributes.api";
 import { useDetails, useRemoveDetail } from "~/api/details.api";
 import type { ITemplateList } from "~/types/interfaces/templates.interface";
 import AppLayout from "~/components/layout/AppLayout";
-import { PageSizeSelector, PaginationControls, SearchInput } from "~/components/common";
+import {
+  PageSizeSelector,
+  PaginationControls,
+  SearchInput,
+} from "~/components/common";
 
 type TemplateType = "attributes" | "details";
 
@@ -55,7 +59,7 @@ const TemplatesList = () => {
   const [detailsList, setDetailsList] = useState<ITemplateList[]>([]);
   const [attributesTotal, setAttributesTotal] = useState<number>(0);
   const [detailsTotal, setDetailsTotal] = useState<number>(0);
-  
+
   // Delete confirmation dialog state
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
@@ -86,15 +90,11 @@ const TemplatesList = () => {
   } = useDetails();
 
   // Delete mutations
-  const {
-    mutateAsync: removeAttribute,
-    isPending: isRemovingAttribute,
-  } = useRemoveAttr();
+  const { mutateAsync: removeAttribute, isPending: isRemovingAttribute } =
+    useRemoveAttr();
 
-  const {
-    mutateAsync: removeDetail,
-    isPending: isRemovingDetail,
-  } = useRemoveDetail();
+  const { mutateAsync: removeDetail, isPending: isRemovingDetail } =
+    useRemoveDetail();
 
   // Calculate skip values based on current page
   const attributesSkip = (attributesPage - 1) * attributesLimit;
@@ -218,15 +218,18 @@ const TemplatesList = () => {
   };
 
   const handleDelete = (id: number, type: TemplateType) => {
-    const item = type === "attributes" 
-      ? attributesList.find(attr => attr.id === id)
-      : detailsList.find(detail => detail.id === id);
-      
+    const item =
+      type === "attributes"
+        ? attributesList.find((attr) => attr.id === id)
+        : detailsList.find((detail) => detail.id === id);
+
     setDeleteDialog({
       open: true,
       id,
       type,
-      title: item?.title || `${type === "attributes" ? "ویژگی" : "اطلاعات"} انتخاب شده`,
+      title:
+        item?.title ||
+        `${type === "attributes" ? "ویژگی" : "اطلاعات"} انتخاب شده`,
     });
   };
 
@@ -282,7 +285,10 @@ const TemplatesList = () => {
 
   // Filter data based on search
   const filteredData = currentData.filter((item) => {
-    if (searchValue && !item.title.toLowerCase().includes(searchValue.toLowerCase())) {
+    if (
+      searchValue &&
+      !item.title.toLowerCase().includes(searchValue.toLowerCase())
+    ) {
       return false;
     }
     return true;
@@ -342,7 +348,14 @@ const TemplatesList = () => {
               gap: 2,
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                flexWrap: "wrap",
+              }}
+            >
               <ToggleButtonGroup
                 value={templateType}
                 exclusive
@@ -472,7 +485,9 @@ const TemplatesList = () => {
                   <TableRow>
                     <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
                       <Typography variant="body2" color="text.secondary">
-                        {searchValue ? "نتیجه‌ای یافت نشد" : "هیچ قالبی یافت نشد"}
+                        {searchValue
+                          ? "نتیجه‌ای یافت نشد"
+                          : "هیچ قالبی یافت نشد"}
                       </Typography>
                     </TableCell>
                   </TableRow>
