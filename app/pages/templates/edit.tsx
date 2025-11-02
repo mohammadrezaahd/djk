@@ -359,7 +359,7 @@ const EditTemplatePage = () => {
   // Error handling
   if (dataError) {
     return (
-      <AppLayout>
+      <AppLayout title="ویرایش قالب">
         <Alert severity="error" sx={{ mb: 2 }}>
           خطا در دریافت اطلاعات قالب: {dataError.message}
         </Alert>
@@ -370,7 +370,7 @@ const EditTemplatePage = () => {
   // Loading state
   if (isLoading) {
     return (
-      <AppLayout>
+      <AppLayout title="ویرایش قالب">
         <Box
           sx={{
             display: "flex",
@@ -389,7 +389,7 @@ const EditTemplatePage = () => {
   }
 
   return (
-    <AppLayout>
+    <AppLayout title="ویرایش قالب">
       <Typography variant="h4" gutterBottom>
         ویرایش قالب {templateType === "attributes" ? "ویژگی‌ها" : "اطلاعات"}
       </Typography>

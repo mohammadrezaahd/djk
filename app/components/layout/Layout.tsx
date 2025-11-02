@@ -10,9 +10,10 @@ const collapsedDrawerWidth = 64;
 
 interface LayoutProps {
   children: React.ReactNode;
+  title?: string;
 }
 
-const Layout = ({ children }: LayoutProps) => {
+const Layout = ({ children, title }: LayoutProps) => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
@@ -60,6 +61,7 @@ const Layout = ({ children }: LayoutProps) => {
       <AppBar
         currentDrawerWidth={currentDrawerWidth}
         handleDrawerToggle={handleDrawerToggle}
+        title={title}
       />
 
       <Drawer

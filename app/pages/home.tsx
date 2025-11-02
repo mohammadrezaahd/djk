@@ -10,7 +10,7 @@ export function meta() {
 
 const Home = () => {
   return (
-    <AppLayout>
+    <AppLayout title="داشبورد">
       <Dashboard />
     </AppLayout>
   );

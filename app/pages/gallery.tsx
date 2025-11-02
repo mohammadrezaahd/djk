@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { 
-  Container, 
-  Typography, 
-  Alert, 
-  Box, 
+import {
+  Container,
+  Typography,
+  Alert,
+  Box,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button
+  Button,
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
 import { useSnackbar } from "notistack";
@@ -66,10 +66,8 @@ const GalleryPage = () => {
   });
 
   // Delete mutation
-  const {
-    mutateAsync: removeImage,
-    isPending: isRemovingImage,
-  } = useRemoveImage();
+  const { mutateAsync: removeImage, isPending: isRemovingImage } =
+    useRemoveImage();
 
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
@@ -107,8 +105,8 @@ const GalleryPage = () => {
   };
 
   const handleDelete = (id: string) => {
-    const item = galleryData.find(img => img.id.toString() === id);
-    
+    const item = galleryData.find((img) => img.id.toString() === id);
+
     setDeleteDialog({
       open: true,
       id,
@@ -125,7 +123,9 @@ const GalleryPage = () => {
       // Refresh the images list
       await refetch();
     } catch (error: any) {
-      enqueueSnackbar(`خطا در حذف تصویر: ${error.message}`, { variant: "error" });
+      enqueueSnackbar(`خطا در حذف تصویر: ${error.message}`, {
+        variant: "error",
+      });
     } finally {
       setDeleteDialog({ open: false, id: null, title: "" });
     }
@@ -136,10 +136,12 @@ const GalleryPage = () => {
   };
 
   const galleryData = imagesData?.data?.list || [];
-  
+
   // بررسی خطا در دریافت لیست عکس‌ها
-  const hasImagesFetchError = imagesData?.status !== ApiStatus.SUCCEEDED && imagesData?.status !== undefined;
-  
+  const hasImagesFetchError =
+    imagesData?.status !== ApiStatus.SUCCEEDED &&
+    imagesData?.status !== undefined;
+
   const mediaFiles: IMediaFile[] = galleryData.map((item: IGallery) => ({
     _id: item.id.toString(),
     filename: item.title,
@@ -154,7 +156,7 @@ const GalleryPage = () => {
   const totalItems = mediaFiles.length;
 
   return (
-    <AppLayout>
+    <AppLayout title="مدیریت رسانه">
       <Container maxWidth="lg">
         <Typography variant="h4" gutterBottom>
           مدیریت رسانه
@@ -162,7 +164,9 @@ const GalleryPage = () => {
 
         {(error || hasImagesFetchError) && (
           <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError("")}>
-            {error || (hasImagesFetchError && imagesData?.message) || "خطا در بارگیری داده‌ها"}
+            {error ||
+              (hasImagesFetchError && imagesData?.message) ||
+              "خطا در بارگیری داده‌ها"}
           </Alert>
         )}
 
@@ -220,10 +224,9 @@ const GalleryPage = () => {
         onClose={handleCancelDelete}
         maxWidth="sm"
         fullWidth
+        disableScrollLock={true}
       >
-        <DialogTitle>
-          تایید حذف تصویر
-        </DialogTitle>
+        <DialogTitle>تایید حذف تصویر</DialogTitle>
         <DialogContent>
           <Typography>
             آیا از حذف "{deleteDialog.title}" اطمینان دارید؟

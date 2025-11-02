@@ -241,7 +241,7 @@ const NewTemplatePage = () => {
   };
 
   return (
-    <AppLayout>
+    <AppLayout title="افزودن قالب جدید">
       <Typography variant="h4" gutterBottom>
         افزودن قالب جدید به فروشگاه
       </Typography>

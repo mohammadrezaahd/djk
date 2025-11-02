@@ -9,9 +9,10 @@ import MenuIcon from "@mui/icons-material/Menu";
 interface AppBarProps {
   currentDrawerWidth: number;
   handleDrawerToggle: () => void;
+  title?: string;
 }
 
-const TopBar = ({ currentDrawerWidth, handleDrawerToggle }: AppBarProps) => {
+const TopBar = ({ currentDrawerWidth, handleDrawerToggle, title = "پنل مدیریت" }: AppBarProps) => {
   return (
     <MuiAppBar
       position="fixed"
@@ -27,7 +28,7 @@ const TopBar = ({ currentDrawerWidth, handleDrawerToggle }: AppBarProps) => {
     >
       <Toolbar>
         <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-          پنل مدیریت
+          {title}
         </Typography>
         <IconButton
           color="inherit"

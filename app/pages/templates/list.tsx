@@ -319,7 +319,7 @@ const TemplatesList = () => {
   );
 
   return (
-    <AppLayout>
+    <AppLayout title="مدیریت قالب‌ها">
       <Box sx={{ mb: 3 }}>
         <Typography variant="h4" gutterBottom>
           مدیریت قالب‌ها

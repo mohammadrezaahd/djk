@@ -1,124 +1,119 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme } from "@mui/material/styles";
 
 // تعریف رنگ‌های پیش‌فرض
 const palette = {
   primary: {
-    main: '#6C5CE7',
-    light: '#A29BFE',
-    dark: '#4C3BCF',
-    contrastText: '#ffffff',
+    main: "#6C5CE7",
+    light: "#A29BFE",
+    dark: "#4C3BCF",
+    contrastText: "#ffffff",
   },
   secondary: {
-    main: '#00CEC9',
-    contrastText: '#2D3436',
+    main: "#00CEC9",
+    contrastText: "#2D3436",
   },
   accent: {
-    main: '#FDA7DC',
+    main: "#FDA7DC",
   },
   error: {
-    main: '#D63031',
-    contrastText: '#ffffff',
+    main: "#D63031",
+    contrastText: "#ffffff",
   },
   warning: {
-    main: '#FDCB6E',
-    contrastText: '#ffffff',
+    main: "#FDCB6E",
+    contrastText: "#ffffff",
   },
   info: {
-    main: '#0984E3',
-    contrastText: '#ffffff',
+    main: "#0984E3",
+    contrastText: "#ffffff",
   },
   success: {
-    main: '#00B894',
-    contrastText: '#ffffff',
+    main: "#00B894",
+    contrastText: "#ffffff",
   },
   grey: {
-    50: '#fafafa',
-    100: '#f5f5f5',
-    200: '#eeeeee',
-    300: '#e0e0e0',
-    400: '#bdbdbd',
-    500: '#9e9e9e',
-    600: '#757575',
-    700: '#616161',
-    800: '#424242',
-    900: '#212121',
+    50: "#fafafa",
+    100: "#f5f5f5",
+    200: "#eeeeee",
+    300: "#e0e0e0",
+    400: "#bdbdbd",
+    500: "#9e9e9e",
+    600: "#757575",
+    700: "#616161",
+    800: "#424242",
+    900: "#212121",
   },
   background: {
-    default: '#F8F9FB',
-    paper: '#FFFFFF',
+    default: "#F8F9FB",
+    paper: "#FFFFFF",
   },
   text: {
-    primary: '#2D3436',
-    secondary: '#636E72',
-    disabled: '#919EAB',
+    primary: "#2D3436",
+    secondary: "#636E72",
+    disabled: "#919EAB",
   },
-  gradient: 'linear-gradient(135deg, #6C5CE7, #A29BFE)',
+  gradient: "linear-gradient(135deg, #6C5CE7, #A29BFE)",
 };
 
 // تنظیمات typography با فونت یکان بخ
 const typography = {
-  fontFamily: [
-    'YekanBakh',
-    'YekanBakhFaNum',
-    'Arial',
-    'sans-serif',
-  ].join(','),
+  fontFamily: ["YekanBakh", "YekanBakhFaNum", "Arial", "sans-serif"].join(","),
   h1: {
-    fontSize: '2.125rem',
+    fontSize: "2.125rem",
     fontWeight: 300,
     lineHeight: 1.167,
   },
   h2: {
-    fontSize: '1.5rem',
+    fontSize: "1.5rem",
     fontWeight: 400,
     lineHeight: 1.2,
   },
   h3: {
-    fontSize: '1.25rem',
+    fontSize: "1.25rem",
     fontWeight: 400,
     lineHeight: 1.167,
   },
   h4: {
-    fontSize: '1.125rem',
+    fontSize: "1.125rem",
     fontWeight: 400,
     lineHeight: 1.235,
   },
   h5: {
-    fontSize: '1rem',
+    fontSize: "1rem",
     fontWeight: 400,
     lineHeight: 1.334,
   },
   h6: {
-    fontSize: '0.875rem',
+    fontSize: "0.875rem",
     fontWeight: 500,
     lineHeight: 1.6,
   },
   body1: {
-    fontSize: '1rem',
+    fontSize: "1rem",
     fontWeight: 400,
     lineHeight: 1.5,
   },
   body2: {
-    fontSize: '0.875rem',
+    fontSize: "0.875rem",
     fontWeight: 400,
     lineHeight: 1.43,
   },
   button: {
-    fontSize: '0.875rem',
+    fontSize: "0.875rem",
     fontWeight: 500,
     lineHeight: 1.75,
-    textTransform: 'none' as const,
+    textTransform: "none" as const,
   },
   caption: {
-    fontSize: '0.75rem',
+    fontSize: "0.75rem",
     fontWeight: 400,
     lineHeight: 1.66,
   },
   overline: {
-    fontSize: '0.75rem',
+    fontSize: "0.75rem",
     fontWeight: 400,
     lineHeight: 2.66,
-    textTransform: 'uppercase' as const,
+    textTransform: "uppercase" as const,
   },
 };
 
@@ -143,7 +138,7 @@ const breakpoints = {
 
 // ایجاد theme اصلی
 export const theme = createTheme({
-  direction: 'rtl',
+  direction: "rtl",
   palette,
   typography,
   spacing,
@@ -164,14 +159,14 @@ export const theme = createTheme({
     MuiCssBaseline: {
       styleOverrides: {
         html: {
-          direction: 'rtl',
+          direction: "rtl",
         },
         body: {
-          direction: 'rtl',
+          direction: "rtl",
           fontFamily: typography.fontFamily,
         },
-        '*': {
-          boxSizing: 'border-box',
+        "*": {
+          boxSizing: "border-box",
         },
       },
     },
@@ -179,23 +174,23 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: shape.borderRadius,
-          textTransform: 'none',
+          textTransform: "none",
           fontWeight: 500,
-          boxShadow: 'none',
-          '&:hover': {
-            boxShadow: 'none',
-          }
+          boxShadow: "none",
+          "&:hover": {
+            boxShadow: "none",
+          },
         },
         containedPrimary: {
           boxShadow: `0 8px 16px 0 rgba(0,0,0,0.24)`,
         },
         containedSecondary: {
-            backgroundColor: palette.grey[300],
-            color: palette.text.primary,
-            '&:hover': {
-                backgroundColor: palette.grey[400],
-            }
-        }
+          backgroundColor: palette.grey[300],
+          color: palette.text.primary,
+          "&:hover": {
+            backgroundColor: palette.grey[400],
+          },
+        },
       },
     },
     MuiCard: {
@@ -207,14 +202,14 @@ export const theme = createTheme({
       },
     },
     MuiTextField: {
-        styleOverrides: {
-            root: {
-                '& .MuiOutlinedInput-root': {
-                    borderRadius: shape.borderRadius,
-                    backgroundColor: palette.background.paper,
-                }
-            }
-        }
+      styleOverrides: {
+        root: {
+          "& .MuiOutlinedInput-root": {
+            borderRadius: shape.borderRadius,
+            backgroundColor: palette.background.paper,
+          },
+        },
+      },
     },
     MuiSelect: {
       styleOverrides: {
@@ -242,7 +237,7 @@ export const theme = createTheme({
           slotProps: {
             backdrop: {
               sx: {
-                backgroundColor: 'transparent',
+                backgroundColor: "transparent",
               },
             },
           },
@@ -253,14 +248,14 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: shape.borderRadius / 2,
-          margin: '2px 8px',
-          '&:hover': {
+          margin: "2px 8px",
+          "&:hover": {
             backgroundColor: palette.grey[100],
           },
-          '&.Mui-selected': {
+          "&.Mui-selected": {
             backgroundColor: palette.primary.main,
             color: palette.primary.contrastText,
-            '&:hover': {
+            "&:hover": {
               backgroundColor: palette.primary.dark,
             },
           },
@@ -268,25 +263,25 @@ export const theme = createTheme({
       },
     },
     MuiAutocomplete: {
-        styleOverrides: {
-            root: {
-                '& .MuiOutlinedInput-root': {
-                    padding: '9px',
-                }
-            },
-            paper: {
-                borderRadius: shape.borderRadius,
-                boxShadow: `0 0 2px 0 rgba(145, 158, 171, 0.2), 0 12px 24px -4px rgba(145, 158, 171, 0.12)`,
-            }
-        }
+      styleOverrides: {
+        root: {
+          "& .MuiOutlinedInput-root": {
+            padding: "9px",
+          },
+        },
+        paper: {
+          borderRadius: shape.borderRadius,
+          boxShadow: `0 0 2px 0 rgba(145, 158, 171, 0.2), 0 12px 24px -4px rgba(145, 158, 171, 0.12)`,
+        },
+      },
     },
     MuiChip: {
-        styleOverrides: {
-            root: {
-                borderRadius: shape.borderRadius / 1.5,
-                backgroundColor: palette.grey[200],
-            }
-        }
+      styleOverrides: {
+        root: {
+          borderRadius: shape.borderRadius / 1.5,
+          backgroundColor: palette.grey[200],
+        },
+      },
     },
     MuiDrawer: {
       styleOverrides: {
@@ -306,14 +301,14 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: shape.borderRadius,
-          margin: '2px 8px',
-          '&.Mui-selected': {
+          margin: "2px 8px",
+          "&.Mui-selected": {
             backgroundColor: palette.primary.main,
             color: palette.primary.contrastText,
-            '&:hover': {
+            "&:hover": {
               backgroundColor: palette.primary.dark,
             },
-            '& .MuiListItemIcon-root': {
+            "& .MuiListItemIcon-root": {
               color: palette.primary.contrastText,
             },
           },
@@ -323,7 +318,7 @@ export const theme = createTheme({
     MuiModal: {
       styleOverrides: {
         root: {
-          '&.MuiModal-root': {
+          "&.MuiModal-root": {
             zIndex: 1300,
           },
         },
@@ -332,8 +327,8 @@ export const theme = createTheme({
     MuiBackdrop: {
       styleOverrides: {
         root: {
-          '&.MuiSelect-backdrop': {
-            backgroundColor: 'transparent',
+          "&.MuiSelect-backdrop": {
+            backgroundColor: "transparent",
           },
         },
       },

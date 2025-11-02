@@ -3,10 +3,11 @@ import Layout from "./Layout";
 
 interface LayoutProps {
   children: React.ReactNode;
+  title?: string;
 }
 
-const AppLayout = ({ children }: LayoutProps) => {
-  return <Layout>{children}</Layout>;
+const AppLayout = ({ children, title }: LayoutProps) => {
+  return <Layout title={title}>{children}</Layout>;
 };
 
 export default AppLayout;
