@@ -54,7 +54,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <IconButton
                   onClick={() => closeSnackbar(snackbarId)}
                   size="small"
-                  sx={{ color: "#fff" }}
+                  sx={{ color: "primary.contrastText" }}
                 >
                   <CloseIcon fontSize="small" />
                 </IconButton>

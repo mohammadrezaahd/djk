@@ -179,7 +179,7 @@ const Drawer = ({
               component="div"
               disablePadding
               sx={{
-                borderRight: "2px solid #e7e6e6",
+                borderRight: (theme) => `2px solid ${theme.palette.divider}`,
                 marginRight: "2rem",
                 borderRadius: "0 2px 2px 0",
               }}

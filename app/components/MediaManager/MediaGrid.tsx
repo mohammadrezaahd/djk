@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import { useTheme, alpha } from "@mui/material/styles";
 import { PageSizeSelector, PaginationControls } from "~/components/common";
 import type { SelectChangeEvent } from "@mui/material";
 
@@ -63,6 +64,7 @@ const MediaGrid: React.FC<MediaGridProps> = ({
   selectedItems = [],
   onSelectionChange,
 }) => {
+  const theme = useTheme();
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes";
     const k = 1024;
@@ -287,8 +289,8 @@ const MediaGrid: React.FC<MediaGridProps> = ({
                       const parent = target.parentElement;
                       if (parent) {
                         parent.innerHTML = `
-                          <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: #f5f5f5;">
-                            <svg style="width: 48px; height: 48px; color: #999;" viewBox="0 0 24 24">
+                          <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: ${theme.palette.grey[100]};">
+                            <svg style="width: 48px; height: 48px; color: ${theme.palette.grey[500]};" viewBox="0 0 24 24">
                               <path fill="currentColor" d="M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19M19,19H5V5H19V19Z"/>
                             </svg>
                           </div>
@@ -318,9 +320,9 @@ const MediaGrid: React.FC<MediaGridProps> = ({
                         position: "absolute",
                         top: 8,
                         left: 8,
-                        bgcolor: "rgba(255, 255, 255, 0.9)",
+                        bgcolor: alpha(theme.palette.background.paper, 0.9),
                         "&:hover": {
-                          bgcolor: "rgba(255, 255, 255, 1)",
+                          bgcolor: theme.palette.background.paper,
                         },
                       }}
                       onClick={(e) => {

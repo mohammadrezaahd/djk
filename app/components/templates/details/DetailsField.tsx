@@ -145,7 +145,7 @@ const DetailsField = ({
               height: 32,
               borderRadius: 1,
               objectFit: "contain",
-              border: "1px solid #e0e0e0",
+              border: (theme) => `1px solid ${theme.palette.divider}`,
             }}
             onError={(e: any) => {
               e.target.style.display = "none";
@@ -177,7 +177,7 @@ const DetailsField = ({
               borderRadius: 0.5,
               objectFit: "contain",
               ml: 1,
-              border: "1px solid #e0e0e0",
+              border: (theme) => `1px solid ${theme.palette.divider}`,
             }}
             onError={(e: any) => {
               e.target.style.display = "none";

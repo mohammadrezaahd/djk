@@ -3,39 +3,32 @@ import { createTheme } from '@mui/material/styles';
 // تعریف رنگ‌های پیش‌فرض
 const palette = {
   primary: {
-    main: '#212B36',
-    light: '#454F5B',
-    dark: '#161C24',
+    main: '#6C5CE7',
+    light: '#A29BFE',
+    dark: '#4C3BCF',
     contrastText: '#ffffff',
   },
   secondary: {
-    main: '#919EAB',
-    light: '#C4CDD5',
-    dark: '#637381',
-    contrastText: '#212B36',
+    main: '#00CEC9',
+    contrastText: '#2D3436',
+  },
+  accent: {
+    main: '#FDA7DC',
   },
   error: {
-    main: '#d32f2f',
-    light: '#ef5350',
-    dark: '#c62828',
+    main: '#D63031',
     contrastText: '#ffffff',
   },
   warning: {
-    main: '#ed6c02',
-    light: '#ff9800',
-    dark: '#e65100',
+    main: '#FDCB6E',
     contrastText: '#ffffff',
   },
   info: {
-    main: '#0288d1',
-    light: '#03a9f4',
-    dark: '#01579b',
+    main: '#0984E3',
     contrastText: '#ffffff',
   },
   success: {
-    main: '#2e7d32',
-    light: '#4caf50',
-    dark: '#1b5e20',
+    main: '#00B894',
     contrastText: '#ffffff',
   },
   grey: {
@@ -51,14 +44,15 @@ const palette = {
     900: '#212121',
   },
   background: {
-    default: '#F4F6F8',
-    paper: '#ffffff',
+    default: '#F8F9FB',
+    paper: '#FFFFFF',
   },
   text: {
-    primary: '#212B36',
-    secondary: '#637381',
+    primary: '#2D3436',
+    secondary: '#636E72',
     disabled: '#919EAB',
   },
+  gradient: 'linear-gradient(135deg, #6C5CE7, #A29BFE)',
 };
 
 // تنظیمات typography با فونت یکان بخ
