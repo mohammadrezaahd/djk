@@ -61,11 +61,11 @@ const palette = {
   },
 };
 
-// تنظیمات typography با فونت فارسی
+// تنظیمات typography با فونت یکان بخ
 const typography = {
   fontFamily: [
-    'Vazirmatn',
-    'Roboto',
+    'YekanBakh',
+    'YekanBakhFaNum',
     'Arial',
     'sans-serif',
   ].join(','),
