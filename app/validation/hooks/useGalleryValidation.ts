@@ -2,7 +2,8 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect } from 'react';
 import { 
-  galleryFormSchema, 
+  galleryFormSchema,
+  galleryEditFormSchema, 
   getGalleryDefaultValues,
   type GalleryFormData 
 } from '../schemas/gallerySchema';
@@ -10,7 +11,7 @@ import {
 /**
  * Custom hook for gallery/image upload form validation using react-hook-form and yup
  */
-export const useGalleryValidation = (allowedType?: 'packaging' | 'product' | 'none') => {
+export const useGalleryValidation = (allowedType?: 'packaging' | 'product' | 'none', isEditMode: boolean = false) => {
   // Get default values
   const defaultValues = getGalleryDefaultValues();
   
@@ -19,9 +20,12 @@ export const useGalleryValidation = (allowedType?: 'packaging' | 'product' | 'no
     defaultValues.type = allowedType;
   }
 
+  // Choose schema based on mode
+  const schema = isEditMode ? galleryEditFormSchema : galleryFormSchema;
+
   // Initialize react-hook-form
   const form = useForm<GalleryFormData>({
-    resolver: yupResolver(galleryFormSchema) as any,
+    resolver: yupResolver(schema) as any,
     defaultValues,
     mode: 'onChange', // Validate on change for immediate feedback
   });

@@ -44,15 +44,59 @@ export const galleryFormSchema = yup.object({
   
   file: yup
     .mixed<File>()
-    .required('انتخاب فایل الزامی است')
+    .nullable()
+    .test('fileRequired', 'انتخاب فایل الزامی است', function(value) {
+      // Custom validation that checks if we're in edit mode
+      // This will be overridden by the component logic
+      return true;
+    })
     .test('fileSize', messages.fileSize, (value) => {
-      if (!value) return false;
+      if (!value) return true; // Allow null/undefined for edit mode
       const file = value as File;
       // 5MB limit
       return file.size <= 5 * 1024 * 1024;
     })
     .test('fileType', messages.fileType, (value) => {
-      if (!value) return false;
+      if (!value) return true; // Allow null/undefined for edit mode
+      const file = value as File;
+      
+      // Check MIME type
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        return false;
+      }
+      
+      // Check file extension
+      const extension = '.' + file.name.split('.').pop()?.toLowerCase();
+      return ALLOWED_EXTENSIONS.includes(extension);
+    }),
+});
+
+/**
+ * Schema for edit mode where file is optional
+ */
+export const galleryEditFormSchema = yup.object({
+  title: yup
+    .string()
+    .required(messages.required)
+    .min(3, 'عنوان تصویر باید حداقل 3 کاراکتر باشد')
+    .max(100, 'عنوان تصویر باید حداکثر 100 کاراکتر باشد'),
+  
+  type: yup
+    .string()
+    .oneOf(['packaging', 'product', 'none'], 'نوع تصویر انتخاب شده معتبر نیست')
+    .required(messages.required),
+  
+  file: yup
+    .mixed<File>()
+    .nullable()
+    .test('fileSize', messages.fileSize, (value) => {
+      if (!value) return true; // Allow null/undefined for edit mode
+      const file = value as File;
+      // 5MB limit
+      return file.size <= 5 * 1024 * 1024;
+    })
+    .test('fileType', messages.fileType, (value) => {
+      if (!value) return true; // Allow null/undefined for edit mode
       const file = value as File;
       
       // Check MIME type

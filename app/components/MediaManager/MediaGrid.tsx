@@ -321,7 +321,7 @@ const MediaGrid: React.FC<MediaGridProps> = ({
                     <Tooltip title="ویرایش">
                       <IconButton
                         size="small"
-                        disabled={true} // Disabled as requested
+                        color="warning"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleEdit(item);

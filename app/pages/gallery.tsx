@@ -18,6 +18,7 @@ import { SearchInput } from "~/components/common";
 import { useImages, useRemoveImage } from "~/api/gallery.api";
 import { ApiStatus } from "~/types";
 import type { IGallery } from "~/types/interfaces/gallery.interface";
+import { fixImageUrl } from "~/utils/imageUtils";
 
 // Media file interface matching MediaManager
 interface IMediaFile {
@@ -36,6 +37,7 @@ const GalleryPage = () => {
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(12);
   const [apiSearchValue, setApiSearchValue] = useState<string>(""); // فقط مقدار برای API
+  const [editImageId, setEditImageId] = useState<number | null>(null);
 
   // Delete confirmation dialog state
   const [deleteDialog, setDeleteDialog] = useState<{
@@ -96,7 +98,12 @@ const GalleryPage = () => {
   };
 
   const handleEdit = (id: string) => {
-    console.log("Edit image with id:", id);
+    setEditImageId(parseInt(id));
+  };
+
+  const handleEditComplete = () => {
+    setEditImageId(null);
+    refetch();
   };
 
   const handleDelete = (id: string) => {
@@ -136,7 +143,7 @@ const GalleryPage = () => {
   const mediaFiles: IMediaFile[] = galleryData.map((item: IGallery) => ({
     _id: item.id.toString(),
     filename: item.title,
-    filepath: item.image_url,
+    filepath: fixImageUrl(item.image_url),
     size: 0,
     mimetype: "image/jpeg",
     createdAt: new Date().toISOString(),
@@ -164,6 +171,8 @@ const GalleryPage = () => {
           allowedType="none"
           onUploadSuccess={handleUploadSuccess}
           onUploadError={handleUploadError}
+          editImageId={editImageId}
+          onEditComplete={handleEditComplete}
         />
 
         {/* Search Filter */}

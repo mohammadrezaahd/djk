@@ -123,7 +123,7 @@ export const useEditDetail = () => {
       // console.log("✅ Attribute added successfully:", data);
     },
     onError: (error) => {
-      console.error("❌ Error adding attribute:", error);
+      console.error("❌ Error modifying attribute:", error);
     },
   });
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Button,
@@ -15,9 +15,11 @@ import {
 import type { SelectChangeEvent } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { useSnackbar } from "notistack";
-import { useAddImage } from "~/api/gallery.api";
+import { useAddImage, useEditImage, useImage } from "~/api/gallery.api";
 import { ApiStatus } from "~/types";
 import { useGalleryValidation, convertGalleryFormToApi } from "~/validation";
+import type { IGallery } from "~/types/interfaces/gallery.interface";
+import { fixImageUrl } from "~/utils/imageUtils";
 
 const MEDIA_FILTER_TYPES = [
   {
@@ -41,33 +43,80 @@ interface FileUploadProps {
   allowedType?: "packaging" | "product" | "none";
   onUploadSuccess?: () => void;
   onUploadError?: (error: string) => void;
+  editImageId?: number | null;
+  onEditComplete?: () => void;
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({
   allowedType = "none",
   onUploadSuccess,
   onUploadError,
+  editImageId = null,
+  onEditComplete,
 }) => {
   const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
 
   const addImageMutation = useAddImage();
+  const editImageMutation = useEditImage();
   const { enqueueSnackbar } = useSnackbar();
 
+  // Fetch image data for editing
+  const {
+    data: editImageData,
+    isLoading: isLoadingEditData,
+    error: editDataError,
+  } = useImage(editImageId || 0);
+
   // Use validation hook
-  const form = useGalleryValidation(allowedType);
-  const { handleSubmit, setValue, watch, formState: { errors, isValid } } = form;
+  const form = useGalleryValidation(allowedType, isEditMode);
+  const { handleSubmit, setValue, watch, formState: { errors, isValid }, reset } = form;
 
   // Watch form values
   const selectedFile = watch('file');
   const title = watch('title');
   const currentAllowedType = watch('type');
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPreviewUrl("");
+  // Effect to handle edit mode
+  useEffect(() => {
+    if (editImageId && editImageData?.data && !isEditMode) {
+      const imageData = editImageData.data;
+      setIsEditMode(true);
+      
+      // Set form values from edit data
+      setValue('title', imageData.title);
+      
+      // Set type based on packaging/product flags
+      if (imageData.packaging) {
+        setValue('type', 'packaging');
+      } else if (imageData.product) {
+        setValue('type', 'product');
+      } else {
+        setValue('type', 'none');
+      }
+      
+      // Set preview URL from existing image
+      setPreviewUrl(fixImageUrl(imageData.image_url));
+      
+      // In edit mode, file is not required, so we set it to null but preview remains
+      setValue('file', null);
+    } else if (!editImageId && isEditMode) {
+      setIsEditMode(false);
+      // Reset form to default values
+      const defaultValues = {
+        title: '',
+        type: allowedType !== 'none' ? allowedType : 'none' as any,
+        file: null
+      };
+      reset(defaultValues);
+      setPreviewUrl("");
+    }
+  }, [editImageId, editImageData?.data, isEditMode]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      setValue('file', file, { shouldValidate: true });
+      setValue('file', file);
 
       // Create preview URL
       const reader = new FileReader();
@@ -77,34 +126,69 @@ const FileUpload: React.FC<FileUploadProps> = ({
         }
       };
       reader.readAsDataURL(file);
+    } else if (!isEditMode) {
+      // Only clear preview if not in edit mode
+      setPreviewUrl("");
+      setValue('file', null);
     }
   };
 
   const handleUpload = handleSubmit(async (formData) => {
     try {
-      const uploadData = convertGalleryFormToApi(formData);
-      const result = await addImageMutation.mutateAsync(uploadData);
+      if (isEditMode && editImageId) {
+        // Edit mode: call edit API
+        const editData = {
+          title: formData.title.trim(),
+          packaging: formData.type === 'packaging',
+          product: formData.type === 'product',
+          source: 'app' as any,
+          tag: 'edit',
+          file: formData.file as File, // file can be null in edit mode if not changing
+        };
 
-      // بررسی موفقیت با ApiStatus
-      if (result.status === ApiStatus.SUCCEEDED) {
-        // Reset form after successful upload
-        form.resetForm();
-        setPreviewUrl("");
+        const result = await editImageMutation.mutateAsync({
+          id: editImageId,
+          data: editData,
+        });
 
-        const fileInput = document.querySelector(
-          'input[type="file"]'
-        ) as HTMLInputElement;
-        if (fileInput) fileInput.value = "";
-
-        // نمایش snackbar موفقیت
-        enqueueSnackbar("تصویر با موفقیت آپلود شد!", { variant: "success" });
-
-        if (onUploadSuccess) onUploadSuccess();
+        // بررسی موفقیت با ApiStatus
+        if (result.status === ApiStatus.SUCCEEDED) {
+          enqueueSnackbar("تصویر با موفقیت ویرایش شد!", { variant: "success" });
+          if (onEditComplete) onEditComplete();
+        } else {
+          throw new Error(result.message || "ویرایش ناموفق بود");
+        }
       } else {
-        throw new Error(result.message || "آپلود ناموفق بود");
+        // Add mode: call add API
+        const uploadData = convertGalleryFormToApi(formData);
+        const result = await addImageMutation.mutateAsync(uploadData);
+
+        // بررسی موفقیت با ApiStatus
+        if (result.status === ApiStatus.SUCCEEDED) {
+          // Reset form after successful upload
+          const defaultValues = {
+            title: '',
+            type: allowedType !== 'none' ? allowedType : 'none' as any,
+            file: null
+          };
+          reset(defaultValues);
+          setPreviewUrl("");
+
+          const fileInput = document.querySelector(
+            'input[type="file"]'
+          ) as HTMLInputElement;
+          if (fileInput) fileInput.value = "";
+
+          // نمایش snackbar موفقیت
+          enqueueSnackbar("تصویر با موفقیت آپلود شد!", { variant: "success" });
+
+          if (onUploadSuccess) onUploadSuccess();
+        } else {
+          throw new Error(result.message || "آپلود ناموفق بود");
+        }
       }
     } catch (error: any) {
-      const errorMsg = error.message || "آپلود ناموفق بود";
+      const errorMsg = error.message || (isEditMode ? "ویرایش ناموفق بود" : "آپلود ناموفق بود");
 
       // نمایش snackbar خطا
       enqueueSnackbar(errorMsg, { variant: "error" });
@@ -115,8 +199,18 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
   const handleAllowedTypeChange = (event: SelectChangeEvent<string>) => {
     const newType = event.target.value as "packaging" | "product" | "none";
-    setValue('type', newType, { shouldValidate: true });
+    setValue('type', newType);
   };
+
+  // Check if form is valid - in edit mode, file is optional
+  const isFormValidForSubmit = isEditMode 
+    ? (title && title.trim().length >= 3) // In edit mode, only title is required
+    : isValid; // In add mode, all fields including file are required
+
+  const isSubmitDisabled = !isFormValidForSubmit || 
+    addImageMutation.isPending || 
+    editImageMutation.isPending ||
+    isLoadingEditData;
 
   const getSelectedFilterType = () => {
     return MEDIA_FILTER_TYPES.find((ft) => ft.value === currentAllowedType);
@@ -133,8 +227,21 @@ const FileUpload: React.FC<FileUploadProps> = ({
   return (
     <Paper elevation={1} sx={{ p: 3, mb: 3 }}>
       <Typography variant="h6" gutterBottom>
-        آپلود تصویر
+        {isEditMode ? "ویرایش تصویر" : "آپلود تصویر"}
       </Typography>
+
+      {isLoadingEditData && (
+        <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
+          <CircularProgress size={24} />
+          <Typography sx={{ ml: 2 }}>در حال بارگیری اطلاعات...</Typography>
+        </Box>
+      )}
+
+      {editDataError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          خطا در بارگیری اطلاعات تصویر
+        </Alert>
+      )}
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
         {/* ردیف بالا: مربع آپلود + نوع تصویر + عنوان تصویر */}
@@ -157,7 +264,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
               id="file-upload"
               onChange={handleFileChange}
               style={{ display: "none" }}
-              disabled={addImageMutation.isPending}
+              disabled={addImageMutation.isPending || editImageMutation.isPending || isLoadingEditData}
               accept=".jpg,.jpeg,.png,.gif,.webp,.svg"
             />
             <label htmlFor="file-upload">
@@ -174,7 +281,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  cursor: addImageMutation.isPending ? "not-allowed" : "pointer",
+                  cursor: (addImageMutation.isPending || editImageMutation.isPending || isLoadingEditData) ? "not-allowed" : "pointer",
                   bgcolor: selectedFile 
                     ? (errors.file ? "error.50" : "primary.50") 
                     : (errors.file ? "error.50" : "grey.50"),
@@ -216,7 +323,11 @@ const FileUpload: React.FC<FileUploadProps> = ({
                       textAlign="center"
                       sx={{ px: 1 }}
                     >
-                      {selectedFile ? "فایل انتخاب شده" : "انتخاب فایل"}
+                      {selectedFile 
+                        ? "فایل انتخاب شده" 
+                        : isEditMode 
+                          ? "انتخاب فایل جدید (اختیاری)" 
+                          : "انتخاب فایل"}
                     </Typography>
                   </>
                 )}
@@ -235,9 +346,10 @@ const FileUpload: React.FC<FileUploadProps> = ({
                 value={currentAllowedType}
                 onChange={handleAllowedTypeChange}
                 label="نوع تصویر"
-                disabled={addImageMutation.isPending}
+                disabled={addImageMutation.isPending || editImageMutation.isPending || isLoadingEditData}
                 MenuProps={{
                   disablePortal: true,
+                  disableScrollLock: true,
                   PaperProps: {
                     sx: {
                       borderRadius: 2,
@@ -369,9 +481,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
           variant="contained"
           size="large"
           onClick={handleUpload}
-          disabled={
-            !isValid || addImageMutation.isPending
-          }
+          disabled={isSubmitDisabled}
           fullWidth
           sx={{
             minHeight: 56,
@@ -388,13 +498,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
             },
           }}
         >
-          {addImageMutation.isPending ? (
+          {(addImageMutation.isPending || editImageMutation.isPending) ? (
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <CircularProgress size={24} color="inherit" />
-              در حال آپلود...
+              {isEditMode ? "در حال ویرایش..." : "در حال آپلود..."}
             </Box>
           ) : (
-            "آپلود تصویر"
+            isEditMode ? "ویرایش تصویر" : "آپلود تصویر"
           )}
         </Button>
       </Box>

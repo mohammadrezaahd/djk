@@ -2,8 +2,10 @@ import type { IPostImage } from "~/types/dtos/gallery.dto";
 import { apiUtils } from "./apiUtils.api";
 import {
   authorizedDelete,
+  authorizedGet,
   authorizedPost,
   authorizedPostFileWithQuery,
+  authorizedPut,
 } from "~/utils/authorizeReq";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { IGallery } from "~/types/interfaces/gallery.interface";
@@ -43,6 +45,20 @@ const getImages = async ({
 const removeImage = async (id: number) => {
   return apiUtils<{ status: string }>(async () => {
     const response = await authorizedDelete(`/v1/images/remove/${id}`);
+    return response.data;
+  });
+};
+
+const getImage = async (id: number) => {
+  return apiUtils<IGallery>(async () => {
+    const response = await authorizedGet(`/v1/images/get/${id}`);
+    return response.data;
+  });
+};
+
+const editImage = async ({ id, data }: { id: number; data: IPostImage }) => {
+  return apiUtils<{ status: string }>(async () => {
+    const response = await authorizedPut(`/v1/images/edit/${id}`, data);
     return response.data;
   });
 };
@@ -90,6 +106,31 @@ export const useRemoveImage = () => {
     },
     onError: (error) => {
       console.error("❌ Error removing image:", error);
+    },
+  });
+};
+
+export const useImage = (id: number) => {
+  return useQuery({
+    queryKey: ["detailes", id],
+    queryFn: () => getImage(id),
+    enabled: !!id,
+    staleTime: 30 * 60 * 1000, // 30 minutes
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useEditImage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: editImage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["image modify"] });
+      // console.log("✅ Attribute added successfully:", data);
+    },
+    onError: (error) => {
+      console.error("❌ Error modifying image:", error);
     },
   });
 };
