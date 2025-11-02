@@ -11,6 +11,7 @@ import {
   Box,
   Tooltip,
   Skeleton,
+  Checkbox,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -41,6 +42,10 @@ interface MediaGridProps {
   onPageChange: (event: React.ChangeEvent<unknown>, value: number) => void;
   onPageSizeChange: (event: SelectChangeEvent<number>) => void;
   pageSizeOptions?: number[];
+  // Selection props
+  selectionMode?: boolean;
+  selectedItems?: string[];
+  onSelectionChange?: (selectedIds: string[]) => void;
 }
 
 const MediaGrid: React.FC<MediaGridProps> = ({
@@ -54,6 +59,9 @@ const MediaGrid: React.FC<MediaGridProps> = ({
   onPageChange,
   onPageSizeChange,
   pageSizeOptions = [12, 24, 48],
+  selectionMode = false,
+  selectedItems = [],
+  onSelectionChange,
 }) => {
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes";
@@ -87,6 +95,18 @@ const MediaGrid: React.FC<MediaGridProps> = ({
       onEdit(media._id);
     }
   };
+
+  const handleSelectionToggle = (id: string) => {
+    if (!selectionMode || !onSelectionChange) return;
+    
+    const newSelection = selectedItems.includes(id)
+      ? selectedItems.filter(item => item !== id)
+      : [...selectedItems, id];
+    
+    onSelectionChange(newSelection);
+  };
+
+  const isSelected = (id: string) => selectedItems.includes(id);
 
   // Calculate total pages
   const totalPages = Math.ceil(totalItems / pageSize);
@@ -229,7 +249,16 @@ const MediaGrid: React.FC<MediaGridProps> = ({
                   height: "100%",
                   display: "flex",
                   flexDirection: "column",
+                  cursor: selectionMode ? "pointer" : "default",
+                  border: selectionMode && isSelected(item._id) ? 2 : 1,
+                  borderColor: selectionMode && isSelected(item._id) ? "primary.main" : "divider",
+                  "&:hover": selectionMode ? {
+                    borderColor: "primary.main",
+                    transform: "translateY(-2px)",
+                    transition: "all 0.2s ease-in-out",
+                  } : {},
                 }}
+                onClick={selectionMode ? () => handleSelectionToggle(item._id) : undefined}
               >
                 {/* Media Preview */}
                 <Box
@@ -280,6 +309,26 @@ const MediaGrid: React.FC<MediaGridProps> = ({
                       fontWeight: "bold",
                     }}
                   />
+
+                  {/* Selection Checkbox */}
+                  {selectionMode && (
+                    <Checkbox
+                      checked={isSelected(item._id)}
+                      sx={{
+                        position: "absolute",
+                        top: 8,
+                        left: 8,
+                        bgcolor: "rgba(255, 255, 255, 0.9)",
+                        "&:hover": {
+                          bgcolor: "rgba(255, 255, 255, 1)",
+                        },
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelectionToggle(item._id);
+                      }}
+                    />
+                  )}
                 </Box>
 
                 {/* Content */}
@@ -316,37 +365,41 @@ const MediaGrid: React.FC<MediaGridProps> = ({
                 </CardContent>
 
                 {/* Actions */}
-                <CardActions sx={{ pt: 0, justifyContent: "space-between" }}>
-                  <Box>
-                    <Tooltip title="ویرایش">
-                      <IconButton
-                        size="small"
-                        color="warning"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEdit(item);
-                        }}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
+                {!selectionMode && (
+                  <CardActions sx={{ pt: 0, justifyContent: "space-between" }}>
+                    {onEdit && (
+                      <Box>
+                        <Tooltip title="ویرایش">
+                          <IconButton
+                            size="small"
+                            color="warning"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(item);
+                            }}
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    )}
 
-                  {onDelete && (
-                    <Tooltip title="حذف">
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDelete(item._id);
-                        }}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                </CardActions>
+                    {onDelete && (
+                      <Tooltip title="حذف">
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(item._id);
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </CardActions>
+                )}
               </Card>
             </Grid>
           );

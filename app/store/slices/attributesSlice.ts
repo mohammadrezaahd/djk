@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import type { ICategoryAttr } from "~/types/interfaces/attributes.interface";
 import type { IPostAttr } from "~/types/dtos/attributes.dto";
+import { TemplateSource } from "~/types/dtos/templates.dto";
 
 interface AttributesState {
   currentCategoryId: number | null;
@@ -9,6 +10,7 @@ interface AttributesState {
   formData: { [key: string]: any };
   title: string;
   description: string;
+  images: number[];
 }
 
 const initialState: AttributesState = {
@@ -17,6 +19,7 @@ const initialState: AttributesState = {
   formData: {},
   title: "",
   description: "",
+  images: [],
 };
 
 const attributesSlice = createSlice({
@@ -80,12 +83,17 @@ const attributesSlice = createSlice({
       state.description = action.payload;
     },
 
+    setImages: (state, action: PayloadAction<number[]>) => {
+      state.images = action.payload;
+    },
+
     resetAttributes: (state) => {
       state.currentCategoryId = null;
       state.attributesData = null;
       state.formData = {};
       state.title = "";
       state.description = "";
+      state.images = [];
     },
   },
 });
@@ -95,6 +103,7 @@ export const {
   updateFormField,
   setTitle,
   setDescription,
+  setImages,
   resetAttributes,
 } = attributesSlice.actions;
 
@@ -168,8 +177,8 @@ export const getFinalAttributesObject = (state: {
     description: state.attributes.description?.trim() || undefined,
     category_id: state.attributes.currentCategoryId,
     data_json: finalData,
-    images: [],
-    source: "app" as const,
+    images: state.attributes.images,
+    source: TemplateSource.App,
   };
 };
 

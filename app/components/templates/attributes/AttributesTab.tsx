@@ -13,9 +13,11 @@ import {
   updateFormField,
   setTitle,
   setDescription,
+  setImages,
 } from "~/store/slices/attributesSlice";
 import { useAttributesValidation } from "~/validation";
 import AttributesField from "./AttributesField";
+import ImageSelector from "../ImageSelector";
 
 const SectionCard = ({ title, children, ...props }: any) => (
   <Card sx={{ p: 2, ...props.sx }} {...props}>
@@ -38,7 +40,7 @@ export default function AttributesTab({
   isLoading,
 }: AttributesTabProps) {
   const dispatch = useAppDispatch();
-  const { attributesData, formData, title, description } = useAppSelector(
+  const { attributesData, formData, title, description, images } = useAppSelector(
     (state) => state.attributes
   );
 
@@ -110,6 +112,10 @@ export default function AttributesTab({
       shouldDirty: true,
     });
     dispatch(setDescription(newDescription));
+  };
+
+  const handleImagesChange = (selectedImages: number[]) => {
+    dispatch(setImages(selectedImages));
   };
 
   if (isLoading) {
@@ -188,6 +194,17 @@ export default function AttributesTab({
               </Grid>
             ))}
           </Grid>
+        </SectionCard>
+      </Grid>
+
+      <Grid size={{ xs: 12 }}>
+        <SectionCard title="تصاویر محصول">
+          <ImageSelector
+            selectedImages={images}
+            onImagesChange={handleImagesChange}
+            label="انتخاب تصاویر"
+            helperText="تصاویر مرتبط با این قالب ویژگی‌ها را انتخاب کنید"
+          />
         </SectionCard>
       </Grid>
     </>

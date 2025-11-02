@@ -2,17 +2,20 @@ import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import type { ICategoryDetails } from "~/types/interfaces/details.interface";
 import type { IPostDetail } from "~/types/dtos/details.dto";
+import { TemplateSource } from "~/types/dtos/templates.dto";
 
 interface DetailsState {
   currentCategoryId: number | null;
   detailsData: ICategoryDetails | null;
   formData: { [key: string]: any };
+  images: number[];
 }
 
 const initialState: DetailsState = {
   currentCategoryId: null,
   detailsData: null,
   formData: {},
+  images: [],
 };
 
 const detailsSlice = createSlice({
@@ -47,10 +50,15 @@ const detailsSlice = createSlice({
       state.formData[fieldName] = value;
     },
 
+    setImages: (state, action: PayloadAction<number[]>) => {
+      state.images = action.payload;
+    },
+
     resetDetails: (state) => {
       state.currentCategoryId = null;
       state.detailsData = null;
       state.formData = {};
+      state.images = [];
     },
   },
 });
@@ -58,6 +66,7 @@ const detailsSlice = createSlice({
 export const {
   setDetailsData,
   updateFormField,
+  setImages,
   resetDetails,
 } = detailsSlice.actions;
 
@@ -161,8 +170,8 @@ export const getFinalDetailsObject = (state: { details: DetailsState }): IPostDe
     description: formData.description?.trim() || "",
     category_id: state.details.currentCategoryId,
     data_json: finalData,
-    images: [],
-    source: "app" as const,
+    images: state.details.images,
+    source: TemplateSource.App,
     tag: formData.tag?.trim() || undefined,
   };
 };

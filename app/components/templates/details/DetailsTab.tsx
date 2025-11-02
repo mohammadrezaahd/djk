@@ -1,10 +1,11 @@
 import { Box, Typography, Card, CardContent, Grid } from "@mui/material";
 import { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "~/store/hooks";
-import { updateFormField } from "~/store/slices/detailsSlice";
+import { updateFormField, setImages } from "~/store/slices/detailsSlice";
 import type { RootState } from "~/store";
 import { useDetailsValidation } from "~/validation";
 import DetailsField from "./DetailsField";
+import ImageSelector from "../ImageSelector";
 
 const SectionCard = ({ title, children, ...props }: any) => (
   <Card sx={{ p: 2, ...props.sx }} {...props}>
@@ -29,6 +30,9 @@ const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
   );
   const detailsFormData = useAppSelector(
     (state: RootState) => (state.details as any)?.formData || {}
+  );
+  const images = useAppSelector(
+    (state: RootState) => (state.details as any)?.images || []
   );
 
   console.log("🔍 DetailsTab formData:", detailsFormData);
@@ -58,6 +62,10 @@ const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
       shouldDirty: true,
     });
     dispatch(updateFormField({ fieldName, value }));
+  };
+
+  const handleImagesChange = (selectedImages: number[]) => {
+    dispatch(setImages(selectedImages));
   };
 
   const isFakeProduct = form.watch("is_fake_product") === true;
@@ -312,6 +320,18 @@ const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
           </SectionCard>
         </Grid>
       )}
+
+      {/* Images Section */}
+      <Grid size={{ xs: 12 }}>
+        <SectionCard title="تصاویر محصول">
+          <ImageSelector
+            selectedImages={images}
+            onImagesChange={handleImagesChange}
+            label="انتخاب تصاویر"
+            helperText="تصاویر مرتبط با این جزئیات محصول را انتخاب کنید"
+          />
+        </SectionCard>
+      </Grid>
     </Grid>
   );
 };

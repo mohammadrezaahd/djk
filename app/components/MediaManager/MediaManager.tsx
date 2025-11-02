@@ -28,6 +28,10 @@ interface MediaManagerProps {
   pageSizeOptions?: number[];
   showUpload?: boolean;
   title?: string;
+  // Selection props
+  selectionMode?: boolean;
+  selectedItems?: string[];
+  onSelectionChange?: (selectedIds: string[]) => void;
 }
 
 const MediaManager: React.FC<MediaManagerProps> = ({
@@ -42,7 +46,10 @@ const MediaManager: React.FC<MediaManagerProps> = ({
   onPageSizeChange,
   pageSizeOptions = [12, 24, 48],
   showUpload = true,
-  title = "?????? ?????",
+  title = "مدیریت رسانه",
+  selectionMode = false,
+  selectedItems = [],
+  onSelectionChange,
 }) => {
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -57,6 +64,9 @@ const MediaManager: React.FC<MediaManagerProps> = ({
         onPageChange={onPageChange}
         onPageSizeChange={onPageSizeChange}
         pageSizeOptions={pageSizeOptions}
+        selectionMode={selectionMode}
+        selectedItems={selectedItems}
+        onSelectionChange={onSelectionChange}
       />
     </Box>
   );
