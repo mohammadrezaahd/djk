@@ -25,14 +25,20 @@ const addNewAttr = async (data: IPostAttr) => {
 const getAttrList = async ({
   skip = 0,
   limit = 100,
+  searchTerm = "",
+  categoryId,
 }: {
   skip?: number;
   limit?: number;
+  searchTerm?: string;
+  categoryId?: number;
 }) => {
   return apiUtils<{ list: ITemplateList[] }>(async () => {
-    const response = await authorizedPost(
-      `/v1/attributes/list?skip=${skip}&limit=${limit}`
-    );
+    let url = `/v1/attributes/list?skip=${skip}&limit=${limit}&search_title=${searchTerm}`;
+    if (categoryId !== undefined) {
+      url += `&category_id=${categoryId}`;
+    }
+    const response = await authorizedPost(url);
     return response.data;
   });
 };

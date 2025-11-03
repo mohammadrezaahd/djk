@@ -18,12 +18,16 @@ const Layout = ({ children, title }: LayoutProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [productTemplatesOpen, setProductTemplatesOpen] = useState(false);
+  const [productsOpen, setProductsOpen] = useState(false);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
 
   // Keep templates menu open if any child path is active
   React.useEffect(() => {
     if (isChildPathActive("/templates")) {
       setProductTemplatesOpen(true);
+    }
+    if (isChildPathActive("/products")) {
+      setProductsOpen(true);
     }
   }, [location.pathname]);
 
@@ -46,12 +50,18 @@ const Layout = ({ children, title }: LayoutProps) => {
     if (!desktopCollapsed) {
       setTemplatesOpen(false);
       setProductTemplatesOpen(false);
+      setProductsOpen(false);
     }
   };
 
   const handleProductTemplatesClick = () => {
     if (desktopCollapsed) return; // در حالت collapsed کلیک نکند
     setProductTemplatesOpen(!productTemplatesOpen);
+  };
+
+  const handleProductsClick = () => {
+    if (desktopCollapsed) return; // در حالت collapsed کلیک نکند
+    setProductsOpen(!productsOpen);
   };
 
   return (
@@ -71,6 +81,8 @@ const Layout = ({ children, title }: LayoutProps) => {
         handleDesktopToggle={handleDesktopToggle}
         productTemplatesOpen={productTemplatesOpen}
         handleProductTemplatesClick={handleProductTemplatesClick}
+        productsOpen={productsOpen}
+        handleProductsClick={handleProductsClick}
         currentDrawerWidth={currentDrawerWidth}
       />
 

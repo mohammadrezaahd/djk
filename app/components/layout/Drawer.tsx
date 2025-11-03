@@ -33,6 +33,8 @@ interface DrawerProps {
   handleDesktopToggle: () => void;
   productTemplatesOpen: boolean;
   handleProductTemplatesClick: () => void;
+  productsOpen: boolean;
+  handleProductsClick: () => void;
   currentDrawerWidth: number;
 }
 
@@ -43,6 +45,8 @@ const Drawer = ({
   handleDesktopToggle,
   productTemplatesOpen,
   handleProductTemplatesClick,
+  productsOpen,
+  handleProductsClick,
   currentDrawerWidth,
 }: DrawerProps) => {
   const theme = useTheme();
@@ -333,10 +337,9 @@ const Drawer = ({
         {/* محصولات */}
         <ListItem disablePadding>
           <ListItemButton
-            component={Link}
-            to="/product"
+            onClick={handleProductsClick}
             sx={{
-              backgroundColor: isPathActive("/product")
+              backgroundColor: isPathActive("/products")
                 ? theme.palette.action.selected
                 : "transparent",
               "&:hover": {
@@ -349,7 +352,7 @@ const Drawer = ({
                 minWidth: "auto",
                 ml: desktopCollapsed ? 0 : 1,
                 justifyContent: "center",
-                color: isPathActive("/product")
+                color: isPathActive("/products")
                   ? theme.palette.primary.main
                   : "inherit",
               }}
@@ -357,21 +360,96 @@ const Drawer = ({
               <SellIcon />
             </ListItemIcon>
             {!desktopCollapsed && (
-              <ListItemText
-                primary="محصولات"
-                sx={{
-                  textAlign: "start",
-                  "& .MuiListItemText-primary": {
-                    color: isPathActive("/product")
-                      ? theme.palette.primary.main
-                      : "inherit",
-                    fontWeight: isPathActive("/product") ? "bold" : "normal",
-                  },
-                }}
-              />
+              <>
+                <ListItemText
+                  primary="محصولات"
+                  sx={{
+                    textAlign: "start",
+                    "& .MuiListItemText-primary": {
+                      color: isPathActive("/products")
+                        ? theme.palette.primary.main
+                        : "inherit",
+                      fontWeight: isPathActive("/products")
+                        ? "bold"
+                        : "normal",
+                    },
+                  }}
+                />
+                {productsOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              </>
             )}
           </ListItemButton>
         </ListItem>
+        {!desktopCollapsed && (
+          <Collapse in={productsOpen} timeout="auto" unmountOnExit>
+            <List
+              component="div"
+              disablePadding
+              sx={{
+                borderRight: (theme) => `2px solid ${theme.palette.divider}`,
+                marginRight: "2rem",
+                borderRadius: "0 2px 2px 0",
+              }}
+            >
+              <ListItemButton
+                sx={{
+                  pl: 4,
+                  backgroundColor: isPathActive("/products/list")
+                    ? theme.palette.action.selected
+                    : "transparent",
+                  "&:hover": {
+                    backgroundColor: theme.palette.action.hover,
+                  },
+                }}
+                component={Link}
+                to="/products/list"
+              >
+                <ListItemText
+                  sx={{
+                    textAlign: "start",
+                    "& .MuiListItemText-primary": {
+                      color: isPathActive("/products/list")
+                        ? theme.palette.primary.main
+                        : "inherit",
+                      fontWeight: isPathActive("/products/list")
+                        ? "bold"
+                        : "normal",
+                    },
+                  }}
+                  primary="تمام محصولات"
+                />
+              </ListItemButton>
+              <ListItemButton
+                sx={{
+                  pl: 4,
+                  backgroundColor: isPathActive("/products/new")
+                    ? theme.palette.action.selected
+                    : "transparent",
+                  "&:hover": {
+                    backgroundColor: theme.palette.action.hover,
+                  },
+                }}
+                component={Link}
+                to="/products/new"
+              >
+                <ListItemText
+                  sx={{
+                    textAlign: "start",
+                    "& .MuiListItemText-primary": {
+                      color: isPathActive("/products/new")
+                        ? theme.palette.primary.main
+                        : "inherit",
+                      fontWeight: isPathActive("/products/new")
+                        ? "bold"
+                        : "normal",
+                    },
+                  }}
+                  primary="افزودن محصول جدید"
+                />
+              </ListItemButton>
+            </List>
+          </Collapse>
+        )}
       </List>
     </Box>
   );
