@@ -40,6 +40,13 @@ interface ProductState {
   productTitle: string;
   productDescription: string;
   finalProductData: IPostProduct | null;
+  
+  // Validation state
+  stepValidationErrors: {
+    [FormStep.DETAILS_FORM]: boolean;
+    [FormStep.ATTRIBUTES_FORM]: boolean;
+    [FormStep.PRODUCT_INFO]: boolean;
+  };
 }
 
 const initialState: ProductState = {
@@ -57,6 +64,12 @@ const initialState: ProductState = {
   productTitle: "",
   productDescription: "",
   finalProductData: null,
+  
+  stepValidationErrors: {
+    [FormStep.DETAILS_FORM]: false,
+    [FormStep.ATTRIBUTES_FORM]: false,
+    [FormStep.PRODUCT_INFO]: false,
+  },
 };
 
 const productSlice = createSlice({
@@ -357,6 +370,14 @@ const productSlice = createSlice({
     resetProduct: (state) => {
       return { ...initialState };
     },
+
+    // Validation actions
+    setStepValidationError: (state, action: PayloadAction<{ step: FormStep; hasError: boolean }>) => {
+      const { step, hasError } = action.payload;
+      if (step in state.stepValidationErrors) {
+        state.stepValidationErrors[step as keyof typeof state.stepValidationErrors] = hasError;
+      }
+    },
   },
 });
 
@@ -378,6 +399,7 @@ export const {
   updateSelectedTemplateData,
   generateFinalProductData,
   resetProduct,
+  setStepValidationError,
 } = productSlice.actions;
 
 export default productSlice.reducer;

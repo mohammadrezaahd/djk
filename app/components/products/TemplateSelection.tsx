@@ -20,6 +20,7 @@ interface TemplateSelectionProps {
   selectedTemplateIds: number[];
   onTemplateToggle: (template: ITemplateList) => void;
   onNext: () => void;
+  onBack?: () => void;
   isLoading?: boolean;
 }
 
@@ -29,6 +30,7 @@ const TemplateSelection: React.FC<TemplateSelectionProps> = ({
   selectedTemplateIds,
   onTemplateToggle,
   onNext,
+  onBack,
   isLoading = false,
 }) => {
   const isTemplateSelected = (templateId: number) => {
@@ -50,6 +52,26 @@ const TemplateSelection: React.FC<TemplateSelectionProps> = ({
           <Typography variant="body1" color="text.secondary">
             {isLoading ? "در حال بارگذاری..." : "هیچ قالبی یافت نشد"}
           </Typography>
+          {!isLoading && (
+            <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
+              {onBack && (
+                <Button
+                  variant="outlined"
+                  onClick={onBack}
+                  sx={{ minWidth: 120 }}
+                >
+                  مرحله قبل
+                </Button>
+              )}
+              <Button
+                variant="contained"
+                onClick={onNext}
+                sx={{ minWidth: 120, ml: onBack ? 0 : "auto" }}
+              >
+                ادامه
+              </Button>
+            </Box>
+          )}
         </Box>
       ) : (
         <>
@@ -93,12 +115,20 @@ const TemplateSelection: React.FC<TemplateSelectionProps> = ({
             ))}
           </List>
 
-          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
+            {onBack && (
+              <Button
+                variant="outlined"
+                onClick={onBack}
+                sx={{ minWidth: 120 }}
+              >
+                مرحله قبل
+              </Button>
+            )}
             <Button
               variant="contained"
               onClick={onNext}
-              disabled={selectedTemplateIds.length === 0}
-              sx={{ minWidth: 120 }}
+              sx={{ minWidth: 120, ml: onBack ? 0 : "auto" }}
             >
               ادامه
             </Button>

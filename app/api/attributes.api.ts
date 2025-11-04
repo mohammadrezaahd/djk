@@ -34,7 +34,10 @@ const getAttrList = async ({
   categoryId?: number;
 }) => {
   return apiUtils<{ list: ITemplateList[] }>(async () => {
-    let url = `/v1/attributes/list?skip=${skip}&limit=${limit}&search_title=${searchTerm}`;
+    let url = `/v1/attributes/list?skip=${skip}&limit=${limit}`;
+    if (searchTerm && searchTerm.trim().length > 0) {
+      url += `&search_title=${encodeURIComponent(searchTerm)}`;
+    }
     if (categoryId !== undefined) {
       url += `&category_id=${categoryId}`;
     }

@@ -17,6 +17,10 @@ interface ProductInfoFormProps {
   onSubmit: () => void;
   onBack: () => void;
   isSubmitting?: boolean;
+  hasValidationErrors?: boolean;
+  stepValidationErrors?: {
+    [key: string]: boolean;
+  };
 }
 
 const ProductInfoForm: React.FC<ProductInfoFormProps> = ({
@@ -27,6 +31,8 @@ const ProductInfoForm: React.FC<ProductInfoFormProps> = ({
   onSubmit,
   onBack,
   isSubmitting = false,
+  hasValidationErrors = false,
+  stepValidationErrors = {},
 }) => {
   const [errors, setErrors] = useState<{ title?: string }>({});
 
@@ -39,10 +45,13 @@ const ProductInfoForm: React.FC<ProductInfoFormProps> = ({
 
     setErrors(newErrors);
 
-    if (Object.keys(newErrors).length === 0) {
+    if (Object.keys(newErrors).length === 0 && !hasValidationErrors) {
       onSubmit();
     }
   };
+
+  // Check if any previous steps have validation errors
+  const hasPreviousStepErrors = Object.values(stepValidationErrors).some(hasError => hasError);
 
   return (
     <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
@@ -53,6 +62,14 @@ const ProductInfoForm: React.FC<ProductInfoFormProps> = ({
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         اطلاعات نهایی محصول را وارد کنید.
       </Typography>
+
+      {hasPreviousStepErrors && (
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          <Typography variant="body2">
+            لطفاً ابتدا خطاهای موجود در مراحل قبلی را رفع کنید. مراحل دارای خطا با علامت ضربدر مشخص شده‌اند.
+          </Typography>
+        </Alert>
+      )}
 
       <Box sx={{ mb: 3 }}>
         <TextField
@@ -102,7 +119,7 @@ const ProductInfoForm: React.FC<ProductInfoFormProps> = ({
         <Button
           variant="contained"
           onClick={handleSubmit}
-          disabled={isSubmitting}
+          disabled={isSubmitting || hasPreviousStepErrors || (!!errors.title && !title.trim())}
           sx={{ minWidth: 120 }}
         >
           {isSubmitting ? "در حال ایجاد..." : "ایجاد محصول"}

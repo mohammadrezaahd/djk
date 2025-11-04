@@ -18,12 +18,14 @@ interface ProductDetailsFormProps {
   data: ICategoryDetails;
   formData: { [key: string]: any };
   onFormDataChange: (fieldName: string, value: any) => void;
+  validationErrors?: { [key: string]: string };
 }
 
 const ProductDetailsForm: React.FC<ProductDetailsFormProps> = ({
   data,
   formData,
   onFormDataChange,
+  validationErrors = {},
 }) => {
   const bind = data?.bind;
   
@@ -77,6 +79,7 @@ const ProductDetailsForm: React.FC<ProductDetailsFormProps> = ({
               disabled={isFakeProduct}
               showBrandLogo
               required
+              error={validationErrors.brand}
             />
           </SectionCard>
         </Grid>
@@ -91,6 +94,7 @@ const ProductDetailsForm: React.FC<ProductDetailsFormProps> = ({
               label="وضعیت"
               value={formData.status || ""}
               onChange={onFormDataChange}
+              error={validationErrors.status}
             />
           </SectionCard>
         </Grid>
@@ -105,6 +109,7 @@ const ProductDetailsForm: React.FC<ProductDetailsFormProps> = ({
               label="پلتفرم"
               value={formData.platform || ""}
               onChange={onFormDataChange}
+              error={validationErrors.platform}
             />
           </SectionCard>
         </Grid>
@@ -119,6 +124,7 @@ const ProductDetailsForm: React.FC<ProductDetailsFormProps> = ({
               label="کلاس محصول"
               value={formData.product_class || ""}
               onChange={onFormDataChange}
+              error={validationErrors.product_class}
             />
           </SectionCard>
         </Grid>
@@ -133,6 +139,7 @@ const ProductDetailsForm: React.FC<ProductDetailsFormProps> = ({
               label="نوع محصول"
               value={formData.category_product_type || ""}
               onChange={onFormDataChange}
+              error={validationErrors.category_product_type}
             />
           </SectionCard>
         </Grid>
@@ -147,6 +154,7 @@ const ProductDetailsForm: React.FC<ProductDetailsFormProps> = ({
               label="دلیل تقلبی"
               value={formData.fake_reason || ""}
               onChange={onFormDataChange}
+              error={validationErrors.fake_reason}
             />
           </SectionCard>
         </Grid>
@@ -161,6 +169,7 @@ const ProductDetailsForm: React.FC<ProductDetailsFormProps> = ({
               label="تم"
               value={formData.theme || ""}
               onChange={onFormDataChange}
+              error={validationErrors.theme}
             />
           </SectionCard>
         </Grid>
@@ -194,6 +203,7 @@ const ProductDetailsForm: React.FC<ProductDetailsFormProps> = ({
                   value={formData.general_mefa_id || ""}
                   onChange={onFormDataChange}
                   isObjectData
+                  error={validationErrors.general_mefa_id}
                 />
               ) : (
                 <DetailsField
@@ -203,6 +213,7 @@ const ProductDetailsForm: React.FC<ProductDetailsFormProps> = ({
                   onChange={onFormDataChange}
                   isTextField
                   placeholder="شناسه خصوصی را وارد کنید..."
+                  error={validationErrors.custom_id}
                 />
               )}
             </Box>

@@ -21,10 +21,18 @@ import {
   updateSelectedTemplateData,
   generateFinalProductData,
   resetProduct,
+  setStepValidationError,
 } from "~/store/slices/productSlice";
 import { useCategoriesList } from "~/api/categories.api";
 import { useDetails, useDetail } from "~/api/details.api";
 import { useAttrs, useAttr } from "~/api/attributes.api";
+import { 
+  useProductDetailsValidation, 
+  useProductAttributesValidation, 
+  useProductInfoValidation,
+  validateAllDetailsTemplates, 
+  validateAllAttributesTemplates 
+} from "~/validation";
 import Layout from "~/components/layout/Layout";
 import CategorySelector from "~/components/templates/CategorySelector";
 import {
@@ -69,10 +77,77 @@ const NewProductPage = () => {
     activeAttributesTemplate?.id || 0
   );
 
-  // Reset state on component mount
+  // Validation hooks for product creation
+  const activeDetailsValidation = useProductDetailsValidation(
+    activeDetailsTemplate?.data as any,
+    activeDetailsTemplate?.formData || {}
+  );
+
+  const activeAttributesValidation = useProductAttributesValidation(
+    activeAttributesTemplate?.data as any,
+    activeAttributesTemplate?.formData || {}
+  );
+
+  const productInfoValidation = useProductInfoValidation(
+    productState.productTitle,
+    productState.productDescription
+  );
+
+  // Update validation errors in store when validation results change
+  // Reset state on component mount  
   useEffect(() => {
     dispatch(resetProduct());
   }, [dispatch]);
+
+  // Update validation errors in store when validation results change
+  useEffect(() => {
+    // Only show validation error if user has visited the step but hasn't selected any templates
+    // or if templates are selected but not properly filled
+    let hasDetailsErrors = false;
+    
+    if (productState.selectedDetailsTemplates.length === 0) {
+      // Only consider it an error if user has passed through details selection step
+      const currentStepIndex = Object.values(FormStep).indexOf(productState.currentStep);
+      const detailsFormStepIndex = Object.values(FormStep).indexOf(FormStep.DETAILS_FORM);
+      hasDetailsErrors = currentStepIndex > detailsFormStepIndex;
+    } else {
+      // If templates are selected, validate them
+      hasDetailsErrors = !validateAllDetailsTemplates(productState.selectedDetailsTemplates);
+    }
+    
+    dispatch(setStepValidationError({
+      step: FormStep.DETAILS_FORM,
+      hasError: hasDetailsErrors
+    }));
+  }, [productState.selectedDetailsTemplates, productState.currentStep, dispatch]);
+
+  useEffect(() => {
+    // Only show validation error if user has visited the step but hasn't selected any templates
+    // or if templates are selected but not properly filled
+    let hasAttributesErrors = false;
+    
+    if (productState.selectedAttributesTemplates.length === 0) {
+      // Only consider it an error if user has passed through attributes selection step
+      const currentStepIndex = Object.values(FormStep).indexOf(productState.currentStep);
+      const attributesFormStepIndex = Object.values(FormStep).indexOf(FormStep.ATTRIBUTES_FORM);
+      hasAttributesErrors = currentStepIndex > attributesFormStepIndex;
+    } else {
+      // If templates are selected, validate them
+      hasAttributesErrors = !validateAllAttributesTemplates(productState.selectedAttributesTemplates);
+    }
+    
+    dispatch(setStepValidationError({
+      step: FormStep.ATTRIBUTES_FORM,
+      hasError: hasAttributesErrors
+    }));
+  }, [productState.selectedAttributesTemplates, productState.currentStep, dispatch]);
+
+  useEffect(() => {
+    dispatch(setStepValidationError({
+      step: FormStep.PRODUCT_INFO,
+      hasError: !productInfoValidation.isValid
+    }));
+  }, [productInfoValidation.isValid, dispatch]);
 
   // Load template data when activeDetailsTemplate changes
   useEffect(() => {
@@ -182,9 +257,29 @@ const NewProductPage = () => {
   };
 
   // Handle step navigation
-  const handleNextFromDetailsSelection = () => {
+  const handleNextFromDetailsSelection = async () => {
+    // Always allow going to next step, regardless of selection
     if (productState.selectedDetailsTemplates.length > 0) {
       dispatch(setCurrentStep(FormStep.DETAILS_FORM));
+    } else {
+      // Skip to attributes selection if no details templates selected
+      // Load attributes templates for the category first
+      if (productState.selectedCategoryId) {
+        try {
+          const attributesResult = await attributesMutation.mutateAsync({
+            categoryId: productState.selectedCategoryId,
+            skip: 0,
+            limit: 100,
+          });
+          
+          if (attributesResult.status === "true" && attributesResult.data?.list) {
+            dispatch(setAvailableAttributesTemplates(attributesResult.data.list));
+          }
+        } catch (error) {
+          console.error("Error loading attributes templates:", error);
+        }
+      }
+      dispatch(setCurrentStep(FormStep.ATTRIBUTES_SELECTION));
     }
   };
 
@@ -209,8 +304,13 @@ const NewProductPage = () => {
   };
 
   const handleNextFromAttributesSelection = () => {
+    // Always allow going to next step, regardless of selection
+    // If no templates selected, the form step will be skipped to product info
     if (productState.selectedAttributesTemplates.length > 0) {
       dispatch(setCurrentStep(FormStep.ATTRIBUTES_FORM));
+    } else {
+      // Skip to product info if no attributes templates selected
+      dispatch(setCurrentStep(FormStep.PRODUCT_INFO));
     }
   };
 
@@ -232,6 +332,14 @@ const NewProductPage = () => {
 
   const handleBackToAttributesForm = () => {
     dispatch(setCurrentStep(FormStep.ATTRIBUTES_FORM));
+  };
+
+  const handleBackToCategorySelection = () => {
+    dispatch(setCurrentStep(FormStep.CATEGORY_SELECTION));
+  };
+
+  const handleBackToDetailsSelectionFromAttributes = () => {
+    dispatch(setCurrentStep(FormStep.DETAILS_SELECTION));
   };
 
   // Handle form submissions
@@ -266,6 +374,7 @@ const NewProductPage = () => {
             selectedTemplateIds={productState.selectedDetailsTemplates.map(t => t.id)}
             onTemplateToggle={handleDetailsTemplateToggle}
             onNext={handleNextFromDetailsSelection}
+            onBack={handleBackToCategorySelection}
             isLoading={detailsMutation.isPending}
           />
         );
@@ -292,6 +401,7 @@ const NewProductPage = () => {
                     value
                   }))
                 }
+                validationErrors={activeDetailsValidation.errors}
               />
             )}
           </TemplateForms>
@@ -305,6 +415,7 @@ const NewProductPage = () => {
             selectedTemplateIds={productState.selectedAttributesTemplates.map(t => t.id)}
             onTemplateToggle={handleAttributesTemplateToggle}
             onNext={handleNextFromAttributesSelection}
+            onBack={handleBackToDetailsSelectionFromAttributes}
             isLoading={attributesMutation.isPending}
           />
         );
@@ -331,6 +442,7 @@ const NewProductPage = () => {
                     value
                   }))
                 }
+                validationErrors={activeAttributesValidation.errors}
               />
             )}
           </TemplateForms>
@@ -345,6 +457,8 @@ const NewProductPage = () => {
             onDescriptionChange={(description) => dispatch(setProductDescription(description))}
             onSubmit={handleCreateProduct}
             onBack={handleBackToAttributesForm}
+            hasValidationErrors={!productInfoValidation.isValid}
+            stepValidationErrors={productState.stepValidationErrors}
           />
         );
 
@@ -372,7 +486,10 @@ const NewProductPage = () => {
           </Typography>
         </Paper>
 
-        <FormSteps currentStep={productState.currentStep} />
+        <FormSteps 
+          currentStep={productState.currentStep} 
+          stepValidationErrors={productState.stepValidationErrors}
+        />
 
         {renderCurrentStep()}
 

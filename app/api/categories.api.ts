@@ -18,7 +18,7 @@ const getCategoriesList = async (
 ) => {
   return apiUtils<{ items: ICategoryList[] }>(async () => {
     const response = await authorizedGet(
-      `/v1/categories/list?search=${search}&page=${page}&limit=${limit}`
+      `/v1/categories/list?search=${search}&page=${page}&limit=${limit}&just_children=true`
     );
     return response.data;
   });

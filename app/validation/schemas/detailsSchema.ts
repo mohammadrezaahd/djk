@@ -72,11 +72,14 @@ export const baseDetailsSchema = yup.object({
 
 /**
  * Generate dynamic validation schema based on details data
+ * @param detailsData - The details data to create validation for
+ * @param isProductCreation - If true, includes all field validations. If false, only title/description
  */
 export const createDetailsFormSchema = (
-  detailsData: ICategoryDetails | null
+  detailsData: ICategoryDetails | null,
+  isProductCreation: boolean = false
 ) => {
-  if (!detailsData?.bind) {
+  if (!detailsData?.bind || !isProductCreation) {
     return baseDetailsSchema;
   }
 

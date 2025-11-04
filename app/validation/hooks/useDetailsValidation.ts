@@ -11,10 +11,14 @@ import {
 
 /**
  * Custom hook for details form validation using react-hook-form and yup
+ * @param detailsData - The details data
+ * @param currentFormData - Current form data
+ * @param isProductCreation - If true, validates all fields. If false, only title/description
  */
 export const useDetailsValidation = (
   detailsData: ICategoryDetails | null,
-  currentFormData: { [key: string]: any } = {}
+  currentFormData: { [key: string]: any } = {},
+  isProductCreation: boolean = false
 ) => {
   // Get default values
   const defaultValues = useMemo(() => {
@@ -23,8 +27,8 @@ export const useDetailsValidation = (
 
   // Validation schema
   const validationSchema = useMemo(() => {
-    return createDetailsFormSchema(detailsData);
-  }, [detailsData]);
+    return createDetailsFormSchema(detailsData, isProductCreation);
+  }, [detailsData, isProductCreation]);
 
   // Initialize react-hook-form
   const form = useForm<DetailsFormData>({

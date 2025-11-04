@@ -118,9 +118,14 @@ export const baseAttributesSchema = yup.object({
 
 /**
  * Generate dynamic validation schema based on attributes data
+ * @param attributesData - The attributes data to create validation for
+ * @param isProductCreation - If true, includes all field validations. If false, only title/description
  */
-export const createAttributesFormSchema = (attributesData: ICategoryAttr | null) => {
-  if (!attributesData?.category_group_attributes) {
+export const createAttributesFormSchema = (
+  attributesData: ICategoryAttr | null,
+  isProductCreation: boolean = false
+) => {
+  if (!attributesData?.category_group_attributes || !isProductCreation) {
     return baseAttributesSchema;
   }
 

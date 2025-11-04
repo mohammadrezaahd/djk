@@ -18,12 +18,14 @@ interface ProductAttributesFormProps {
   data: ICategoryAttr;
   formData: { [key: string]: any };
   onFormDataChange: (fieldId: number, value: any) => void;
+  validationErrors?: { [key: string]: string };
 }
 
 const ProductAttributesForm: React.FC<ProductAttributesFormProps> = ({
   data,
   formData,
   onFormDataChange,
+  validationErrors = {},
 }) => {
   if (!data?.category_group_attributes) {
     return (
@@ -49,6 +51,7 @@ const ProductAttributesForm: React.FC<ProductAttributesFormProps> = ({
                     attr={attr}
                     value={formData[attr.id]}
                     onChange={onFormDataChange}
+                    error={validationErrors[attr.id.toString()]}
                   />
                 </Grid>
               ))}

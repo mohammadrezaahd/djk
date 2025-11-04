@@ -11,12 +11,18 @@ import {
 
 /**
  * Custom hook for attributes form validation using react-hook-form and yup
+ * @param attributesData - The attributes data
+ * @param currentFormData - Current form data
+ * @param title - Title from store
+ * @param description - Description from store
+ * @param isProductCreation - If true, validates all fields. If false, only title/description
  */
 export const useAttributesValidation = (
   attributesData: ICategoryAttr | null,
   currentFormData: { [key: string]: any } = {},
   title: string = '',
-  description: string = ''
+  description: string = '',
+  isProductCreation: boolean = false
 ) => {
   // Get default values
   const defaultValues = useMemo(() => {
@@ -29,8 +35,8 @@ export const useAttributesValidation = (
 
   // Create validation schema based on current attributes data
   const validationSchema = useMemo(() => {
-    return createAttributesFormSchema(attributesData);
-  }, [attributesData]);
+    return createAttributesFormSchema(attributesData, isProductCreation);
+  }, [attributesData, isProductCreation]);
 
   // Initialize react-hook-form
   const form = useForm<AttributesFormData>({

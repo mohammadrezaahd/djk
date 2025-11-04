@@ -64,6 +64,7 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
     skip,
     limit: pageSize,
     search_title: searchValue,
+
   });
 
   const galleryData = imagesData?.data?.list || [];

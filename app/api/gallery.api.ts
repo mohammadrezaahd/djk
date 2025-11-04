@@ -27,7 +27,7 @@ const getImages = async ({
   skip = 0,
   limit = 100,
   search_title = "",
-  source = "",
+  source = "app",
 }: {
   skip?: number;
   limit?: number;
