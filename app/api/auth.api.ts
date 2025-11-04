@@ -6,6 +6,10 @@ export interface LoginRequest {
   username: string;
   password: string;
 }
+export interface LoginNumberRequest {
+  username: string;
+  password: string;
+}
 
 export interface LoginResponse {
   access_token?: string;
@@ -25,6 +29,35 @@ export const loginApi = async (
 
   const response = await axios.post<LoginResponse>(
     `${apiUrl}/v1/auth/login`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    }
+  );
+
+  // ✅ ذخیره JWT در localStorage
+  console.log(response);
+  if (response.data.access_token) {
+    localStorage.setItem("access_token", response.data.access_token);
+  }
+
+  return response.data;
+};
+export const loginApiNumber = async (
+  credentials: LoginNumberRequest
+): Promise<LoginResponse> => {
+  const formData = new URLSearchParams();
+  formData.append("grant_type", "password");
+  formData.append("username", credentials.username);
+  formData.append("password", credentials.password);
+  formData.append("scope", "");
+  formData.append("client_id", "string");
+  // formData.append("client_secret", "********");
+
+  const response = await axios.post<LoginResponse>(
+    `${apiUrl}/v1/auth/verify_password`,
     formData,
     {
       headers: {

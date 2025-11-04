@@ -10,7 +10,7 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
-import { loginApi } from "~/api/auth.api";
+import { loginApiNumber } from "~/api/auth.api";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -56,7 +56,7 @@ const Auth = () => {
       setIsLoading(true);
 
       try {
-        const result = await loginApi({ username, password });
+        const result = await loginApiNumber({ username, password });
 
         setSuccessMessage("ورود موفقیت آمیز بود!");
         console.log("Login successful:", result);
@@ -68,7 +68,11 @@ const Auth = () => {
         // Here you can handle successful login (redirect, store token, etc.)
         // Example: localStorage.setItem('token', result.access_token);
       } catch (error: any) {
-        setApiError(error.response?.data?.message || error.message || "خطایی در ورود رخ داد");
+        setApiError(
+          error.response?.data?.message ||
+            error.message ||
+            "خطایی در ورود رخ داد"
+        );
         console.error("Login error:", error);
       } finally {
         setIsLoading(false);
