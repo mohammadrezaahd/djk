@@ -44,13 +44,13 @@ const CategorySelector = ({
               options={categories}
               getOptionLabel={(option) => option.title}
               value={selectedCategory}
-              onChange={(_, newValue) => {
-                onCategoryChange(newValue);
-              }}
-              onInputChange={(_, newInputValue) => {
-                onSearchChange(newInputValue);
-              }}
+              onChange={(_, newValue) => onCategoryChange(newValue)}
+              onInputChange={(_, newInputValue) =>
+                onSearchChange(newInputValue)
+              }
               loading={loadingCategories}
+              noOptionsText="قالب‌ای یافت نشد"
+              loadingText="در حال جستجو..."
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -58,8 +58,6 @@ const CategorySelector = ({
                   placeholder="جستجو در قالب‌ها..."
                 />
               )}
-              noOptionsText="قالب‌ای یافت نشد"
-              loadingText="در حال جستجو..."
             />
           </Grid>
         </Grid>

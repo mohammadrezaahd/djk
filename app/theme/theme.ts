@@ -201,16 +201,16 @@ export const theme = createTheme({
         },
       },
     },
-    MuiTextField: {
-      styleOverrides: {
-        root: {
-          "& .MuiOutlinedInput-root": {
-            borderRadius: shape.borderRadius,
-            backgroundColor: palette.background.paper,
-          },
-        },
-      },
-    },
+    // MuiTextField: {
+    //   styleOverrides: {
+    //     root: {
+    //       "& .MuiOutlinedInput-root": {
+    //         borderRadius: shape.borderRadius,
+    //         backgroundColor: palette.background.paper,
+    //       },
+    //     },
+    //   },
+    // },
     MuiSelect: {
       styleOverrides: {
         root: {
@@ -262,19 +262,19 @@ export const theme = createTheme({
         },
       },
     },
-    MuiAutocomplete: {
-      styleOverrides: {
-        root: {
-          "& .MuiOutlinedInput-root": {
-            padding: "9px",
-          },
-        },
-        paper: {
-          borderRadius: shape.borderRadius,
-          boxShadow: `0 0 2px 0 rgba(145, 158, 171, 0.2), 0 12px 24px -4px rgba(145, 158, 171, 0.12)`,
-        },
-      },
-    },
+    // MuiAutocomplete: {
+    //   styleOverrides: {
+    //     root: {
+    //       "& .MuiOutlinedInput-root": {
+    //         padding: "9px",
+    //       },
+    //     },
+    //     paper: {
+    //       borderRadius: shape.borderRadius,
+    //       boxShadow: `0 0 2px 0 rgba(145, 158, 171, 0.2), 0 12px 24px -4px rgba(145, 158, 171, 0.12)`,
+    //     },
+    //   },
+    // },
     MuiChip: {
       styleOverrides: {
         root: {
@@ -337,6 +337,56 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           zIndex: 1400,
+        },
+      },
+    },
+    MuiAutocomplete: {
+      styleOverrides: {
+        root: {
+          direction: "rtl",
+          "& .MuiAutocomplete-endAdornment": {
+            left: 8,
+            right: "auto",
+            top: "50%",
+            transform: "translateY(-50%) scaleX(-1)",
+          },
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          direction: "rtl",
+          "& .MuiInputLabel-root": {
+            right: 30,
+            left: "auto",
+            transformOrigin: "right top",
+          },
+          "& .MuiInputLabel-shrink": {
+            transform: "translate(15px, -9px) scale(0.75)",
+          },
+          "& .MuiOutlinedInput-root": {
+            direction: "rtl",
+            borderRadius: shape.borderRadius,
+            backgroundColor: palette.background.paper,
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderColor: palette.grey[300],
+              textAlign: "right",
+            },
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: palette.grey[500],
+            },
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: palette.primary.main,
+              borderWidth: 2,
+            },
+            "& legend": {
+              textAlign: "right",
+            },
+          },
+          "& input": {
+            textAlign: "right",
+          },
         },
       },
     },
