@@ -56,6 +56,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
 }) => {
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
+  const [isDragOver, setIsDragOver] = useState<boolean>(false);
 
   const addImageMutation = useAddImage();
   const editImageMutation = useEditImage();
@@ -116,20 +117,111 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      setValue('file', file);
-
-      // Create preview URL
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          setPreviewUrl(e.target.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
+      processFile(file);
     } else if (!isEditMode) {
       // Only clear preview if not in edit mode
       setPreviewUrl("");
       setValue('file', null);
+    }
+  };
+
+  const processFile = (file: File) => {
+    // Validate file type
+    const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"];
+    const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
+    
+    if (!allowedExtensions.includes(fileExtension)) {
+      enqueueSnackbar("فرمت فایل پشتیبانی نمی‌شود", { variant: "error" });
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      enqueueSnackbar("حجم فایل نباید بیشتر از 10 مگابایت باشد", { variant: "error" });
+      return;
+    }
+
+    setValue('file', file);
+
+    // Create preview URL
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target?.result) {
+        setPreviewUrl(e.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDragOver && !addImageMutation.isPending && !editImageMutation.isPending && !isLoadingEditData) {
+      setIsDragOver(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only set isDragOver to false if leaving the drop zone entirely
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX;
+    const y = e.clientY;
+    
+    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+      setIsDragOver(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    if (addImageMutation.isPending || editImageMutation.isPending || isLoadingEditData) {
+      return;
+    }
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      processFile(file);
+    }
+  };
+
+  // Global drag and drop handlers for the entire component
+  const handleGlobalDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDragOver && !addImageMutation.isPending && !editImageMutation.isPending && !isLoadingEditData) {
+      setIsDragOver(true);
+    }
+  };
+
+  const handleGlobalDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Check if we're leaving the paper container entirely
+    if (e.currentTarget === e.target) {
+      setIsDragOver(false);
+    }
+  };
+
+  const handleGlobalDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    if (addImageMutation.isPending || editImageMutation.isPending || isLoadingEditData) {
+      return;
+    }
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      processFile(file);
     }
   };
 
@@ -225,7 +317,39 @@ const FileUpload: React.FC<FileUploadProps> = ({
   };
 
   return (
-    <Paper elevation={1} sx={{ p: 3, mb: 3 }}>
+    <Paper 
+      elevation={isDragOver ? 4 : 1} 
+      sx={{ 
+        p: 3, 
+        mb: 3,
+        border: isDragOver ? "2px solid" : "1px solid transparent",
+        borderColor: isDragOver ? "primary.main" : "transparent",
+        bgcolor: isDragOver ? "primary.50" : "background.paper",
+        transition: "all 0.2s ease-in-out",
+        position: "relative",
+      }}
+      onDragOver={handleGlobalDragOver}
+      onDragLeave={handleGlobalDragLeave}
+      onDrop={handleGlobalDrop}
+    >
+      {/* Drag overlay */}
+      {isDragOver && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            bgcolor: "primary.main",
+            opacity: 0.1,
+            borderRadius: 1,
+            pointerEvents: "none",
+            zIndex: 1,
+          }}
+        />
+      )}
+      
       <Typography variant="h6" gutterBottom>
         {isEditMode ? "ویرایش تصویر" : "آپلود تصویر"}
       </Typography>
@@ -273,26 +397,34 @@ const FileUpload: React.FC<FileUploadProps> = ({
                   width: 150,
                   height: 150,
                   border: "2px dashed",
-                  borderColor: selectedFile 
-                    ? (errors.file ? "error.main" : "primary.main") 
-                    : (errors.file ? "error.main" : "grey.400"),
+                  borderColor: isDragOver 
+                    ? "primary.main"
+                    : selectedFile 
+                      ? (errors.file ? "error.main" : "primary.main") 
+                      : (errors.file ? "error.main" : "grey.400"),
                   borderRadius: 2,
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
                   cursor: (addImageMutation.isPending || editImageMutation.isPending || isLoadingEditData) ? "not-allowed" : "pointer",
-                  bgcolor: selectedFile 
-                    ? (errors.file ? "error.50" : "primary.50") 
-                    : (errors.file ? "error.50" : "grey.50"),
+                  bgcolor: isDragOver
+                    ? "primary.100"
+                    : selectedFile 
+                      ? (errors.file ? "error.50" : "primary.50") 
+                      : (errors.file ? "error.50" : "grey.50"),
                   transition: "all 0.2s ease-in-out",
                   position: "relative",
                   overflow: "hidden",
+                  transform: isDragOver ? "scale(1.02)" : "scale(1)",
                   "&:hover": {
                     borderColor: "primary.main",
                     bgcolor: "primary.50",
                   },
                 }}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
               >
                 {previewUrl ? (
                   <Box
@@ -312,22 +444,33 @@ const FileUpload: React.FC<FileUploadProps> = ({
                   <>
                     <CloudUploadIcon
                       sx={{
-                        fontSize: 40,
-                        color: selectedFile ? "primary.main" : "grey.500",
+                        fontSize: isDragOver ? 48 : 40,
+                        color: isDragOver 
+                          ? "primary.main" 
+                          : selectedFile 
+                            ? "primary.main" 
+                            : "grey.500",
                         mb: 1,
+                        transition: "all 0.2s ease-in-out",
                       }}
                     />
                     <Typography
                       variant="body2"
-                      color={selectedFile ? "primary.main" : "text.secondary"}
+                      color={isDragOver 
+                        ? "primary.main" 
+                        : selectedFile 
+                          ? "primary.main" 
+                          : "text.secondary"}
                       textAlign="center"
                       sx={{ px: 1 }}
                     >
-                      {selectedFile 
-                        ? "فایل انتخاب شده" 
-                        : isEditMode 
-                          ? "انتخاب فایل جدید (اختیاری)" 
-                          : "انتخاب فایل"}
+                      {isDragOver 
+                        ? "فایل را اینجا رها کنید" 
+                        : selectedFile 
+                          ? "فایل انتخاب شده" 
+                          : isEditMode 
+                            ? "انتخاب فایل جدید (اختیاری)" 
+                            : "کلیک کنید یا فایل را بکشید"}
                     </Typography>
                   </>
                 )}
@@ -470,7 +613,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
               <Typography variant="caption" color="text.secondary">
                 هیچ فایلی انتخاب نشده است.
                 <br />
-                برای انتخاب فایل، روی مربع بالا کلیک کنید.
+                برای انتخاب فایل، روی مربع بالا کلیک کنید یا فایل را بکشید و رها کنید.
               </Typography>
             )}
           </Box>

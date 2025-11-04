@@ -47,7 +47,7 @@ type TemplateType = "attributes" | "details";
 
 const TemplatesList = () => {
   // State for pagination and filters
-  const [templateType, setTemplateType] = useState<TemplateType>("attributes");
+  const [templateType, setTemplateType] = useState<TemplateType>("details");
   const [attributesPage, setAttributesPage] = useState<number>(1);
   const [detailsPage, setDetailsPage] = useState<number>(1);
   const [attributesLimit, setAttributesLimit] = useState<number>(10);
@@ -364,13 +364,13 @@ const TemplatesList = () => {
                 size="small"
                 dir="ltr"
               >
-                <ToggleButton value="details" aria-label="details">
-                  <DetailsIcon sx={{ mr: 1 }} />
-                  اطلاعات
-                </ToggleButton>
                 <ToggleButton value="attributes" aria-label="attributes">
                   <AttributesIcon sx={{ mr: 1 }} />
                   ویژگی‌ها
+                </ToggleButton>
+                <ToggleButton value="details" aria-label="details">
+                  <DetailsIcon sx={{ mr: 1 }} />
+                  اطلاعات
                 </ToggleButton>
               </ToggleButtonGroup>
 

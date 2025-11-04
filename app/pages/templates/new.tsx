@@ -64,7 +64,7 @@ const NewTemplatePage = () => {
 
   // Current form validity based on active tab
   const isCurrentFormValid =
-    activeTab === 0 ? isAttributesValid : isDetailsValid;
+    activeTab === 0 ? isDetailsValid : isAttributesValid;
 
   // React Query hooks
   const {
@@ -152,27 +152,6 @@ const NewTemplatePage = () => {
 
     try {
       if (activeTab === 0) {
-        // ذخیره ویژگی‌ها
-        // Validate required fields
-        if (!attributesStore.title || attributesStore.title.trim() === "") {
-          enqueueSnackbar("عنوان قالب الزامی است", { variant: "error" });
-          return;
-        }
-
-        const postData = getFinalAttributesObject({
-          attributes: attributesStore,
-        });
-
-        if (!postData) {
-          enqueueSnackbar("اطلاعات قالب در دسترس نیست", { variant: "error" });
-          return;
-        }
-
-        await saveAttributes(postData);
-        enqueueSnackbar("قالب ویژگی با موفقیت ذخیره شد", {
-          variant: "success",
-        });
-      } else if (activeTab === 1) {
         // ذخیره اطلاعات
         // Validate required fields
         if (
@@ -194,11 +173,32 @@ const NewTemplatePage = () => {
         enqueueSnackbar("قالب اطلاعات با موفقیت ذخیره شد", {
           variant: "success",
         });
+      } else if (activeTab === 1) {
+        // ذخیره ویژگی‌ها
+        // Validate required fields
+        if (!attributesStore.title || attributesStore.title.trim() === "") {
+          enqueueSnackbar("عنوان قالب الزامی است", { variant: "error" });
+          return;
+        }
+
+        const postData = getFinalAttributesObject({
+          attributes: attributesStore,
+        });
+
+        if (!postData) {
+          enqueueSnackbar("اطلاعات قالب در دسترس نیست", { variant: "error" });
+          return;
+        }
+
+        await saveAttributes(postData);
+        enqueueSnackbar("قالب ویژگی با موفقیت ذخیره شد", {
+          variant: "success",
+        });
       }
     } catch (error: any) {
       const errorMessage =
         error.message ||
-        (activeTab === 0 ? "خطا در ذخیره ویژگی‌ها" : "خطا در ذخیره اطلاعات");
+        (activeTab === 0 ? "خطا در ذخیره اطلاعات" : "خطا در ذخیره ویژگی‌ها");
       enqueueSnackbar(`خطا: ${errorMessage}`, { variant: "error" });
     }
   };
@@ -209,11 +209,11 @@ const NewTemplatePage = () => {
     // اگر دسته‌بندی انتخاب شده باشد، بر اساس تب جدید API کال کن
     if (selectedCategory) {
       if (newValue === 0) {
-        // تب ویژگی‌ها - attributes: true, details: false
-        setCategoryQueryOptions({ attributes: true, details: false });
-      } else if (newValue === 1) {
         // تب اطلاعات - attributes: false, details: true
         setCategoryQueryOptions({ attributes: false, details: true });
+      } else if (newValue === 1) {
+        // تب ویژگی‌ها - attributes: true, details: false
+        setCategoryQueryOptions({ attributes: true, details: false });
       }
     }
   };
@@ -221,8 +221,8 @@ const NewTemplatePage = () => {
   const handleCategoryChange = (category: ICategoryList | null) => {
     setSelectedCategory(category);
     if (category) {
-      // پیش‌فرض تب ویژگی‌ها - attributes: true, details: false
-      setCategoryQueryOptions({ attributes: true, details: false });
+      // پیش‌فرض تب اطلاعات - attributes: false, details: true
+      setCategoryQueryOptions({ attributes: false, details: true });
     } else {
       // ریست کردن store ها
       dispatch(resetAttributes());
@@ -268,22 +268,22 @@ const NewTemplatePage = () => {
                         onChange={handleTabChange}
                         aria-label="product template tabs"
                       >
-                        <Tab label="ویژگی ها" />
                         <Tab label="اطلاعات" />
+                        <Tab label="ویژگی ها" />
                       </Tabs>
                     </Box>
 
                     <Box sx={{ mt: 3 }}>
                       <Grid container spacing={3}>
                         {activeTab === 0 && (
-                          <AttributesTab
-                            onValidationChange={setIsAttributesValid}
+                          <DetailsTab
+                            onValidationChange={setIsDetailsValid}
                             isLoading={categoryLoading}
                           />
                         )}
                         {activeTab === 1 && (
-                          <DetailsTab
-                            onValidationChange={setIsDetailsValid}
+                          <AttributesTab
+                            onValidationChange={setIsAttributesValid}
                             isLoading={categoryLoading}
                           />
                         )}
@@ -303,8 +303,8 @@ const NewTemplatePage = () => {
                 isFormValid={isCurrentFormValid}
                 loading={
                   activeTab === 0
-                    ? categoryLoading || isAttributesSaving
-                    : categoryLoading || isDetailsSaving
+                    ? categoryLoading || isDetailsSaving
+                    : categoryLoading || isAttributesSaving
                 }
               />
             )}
