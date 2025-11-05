@@ -439,7 +439,7 @@ const TemplatesList = () => {
                           {item.title}
                         </Typography>
                       </TableCell>
-                      <TableCell>{item.category_id}</TableCell>
+                      <TableCell>{item.category_title}</TableCell>
                       <TableCell>
                         <Chip
                           label={item.source}

@@ -8,6 +8,9 @@ import {
   Alert,
   Divider,
 } from "@mui/material";
+import DynamicTitleBuilder from "./DynamicTitleBuilder";
+import type { ICategoryAttr } from "~/types/interfaces/attributes.interface";
+import type { ICategoryDetails } from "~/types/interfaces/details.interface";
 
 interface ProductInfoFormProps {
   title: string;
@@ -21,6 +24,8 @@ interface ProductInfoFormProps {
   stepValidationErrors?: {
     [key: string]: boolean;
   };
+  attributesData?: ICategoryAttr[];
+  detailsData?: ICategoryDetails[];
 }
 
 const ProductInfoForm: React.FC<ProductInfoFormProps> = ({
@@ -33,6 +38,8 @@ const ProductInfoForm: React.FC<ProductInfoFormProps> = ({
   isSubmitting = false,
   hasValidationErrors = false,
   stepValidationErrors = {},
+  attributesData = [],
+  detailsData = [],
 }) => {
   const [errors, setErrors] = useState<{ title?: string }>({});
 
@@ -72,21 +79,25 @@ const ProductInfoForm: React.FC<ProductInfoFormProps> = ({
       )}
 
       <Box sx={{ mb: 3 }}>
-        <TextField
-          label="عنوان محصول"
+        <DynamicTitleBuilder
           value={title}
-          onChange={(e) => {
-            onTitleChange(e.target.value);
-            if (errors.title && e.target.value.trim()) {
+          onChange={(value) => {
+            onTitleChange(value);
+            if (errors.title && value.trim()) {
               setErrors({ ...errors, title: undefined });
             }
           }}
-          fullWidth
-          required
-          error={!!errors.title}
-          helperText={errors.title}
-          sx={{ mb: 2 }}
+          attributesData={attributesData}
+          detailsData={detailsData}
+          label="عنوان محصول"
+          placeholder="عنوان محصول را وارد کنید..."
         />
+        
+        {errors.title && (
+          <Alert severity="error" sx={{ mt: 1, mb: 2 }}>
+            {errors.title}
+          </Alert>
+        )}
 
         <TextField
           label="توضیحات محصول"
@@ -96,6 +107,7 @@ const ProductInfoForm: React.FC<ProductInfoFormProps> = ({
           multiline
           rows={4}
           placeholder="توضیحات اختیاری در مورد محصول..."
+          sx={{ mt: 2 }}
         />
       </Box>
 

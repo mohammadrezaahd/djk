@@ -4,6 +4,7 @@ export interface ITemplateList {
   id: number;
   title: string;
   category_id: number;
+  category_title: string;
   source: TemplateSource;
 }
 

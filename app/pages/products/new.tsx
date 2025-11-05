@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Typography, Box, Paper, Alert } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "~/store";
@@ -45,6 +45,8 @@ import {
 } from "~/components/products";
 import type { ICategoryList } from "~/types/interfaces/categories.interface";
 import type { ITemplateList } from "~/types/interfaces/templates.interface";
+import type { ICategoryAttr } from "~/types/interfaces/attributes.interface";
+import type { ICategoryDetails } from "~/types/interfaces/details.interface";
 
 const NewProductPage = () => {
   const dispatch = useDispatch();
@@ -352,6 +354,28 @@ const NewProductPage = () => {
     }
   };
 
+  // Get all attributes data from selected templates for title builder
+  const getAllAttributesData = useMemo(() => {
+    return productState.selectedAttributesTemplates
+      .filter(template => template.data && Object.keys(template.data).length > 0)
+      .map(template => template.data)
+      .filter((data): data is ICategoryAttr => {
+        // Type guard to ensure we only get ICategoryAttr types
+        return 'category_group_attributes' in data;
+      });
+  }, [productState.selectedAttributesTemplates]);
+
+  // Get all details data from selected templates for title builder
+  const getAllDetailsData = useMemo(() => {
+    return productState.selectedDetailsTemplates
+      .filter(template => template.data && Object.keys(template.data).length > 0)
+      .map(template => template.data)
+      .filter((data): data is ICategoryDetails => {
+        // Type guard to ensure we only get ICategoryDetails types
+        return 'bind' in data;
+      });
+  }, [productState.selectedDetailsTemplates]);
+
   // Render current step
   const renderCurrentStep = () => {
     switch (productState.currentStep) {
@@ -459,6 +483,8 @@ const NewProductPage = () => {
             onBack={handleBackToAttributesForm}
             hasValidationErrors={!productInfoValidation.isValid}
             stepValidationErrors={productState.stepValidationErrors}
+            attributesData={getAllAttributesData}
+            detailsData={getAllDetailsData}
           />
         );
 
