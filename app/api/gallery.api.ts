@@ -5,21 +5,33 @@ import {
   authorizedGet,
   authorizedPost,
   authorizedPostFileWithQuery,
+  authorizedPostMultipleFilesWithQuery,
   authorizedPut,
 } from "~/utils/authorizeReq";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { IGallery } from "~/types/interfaces/gallery.interface";
 
 const addImage = (data: IPostImage) => {
-  return apiUtils<{ id: number }>(async () => {
-    const { file, ...queryParams } = data;
-    const response = await authorizedPostFileWithQuery(
-      "/v1/images/save",
-      file as File,
-      queryParams
-    );
-
-    return response.data;
+  return apiUtils<{ id: number } | { ids: number[] }>(async () => {
+    const { file, multipleUpload, ...queryParams } = data;
+    
+    if (multipleUpload && Array.isArray(file)) {
+      // Multiple file upload
+      const response = await authorizedPostMultipleFilesWithQuery(
+        "/v1/images/save-multiple",
+        file as File[],
+        queryParams
+      );
+      return response.data;
+    } else {
+      // Single file upload (existing logic)
+      const response = await authorizedPostFileWithQuery(
+        "/v1/images/save",
+        file as File,
+        queryParams
+      );
+      return response.data;
+    }
   });
 };
 

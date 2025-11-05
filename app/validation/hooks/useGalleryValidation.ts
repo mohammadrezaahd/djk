@@ -11,7 +11,7 @@ import {
 /**
  * Custom hook for gallery/image upload form validation using react-hook-form and yup
  */
-export const useGalleryValidation = (allowedType?: 'packaging' | 'product' | 'none', isEditMode: boolean = false) => {
+export const useGalleryValidation = (allowedType?: 'packaging' | 'product' | 'none', isEditMode: boolean = false, isMultipleUpload: boolean = false) => {
   // Get default values
   const defaultValues = getGalleryDefaultValues();
   
@@ -19,6 +19,9 @@ export const useGalleryValidation = (allowedType?: 'packaging' | 'product' | 'no
   if (allowedType && allowedType !== 'none') {
     defaultValues.type = allowedType;
   }
+
+  // Set multiple upload flag
+  defaultValues.multipleUpload = isMultipleUpload;
 
   // Choose schema based on mode
   const schema = isEditMode ? galleryEditFormSchema : galleryFormSchema;
@@ -37,6 +40,11 @@ export const useGalleryValidation = (allowedType?: 'packaging' | 'product' | 'no
     }
   }, [allowedType, form]);
 
+  // Update multipleUpload when prop changes
+  useEffect(() => {
+    form.setValue('multipleUpload', isMultipleUpload, { shouldValidate: true });
+  }, [isMultipleUpload, form]);
+
   // Check form validity
   const isFormValid = form.formState.isValid && !form.formState.isSubmitting;
   const hasErrors = Object.keys(form.formState.errors).length > 0;
@@ -47,6 +55,7 @@ export const useGalleryValidation = (allowedType?: 'packaging' | 'product' | 'no
     if (allowedType && allowedType !== 'none') {
       newDefaults.type = allowedType;
     }
+    newDefaults.multipleUpload = isMultipleUpload;
     form.reset(newDefaults);
   };
 

@@ -33,41 +33,58 @@ const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
 export const galleryFormSchema = yup.object({
   title: yup
     .string()
-    .required(messages.required)
-    .min(3, 'عنوان تصویر باید حداقل 3 کاراکتر باشد')
-    .max(100, 'عنوان تصویر باید حداکثر 100 کاراکتر باشد'),
+    .when('multipleUpload', {
+      is: true,
+      then: (schema) => schema.notRequired(),
+      otherwise: (schema) => schema
+        .required(messages.required)
+        .min(3, 'عنوان تصویر باید حداقل 3 کاراکتر باشد')
+        .max(100, 'عنوان تصویر باید حداکثر 100 کاراکتر باشد'),
+    }),
   
   type: yup
     .string()
     .oneOf(['packaging', 'product', 'none'], 'نوع تصویر انتخاب شده معتبر نیست')
     .required(messages.required),
   
+  multipleUpload: yup
+    .boolean()
+    .optional(),
+  
   file: yup
-    .mixed<File>()
+    .mixed<File | File[]>()
     .nullable()
     .test('fileRequired', 'انتخاب فایل الزامی است', function(value) {
-      // Custom validation that checks if we're in edit mode
-      // This will be overridden by the component logic
-      return true;
+      return !!value;
     })
     .test('fileSize', messages.fileSize, (value) => {
-      if (!value) return true; // Allow null/undefined for edit mode
-      const file = value as File;
-      // 5MB limit
-      return file.size <= 5 * 1024 * 1024;
+      if (!value) return true;
+      
+      const files = Array.isArray(value) ? value : [value];
+      // 5MB limit per file
+      return files.every(file => file.size <= 5 * 1024 * 1024);
     })
     .test('fileType', messages.fileType, (value) => {
-      if (!value) return true; // Allow null/undefined for edit mode
-      const file = value as File;
+      if (!value) return true;
       
-      // Check MIME type
-      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-        return false;
-      }
+      const files = Array.isArray(value) ? value : [value];
       
-      // Check file extension
-      const extension = '.' + file.name.split('.').pop()?.toLowerCase();
-      return ALLOWED_EXTENSIONS.includes(extension);
+      return files.every(file => {
+        // Check MIME type
+        if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+          return false;
+        }
+        
+        // Check file extension
+        const extension = '.' + file.name.split('.').pop()?.toLowerCase();
+        return ALLOWED_EXTENSIONS.includes(extension);
+      });
+    })
+    .test('fileCount', 'حداکثر 10 فایل مجاز است', (value) => {
+      if (!value) return true;
+      
+      const files = Array.isArray(value) ? value : [value];
+      return files.length <= 10;
     }),
 });
 
@@ -77,36 +94,55 @@ export const galleryFormSchema = yup.object({
 export const galleryEditFormSchema = yup.object({
   title: yup
     .string()
-    .required(messages.required)
-    .min(3, 'عنوان تصویر باید حداقل 3 کاراکتر باشد')
-    .max(100, 'عنوان تصویر باید حداکثر 100 کاراکتر باشد'),
+    .when('multipleUpload', {
+      is: true,
+      then: (schema) => schema.notRequired(),
+      otherwise: (schema) => schema
+        .required(messages.required)
+        .min(3, 'عنوان تصویر باید حداقل 3 کاراکتر باشد')
+        .max(100, 'عنوان تصویر باید حداکثر 100 کاراکتر باشد'),
+    }),
   
   type: yup
     .string()
     .oneOf(['packaging', 'product', 'none'], 'نوع تصویر انتخاب شده معتبر نیست')
     .required(messages.required),
   
+  multipleUpload: yup
+    .boolean()
+    .optional(),
+  
   file: yup
-    .mixed<File>()
+    .mixed<File | File[]>()
     .nullable()
     .test('fileSize', messages.fileSize, (value) => {
       if (!value) return true; // Allow null/undefined for edit mode
-      const file = value as File;
-      // 5MB limit
-      return file.size <= 5 * 1024 * 1024;
+      
+      const files = Array.isArray(value) ? value : [value];
+      // 5MB limit per file
+      return files.every(file => file.size <= 5 * 1024 * 1024);
     })
     .test('fileType', messages.fileType, (value) => {
       if (!value) return true; // Allow null/undefined for edit mode
-      const file = value as File;
       
-      // Check MIME type
-      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-        return false;
-      }
+      const files = Array.isArray(value) ? value : [value];
       
-      // Check file extension
-      const extension = '.' + file.name.split('.').pop()?.toLowerCase();
-      return ALLOWED_EXTENSIONS.includes(extension);
+      return files.every(file => {
+        // Check MIME type
+        if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+          return false;
+        }
+        
+        // Check file extension
+        const extension = '.' + file.name.split('.').pop()?.toLowerCase();
+        return ALLOWED_EXTENSIONS.includes(extension);
+      });
+    })
+    .test('fileCount', 'حداکثر 10 فایل مجاز است', (value) => {
+      if (!value) return true;
+      
+      const files = Array.isArray(value) ? value : [value];
+      return files.length <= 10;
     }),
 });
 
@@ -116,7 +152,8 @@ export const galleryEditFormSchema = yup.object({
 export type GalleryFormData = {
   title: string;
   type: 'packaging' | 'product' | 'none';
-  file: File | null;
+  file: File | File[] | null;
+  multipleUpload?: boolean;
 };
 
 /**
@@ -127,6 +164,7 @@ export const getGalleryDefaultValues = (): GalleryFormData => {
     title: '',
     type: 'none',
     file: null,
+    multipleUpload: false,
   };
 };
 
@@ -135,11 +173,12 @@ export const getGalleryDefaultValues = (): GalleryFormData => {
  */
 export const convertGalleryFormToApi = (formData: GalleryFormData) => {
   return {
-    title: formData.title.trim(),
+    title: formData.multipleUpload ? '' : formData.title.trim(),
     packaging: formData.type === 'packaging',
     product: formData.type === 'product',
     source: 'app' as any,
     tag: 'upload',
-    file: formData.file as File,
+    file: formData.file as File | File[],
+    multipleUpload: formData.multipleUpload || false,
   };
 };

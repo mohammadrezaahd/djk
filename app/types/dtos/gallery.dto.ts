@@ -6,5 +6,6 @@ export interface IPostImage {
   product: boolean;
   source: TemplateSource;
   tag: string;
-  file: File;
+  file: File | File[];
+  multipleUpload?: boolean; // Flag to indicate if this is multiple upload
 }

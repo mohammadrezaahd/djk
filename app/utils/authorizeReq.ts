@@ -75,6 +75,40 @@ const authorizedPostFileWithQuery = async <T = any>(
   return axios.post(urlWithQuery, formData, authConfig);
 };
 
+// تابع کمکی برای Multiple File Upload با Query Parameters
+const authorizedPostMultipleFilesWithQuery = async <T = any>(
+  endpoint: string,
+  files: File[],
+  queryParams: Record<string, string | boolean>,
+  config?: AxiosRequestConfig
+): Promise<AxiosResponse<T>> => {
+  const token = getToken();
+  
+  // Create FormData for multiple files
+  const formData = new FormData();
+  files.forEach((file, index) => {
+    formData.append('files', file); // Use 'files' as field name for multiple files
+  });
+  
+  // Create query string from parameters
+  const queryString = Object.entries(queryParams)
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+    .join('&');
+  
+  const urlWithQuery = `${apiUrl}${endpoint}?${queryString}`;
+  
+  const authConfig: AxiosRequestConfig = {
+    ...config,
+    headers: {
+      ...(token && { Authorization: `Bearer ${token}` }),
+      // Don't set Content-Type for FormData - let browser set it with boundary
+      ...config?.headers,
+    },
+  };
+  
+  return axios.post(urlWithQuery, formData, authConfig);
+};
+
 // تابع کمکی برای GET request با Authorization
 const authorizedGet = async <T = any>(
   endpoint: string,
@@ -119,6 +153,7 @@ export {
   createAuthConfig,
   authorizedPost,
   authorizedPostFileWithQuery,
+  authorizedPostMultipleFilesWithQuery,
   authorizedGet,
   authorizedPut,
   authorizedDelete,
