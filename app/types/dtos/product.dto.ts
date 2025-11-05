@@ -9,7 +9,7 @@ export interface IPostProduct {
   details: { list: ICategoryDetails[] };
   attributes: { list: ICategoryAttr[] };
   variant_data: { [key: string]: any };
-  images: string[];
+  images: number[];
   source: TemplateSource;
   tag: string;
 }

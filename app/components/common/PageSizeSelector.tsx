@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-} from "@mui/material";
+import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
 
 interface PageSizeSelectorProps {
@@ -38,21 +33,21 @@ const PageSizeSelector: React.FC<PageSizeSelectorProps> = ({
               borderRadius: 2,
               mt: 1,
               maxHeight: 240,
-              overflow: 'auto',
+              overflow: "auto",
             },
           },
           anchorOrigin: {
-            vertical: 'bottom',
-            horizontal: 'left',
+            vertical: "bottom",
+            horizontal: "left",
           },
           transformOrigin: {
-            vertical: 'top',
-            horizontal: 'left',
+            vertical: "top",
+            horizontal: "left",
           },
           slotProps: {
             backdrop: {
               sx: {
-                backgroundColor: 'transparent',
+                backgroundColor: "transparent",
               },
             },
           },

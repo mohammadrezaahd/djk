@@ -19,6 +19,7 @@ export enum FormStep {
   DETAILS_FORM = "details_form",
   ATTRIBUTES_SELECTION = "attributes_selection",
   ATTRIBUTES_FORM = "attributes_form",
+  IMAGE_SELECTION = "image_selection",
   PRODUCT_INFO = "product_info"
 }
 
@@ -36,6 +37,9 @@ interface ProductState {
   selectedAttributesTemplates: SelectedTemplate[];
   activeAttributesTemplateIndex: number;
   
+  // Images step
+  selectedImages: number[];
+  
   // Final product data
   productTitle: string;
   productDescription: string;
@@ -45,6 +49,7 @@ interface ProductState {
   stepValidationErrors: {
     [FormStep.DETAILS_FORM]: boolean;
     [FormStep.ATTRIBUTES_FORM]: boolean;
+    [FormStep.IMAGE_SELECTION]: boolean;
     [FormStep.PRODUCT_INFO]: boolean;
   };
 }
@@ -61,6 +66,8 @@ const initialState: ProductState = {
   selectedAttributesTemplates: [],
   activeAttributesTemplateIndex: 0,
   
+  selectedImages: [],
+  
   productTitle: "",
   productDescription: "",
   finalProductData: null,
@@ -68,6 +75,7 @@ const initialState: ProductState = {
   stepValidationErrors: {
     [FormStep.DETAILS_FORM]: false,
     [FormStep.ATTRIBUTES_FORM]: false,
+    [FormStep.IMAGE_SELECTION]: false,
     [FormStep.PRODUCT_INFO]: false,
   },
 };
@@ -183,6 +191,11 @@ const productSlice = createSlice({
 
     setProductDescription: (state, action: PayloadAction<string>) => {
       state.productDescription = action.payload;
+    },
+
+    // Images management
+    setSelectedImages: (state, action: PayloadAction<number[]>) => {
+      state.selectedImages = action.payload;
     },
 
     // Update selected template data  
@@ -361,7 +374,7 @@ const productSlice = createSlice({
         details: { list: detailsList },
         attributes: { list: attributesList },
         variant_data: { test: "" }, // Default as requested
-        images: [], // Default as requested  
+        images: state.selectedImages, // Use selected images
         source: TemplateSource.App, // Default as requested
         tag: "test" // Default as requested
       };
@@ -396,6 +409,7 @@ export const {
   updateAttributesTemplateFormData,
   setProductTitle,
   setProductDescription,
+  setSelectedImages,
   updateSelectedTemplateData,
   generateFinalProductData,
   resetProduct,

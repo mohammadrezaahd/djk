@@ -19,6 +19,7 @@ interface FormStepsProps {
   stepValidationErrors: {
     [FormStep.DETAILS_FORM]: boolean;
     [FormStep.ATTRIBUTES_FORM]: boolean;
+    [FormStep.IMAGE_SELECTION]: boolean;
     [FormStep.PRODUCT_INFO]: boolean;
   };
 }
@@ -89,6 +90,7 @@ const FormSteps: React.FC<FormStepsProps> = ({ currentStep, stepValidationErrors
     { key: FormStep.DETAILS_FORM, label: "تکمیل فرم‌های اطلاعات" },
     { key: FormStep.ATTRIBUTES_SELECTION, label: "انتخاب قالب‌های ویژگی" },
     { key: FormStep.ATTRIBUTES_FORM, label: "تکمیل فرم‌های ویژگی" },
+    { key: FormStep.IMAGE_SELECTION, label: "انتخاب تصاویر" },
     { key: FormStep.PRODUCT_INFO, label: "اطلاعات محصول" },
   ];
 

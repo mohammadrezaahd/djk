@@ -12,4 +12,5 @@ export interface ITemplateBase {
   id: number;
   title: string;
   description?: string;
+  images: number[];
 }

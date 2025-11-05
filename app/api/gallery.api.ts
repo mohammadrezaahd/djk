@@ -14,7 +14,7 @@ import type { IGallery } from "~/types/interfaces/gallery.interface";
 const addImage = (data: IPostImage) => {
   return apiUtils<{ id: number } | { ids: number[] }>(async () => {
     const { file, multipleUpload, ...queryParams } = data;
-    
+
     if (multipleUpload && Array.isArray(file)) {
       // Multiple file upload
       const response = await authorizedPostMultipleFilesWithQuery(
@@ -71,6 +71,13 @@ const getImage = async (id: number) => {
 const editImage = async ({ id, data }: { id: number; data: IPostImage }) => {
   return apiUtils<{ status: string }>(async () => {
     const response = await authorizedPut(`/v1/images/edit/${id}`, data);
+    return response.data;
+  });
+};
+
+const getSelectedImages = async (data: number[]) => {
+  return apiUtils<{ list: IGallery[] }>(async () => {
+    const response = await authorizedPost(`/v1/images/get/multi`, data);
     return response.data;
   });
 };
@@ -144,5 +151,14 @@ export const useEditImage = () => {
     onError: (error) => {
       console.error("❌ Error modifying image:", error);
     },
+  });
+};
+
+export const useSelectedImages = (data: number[]) => {
+  return useQuery({
+    queryKey: ["images", data],
+    queryFn: () => getSelectedImages(data),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 };
