@@ -42,26 +42,28 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
   // Extract unique attributes from all selected templates
   const badges = useMemo((): TagItem[] => {
     const allBadges: TagItem[] = [];
-    
+
     // Extract attributes
     const uniqueAttributes = new Map<number, AttributeTag>();
     attributesData.forEach((templateData) => {
       if (templateData?.category_group_attributes) {
-        Object.values(templateData.category_group_attributes).forEach((categoryData) => {
-          Object.values(categoryData.attributes).forEach((attr: IAttr) => {
-            if (!uniqueAttributes.has(attr.id)) {
-              uniqueAttributes.set(attr.id, {
-                id: attr.id,
-                title: attr.title,
-                type: 'attribute'
-              });
-            }
-          });
-        });
+        Object.values(templateData.category_group_attributes).forEach(
+          (categoryData) => {
+            Object.values(categoryData.attributes).forEach((attr: IAttr) => {
+              if (!uniqueAttributes.has(attr.id)) {
+                uniqueAttributes.set(attr.id, {
+                  id: attr.id,
+                  title: attr.title,
+                  type: "attribute",
+                });
+              }
+            });
+          }
+        );
       }
     });
     allBadges.push(...Array.from(uniqueAttributes.values()));
-    
+
     // Extract selected brands from details
     const uniqueBrands = new Map<string, DetailTag>();
     detailsData.forEach((detailData) => {
@@ -70,15 +72,15 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
           if (brand.selected && !uniqueBrands.has(brand.id)) {
             uniqueBrands.set(brand.id, {
               id: brand.id,
-              title: brand.text,
-              type: 'detail'
+              title: "brand",
+              type: "detail",
             });
           }
         });
       }
     });
     allBadges.push(...Array.from(uniqueBrands.values()));
-    
+
     return allBadges;
   }, [attributesData, detailsData]);
 
@@ -87,12 +89,12 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
     const tagRegex = /\{([^}]+)\}/g;
     const matches = [];
     let match;
-    
+
     while ((match = tagRegex.exec(value)) !== null) {
       const id = match[1]; // Keep as string to handle both number and string IDs
       matches.push(id);
     }
-    
+
     return matches;
   }, [value]);
 
@@ -160,21 +162,21 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
     range.setEndAfter(badgeContainer);
     sel.removeAllRanges();
     sel.addRange(range);
-    
+
     // Update value immediately after adding badge
     handleInput();
   };
 
   const handleInput = () => {
     console.log("content:", ref.current?.innerText);
-    
+
     if (!ref.current) return;
-    
+
     // Extract value from content
     let newValue = "";
     const children = Array.from(ref.current.childNodes);
-    
-    children.forEach(node => {
+
+    children.forEach((node) => {
       if (node.nodeType === Node.TEXT_NODE) {
         newValue += node.textContent || "";
       } else if (node.nodeType === Node.ELEMENT_NODE) {
@@ -185,7 +187,7 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
         }
       }
     });
-    
+
     console.log("extracted value:", newValue);
     onChange(newValue);
   };
@@ -194,7 +196,7 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
       <Typography variant="h6" gutterBottom>
         {label}
       </Typography>
-      
+
       <Box
         ref={ref}
         contentEditable
@@ -210,13 +212,13 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
           "&:empty:before": {
             content: `"${placeholder}"`,
             color: "#999",
-            fontStyle: "italic"
-          }
+            fontStyle: "italic",
+          },
         }}
       />
       <Box sx={{ mt: 2, display: "flex", gap: 1, flexWrap: "wrap" }}>
         {badges
-          .filter(b => !usedTags.includes(b.id.toString()))
+          .filter((b) => !usedTags.includes(b.id.toString()))
           .map((b) => (
             <Chip
               key={`${b.type}-${b.id}`}

@@ -22,12 +22,14 @@ import {
   setDescription,
   updateFormField as updateAttributeFormField,
   getFinalAttributesObject,
+  setImages as setAttributesImages,
 } from "~/store/slices/attributesSlice";
 import {
   setDetailsData,
   resetDetails,
   updateFormField,
   getFinalDetailsObject,
+  setImages as setDetailsImages,
 } from "~/store/slices/detailsSlice";
 import ActionButtons from "~/components/templates/ActionButtons";
 import AttributesTab from "~/components/templates/attributes/AttributesTab";
@@ -105,6 +107,11 @@ const EditTemplatePage = () => {
       // Set template data in store
       dispatch(setTitle(attributeData.data.title));
       dispatch(setDescription(attributeData.data.description || ""));
+      
+      // Load images from template
+      if (attributeData.data.images && Array.isArray(attributeData.data.images)) {
+        dispatch(setAttributesImages(attributeData.data.images));
+      }
 
       // Load the category data for this template if it has data_json
       if (attributeData.data.data_json) {
@@ -177,6 +184,11 @@ const EditTemplatePage = () => {
     ) {
       // Set template data in store
       console.log("🔍 Setting details title:", detailData.data.title);
+
+      // Load images from template
+      if (detailData.data.images && Array.isArray(detailData.data.images)) {
+        dispatch(setDetailsImages(detailData.data.images));
+      }
 
       // Use setTimeout to ensure store update happens after current execution
       setTimeout(() => {
