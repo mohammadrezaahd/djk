@@ -36,6 +36,14 @@ export interface IDetailsBind {
   dimension_config?: any;
   category_mefa_type: "general" | "specified";
   category_product_types: IBindCPT[];
+  model: IStringField;
+  package_width: INumberField;
+  package_height: INumberField;
+  package_length: INumberField;
+  package_weight: INumberField;
+  disadvantages: IListField;
+  advantages: IListField;
+  description: IStringField;
 }
 
 export interface IBindBrand {
@@ -125,4 +133,30 @@ export interface ICDThemes {
 
 export interface IGetDetailTemplate extends ITemplateBase {
   data_json: ICategoryDetails;
+}
+
+// Fields
+
+export enum FieldType {
+  String = "string",
+  Number = "number",
+  List = "list",
+}
+
+export interface IStringField {
+  type: FieldType.String;
+  require: boolean;
+  value?: string;
+}
+
+export interface INumberField {
+  type: FieldType.Number;
+  require: boolean;
+  value?: number;
+}
+
+export interface IListField {
+  type: FieldType.List;
+  require: boolean;
+  value?: string[];
 }

@@ -181,6 +181,56 @@ export const createDetailsFormSchema = (
     });
   }
 
+  // Model validation
+  if (bind.model) {
+    dynamicFields.model = bind.model.require
+      ? yup.string().required(messages.required)
+      : yup.string();
+  }
+
+  // Package dimensions validation
+  if (bind.package_width) {
+    dynamicFields.package_width = bind.package_width.require
+      ? yup.number().required(messages.required)
+      : yup.number();
+  }
+  if (bind.package_height) {
+    dynamicFields.package_height = bind.package_height.require
+      ? yup.number().required(messages.required)
+      : yup.number();
+  }
+  if (bind.package_length) {
+    dynamicFields.package_length = bind.package_length.require
+      ? yup.number().required(messages.required)
+      : yup.number();
+  }
+  if (bind.package_weight) {
+    dynamicFields.package_weight = bind.package_weight.require
+      ? yup.number().required(messages.required)
+      : yup.number();
+  }
+
+  // Disadvantages validation
+  if (bind.disadvantages) {
+    dynamicFields.disadvantages = bind.disadvantages.require
+      ? yup.array().of(yup.string()).required(messages.required)
+      : yup.array().of(yup.string());
+  }
+
+  // Advantages validation
+  if (bind.advantages) {
+    dynamicFields.advantages = bind.advantages.require
+      ? yup.array().of(yup.string()).required(messages.required)
+      : yup.array().of(yup.string());
+  }
+
+  // Description validation (override base if required)
+  if (bind.description) {
+    dynamicFields.description = bind.description.require
+      ? yup.string().required(messages.required).max(1000, "توضیحات باید حداکثر 1000 کاراکتر باشد")
+      : yup.string().max(1000, "توضیحات باید حداکثر 1000 کاراکتر باشد");
+  }
+
   return baseDetailsSchema.shape(dynamicFields);
 };
 
@@ -202,6 +252,13 @@ export type DetailsFormData = {
   id_type?: "general" | "custom";
   general_mefa_id?: string;
   custom_id?: string;
+  model?: string;
+  package_width?: number;
+  package_height?: number;
+  package_length?: number;
+  package_weight?: number;
+  disadvantages?: string[];
+  advantages?: string[];
 };
 
 /**
@@ -241,6 +298,13 @@ export const getDetailsDefaultValues = (
     currentFormData.id_type || bind.category_mefa_type || "general";
   defaultValues.general_mefa_id = currentFormData.general_mefa_id || "";
   defaultValues.custom_id = currentFormData.custom_id || "";
+  defaultValues.model = currentFormData.model || bind.model?.value || "";
+  defaultValues.package_width = currentFormData.package_width ?? bind.package_width?.value ?? undefined;
+  defaultValues.package_height = currentFormData.package_height ?? bind.package_height?.value ?? undefined;
+  defaultValues.package_length = currentFormData.package_length ?? bind.package_length?.value ?? undefined;
+  defaultValues.package_weight = currentFormData.package_weight ?? bind.package_weight?.value ?? undefined;
+  defaultValues.disadvantages = currentFormData.disadvantages || bind.disadvantages?.value || [];
+  defaultValues.advantages = currentFormData.advantages || bind.advantages?.value || [];
 
   console.log("🔍 getDetailsDefaultValues - final defaultValues:", defaultValues);
   

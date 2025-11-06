@@ -20,6 +20,8 @@ interface DetailsFieldProps {
   showBrandLogo?: boolean;
   isRadioGroup?: boolean;
   isTextField?: boolean;
+  isNumberField?: boolean;
+  isListField?: boolean;
   isObjectData?: boolean;
   required?: boolean;
   multiline?: boolean;
@@ -38,6 +40,8 @@ const DetailsField = ({
   showBrandLogo = false,
   isRadioGroup = false,
   isTextField = false,
+  isNumberField = false,
+  isListField = false,
   isObjectData = false,
   required = false,
   multiline = false,
@@ -56,6 +60,43 @@ const DetailsField = ({
         placeholder={placeholder}
         value={value || ""}
         onChange={(e) => onChange(fieldName, e.target.value)}
+        required={required}
+        helperText={error || helperText}
+        error={!!error}
+      />
+    );
+  }
+
+  if (isNumberField) {
+    return (
+      <TextField
+        fullWidth
+        type="number"
+        label={label + (required ? " *" : "")}
+        placeholder={placeholder}
+        value={value || ""}
+        onChange={(e) => onChange(fieldName, parseFloat(e.target.value) || 0)}
+        required={required}
+        helperText={error || helperText}
+        error={!!error}
+      />
+    );
+  }
+
+  if (isListField) {
+    const listValue = Array.isArray(value) ? value.join('\n') : value || "";
+    return (
+      <TextField
+        fullWidth
+        multiline
+        rows={rows || 3}
+        label={label + (required ? " *" : "")}
+        placeholder={placeholder || "هر آیتم را در یک خط وارد کنید"}
+        value={listValue}
+        onChange={(e) => {
+          const lines = e.target.value.split('\n').map(line => line.trim()).filter(line => line);
+          onChange(fieldName, lines);
+        }}
         required={required}
         helperText={error || helperText}
         error={!!error}
