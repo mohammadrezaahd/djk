@@ -1,9 +1,5 @@
 import React from "react";
-import {
-  Box,
-  Pagination,
-  Typography,
-} from "@mui/material";
+import { Box, Pagination, Typography } from "@mui/material";
 
 interface PaginationControlsProps {
   currentPage: number;
@@ -47,9 +43,6 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
         showLastButton={showLastButton}
         disabled={disabled}
       />
-      <Typography variant="body2" color="text.secondary">
-        صفحه {currentPage} از {totalPages}
-      </Typography>
     </Box>
   );
 };

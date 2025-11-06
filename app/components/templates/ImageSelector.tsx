@@ -7,17 +7,11 @@ import {
   DialogContent,
   DialogActions,
   Typography,
-  Grid,
-  Card,
-  CardMedia,
-  IconButton,
-  Chip,
   Alert,
 } from "@mui/material";
 import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { useImages } from "~/api/gallery.api";
-import { MediaManager } from "~/components/MediaManager";
+import { MediaManager, MediaGrid } from "~/components/MediaManager";
 import { SearchInput } from "~/components/common";
 import type { SelectChangeEvent } from "@mui/material";
 import type { IGallery } from "~/types/interfaces/gallery.interface";
@@ -53,6 +47,9 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
   const [pageSize, setPageSize] = useState<number>(12);
   const [searchValue, setSearchValue] = useState<string>("");
   const [tempSelectedImages, setTempSelectedImages] = useState<string[]>([]);
+
+  const [previewPage, setPreviewPage] = useState<number>(1);
+  const [previewPageSize, setPreviewPageSize] = useState<number>(8);
 
   const skip = (page - 1) * pageSize;
 
@@ -123,26 +120,55 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
     setOpen(false);
   };
 
-  const handleRemoveImage = (imageId: number) => {
-    const newImages = selectedImages.filter((id) => id !== imageId);
+  const handleRemoveImage = (imageId: string) => {
+    const numericId = parseInt(imageId);
+    const newImages = selectedImages.filter((id) => id !== numericId);
     onImagesChange(newImages);
+    
+    // Check if current page becomes empty after deletion
+    const newTotalItems = newImages.length;
+    const totalPages = Math.ceil(newTotalItems / previewPageSize);
+    if (previewPage > totalPages && totalPages > 0) {
+      setPreviewPage(totalPages);
+    }
   };
 
-  // Get selected image details for preview
-  const selectedImageDetails = selectedImages
+  const handlePreviewPageChange = (
+    event: React.ChangeEvent<unknown>,
+    newPage: number
+  ) => {
+    setPreviewPage(newPage);
+  };
+
+  const handlePreviewPageSizeChange = (event: SelectChangeEvent<number>) => {
+    const newPageSize = event.target.value as number;
+    setPreviewPageSize(newPageSize);
+    setPreviewPage(1);
+  };
+
+  // Get selected image details for preview - convert to MediaFile format
+  const selectedImageFiles: IMediaFile[] = selectedImages
     .map((id) => {
       const item = galleryData.find((img: IGallery) => img.id === id);
       return item
         ? {
-            id: item.id,
-            title: item.title,
-            image_url: fixImageUrl(item.image_url),
+            _id: item.id.toString(),
+            filename: item.title,
+            filepath: fixImageUrl(item.image_url),
+            size: 0,
+            mimetype: "image/jpeg",
+            createdAt: new Date().toISOString(),
             packaging: item.packaging,
             product: item.product,
           }
         : null;
     })
-    .filter(Boolean);
+    .filter(Boolean) as IMediaFile[];
+
+  // Slice the media files for current page
+  const startIndex = (previewPage - 1) * previewPageSize;
+  const endIndex = startIndex + previewPageSize;
+  const paginatedSelectedFiles = selectedImageFiles.slice(startIndex, endIndex);
 
   return (
     <Box>
@@ -165,81 +191,18 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
           <Typography variant="subtitle2" gutterBottom>
             تصاویر انتخاب شده:
           </Typography>
-          <Grid container spacing={2}>
-            {selectedImageDetails.map(
-              (image) =>
-                image && (
-                  <Grid key={image.id} size={{ xs: 6, sm: 4, md: 3 }}>
-                    <Card sx={{ position: "relative" }}>
-                      <CardMedia
-                        component="img"
-                        height="100"
-                        image={image.image_url}
-                        alt={image.title}
-                        sx={{ objectFit: "cover" }}
-                      />
-
-                      {/* Image type badge */}
-                      <Chip
-                        label={
-                          image.packaging
-                            ? "عکس دسته‌بندی"
-                            : image.product
-                              ? "عکس محصول"
-                              : "عکس عمومی"
-                        }
-                        size="small"
-                        color={
-                          image.packaging
-                            ? "secondary"
-                            : image.product
-                              ? "primary"
-                              : "default"
-                        }
-                        sx={{
-                          position: "absolute",
-                          top: 4,
-                          right: 4,
-                          fontSize: "0.6rem",
-                        }}
-                      />
-
-                      {/* Remove button */}
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => handleRemoveImage(image.id)}
-                        sx={{
-                          position: "absolute",
-                          top: 4,
-                          left: 4,
-                          bgcolor: "rgba(255, 255, 255, 0.9)",
-                          "&:hover": {
-                            bgcolor: "rgba(255, 255, 255, 1)",
-                          },
-                        }}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-
-                      <Box sx={{ p: 1 }}>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            display: "block",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {image.title}
-                        </Typography>
-                      </Box>
-                    </Card>
-                  </Grid>
-                )
-            )}
-          </Grid>
+          <MediaGrid
+            media={paginatedSelectedFiles}
+            loading={false}
+            currentPage={previewPage}
+            totalItems={selectedImageFiles.length}
+            pageSize={previewPageSize}
+            onPageChange={handlePreviewPageChange}
+            onPageSizeChange={handlePreviewPageSizeChange}
+            pageSizeOptions={[4, 8, 12, 16]}
+            onDelete={handleRemoveImage}
+            selectionMode={false}
+          />
         </Box>
       )}
 
