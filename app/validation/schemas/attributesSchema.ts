@@ -84,8 +84,8 @@ const createInputValidation = (attr: IAttr) => {
       validation = validation.required(messages.required);
     }
     
-    // Add positive number validation if needed
-    validation = validation.min(0, messages.positiveNumber);
+    // Enforce non-negative number (>= 0)
+    validation = validation.min(0, 'عدد باید صفر یا بزرگتر باشد');
   } else {
     // Text input
     validation = yup.string();

@@ -9,6 +9,7 @@ import type {
   IBindFakeReason,
   ICDThemes,
 } from "~/types/interfaces/details.interface";
+import { FieldType } from "~/types/interfaces/details.interface";
 
 /**
  * Validation messages in Persian
@@ -20,6 +21,8 @@ const messages = {
   invalidOption: "گزینه انتخاب شده معتبر نیست",
   min: "حداقل ${min} کاراکتر وارد کنید",
   max: "حداکثر ${max} کاراکتر مجاز است",
+  number: "مقدار وارد شده باید عدد باشد",
+  minNumber: "عدد باید صفر یا بزرگتر باشد",
 };
 
 /**
@@ -91,36 +94,21 @@ export const createDetailsFormSchema = (
     dynamicFields.is_fake_product = yup.boolean();
   }
 
+  // Generic: if detailsData contains numeric fields, ensure they are numbers >= 0
+  Object.keys(detailsData || {}).forEach((key) => {
+    const val: any = (detailsData as any)[key];
+    if (val && typeof val === "object" && (val.type === FieldType.Number || val.type === "number")) {
+      dynamicFields[key] = yup
+        .number()
+        .typeError(messages.number)
+        .min(0, messages.minNumber || "عدد باید مثبت باشد");
+      if (val.require) dynamicFields[key] = dynamicFields[key].required(messages.required);
+    }
+  });
+
   // Brand validation
   if (bind.brands && bind.brands.length > 0) {
     dynamicFields.brand = createOptionValidation(bind.brands, true, "id");
-  }
-
-  // Status validation
-  if (bind.statuses && bind.statuses.length > 0) {
-    dynamicFields.status = createOptionValidation(
-      bind.statuses,
-      true,
-      "value"
-    );
-  }
-
-  // Platform validation
-  if (bind.platforms && bind.platforms.length > 0) {
-    dynamicFields.platform = createOptionValidation(
-      bind.platforms,
-      true,
-      "value"
-    );
-  }
-
-  // Product class validation
-  if (bind.product_classes && bind.product_classes.length > 0) {
-    dynamicFields.product_class = createOptionValidation(
-      bind.product_classes,
-      true,
-      "value"
-    );
   }
 
   // Category product types validation
@@ -131,24 +119,6 @@ export const createDetailsFormSchema = (
       "value"
     );
   }
-
-  // Fake reasons validation
-  if (bind.fake_reasons && bind.fake_reasons.length > 0) {
-    dynamicFields.fake_reason = createOptionValidation(
-      bind.fake_reasons,
-      true,
-      "text"
-    );
-  }
-
-  // Theme validation
-  // if (bind.category_data?.themes && bind.category_data.themes.length >= 0) {
-  //   dynamicFields.theme = createOptionValidation(
-  //     bind.category_data.themes,
-  //     true,
-  //     "id"
-  //   );
-  // }
 
   // ID type validation
   if (bind.general_mefa && Object.keys(bind.general_mefa).length > 0) {
@@ -181,54 +151,11 @@ export const createDetailsFormSchema = (
     });
   }
 
-  // Model validation
-  if (bind.model) {
-    dynamicFields.model = bind.model.require
+  // Brand model validation
+  if (bind.brand_model) {
+    dynamicFields.brand_model = bind.brand_model.require
       ? yup.string().required(messages.required)
       : yup.string();
-  }
-
-  // Package dimensions validation
-  if (bind.package_width) {
-    dynamicFields.package_width = bind.package_width.require
-      ? yup.number().required(messages.required)
-      : yup.number();
-  }
-  if (bind.package_height) {
-    dynamicFields.package_height = bind.package_height.require
-      ? yup.number().required(messages.required)
-      : yup.number();
-  }
-  if (bind.package_length) {
-    dynamicFields.package_length = bind.package_length.require
-      ? yup.number().required(messages.required)
-      : yup.number();
-  }
-  if (bind.package_weight) {
-    dynamicFields.package_weight = bind.package_weight.require
-      ? yup.number().required(messages.required)
-      : yup.number();
-  }
-
-  // Disadvantages validation
-  if (bind.disadvantages) {
-    dynamicFields.disadvantages = bind.disadvantages.require
-      ? yup.array().of(yup.string()).required(messages.required)
-      : yup.array().of(yup.string());
-  }
-
-  // Advantages validation
-  if (bind.advantages) {
-    dynamicFields.advantages = bind.advantages.require
-      ? yup.array().of(yup.string()).required(messages.required)
-      : yup.array().of(yup.string());
-  }
-
-  // Description validation (override base if required)
-  if (bind.description) {
-    dynamicFields.description = bind.description.require
-      ? yup.string().required(messages.required).max(1000, "توضیحات باید حداکثر 1000 کاراکتر باشد")
-      : yup.string().max(1000, "توضیحات باید حداکثر 1000 کاراکتر باشد");
   }
 
   return baseDetailsSchema.shape(dynamicFields);
@@ -243,22 +170,11 @@ export type DetailsFormData = {
   tag?: string;
   is_fake_product?: boolean;
   brand?: string;
-  status?: string;
-  platform?: string;
-  product_class?: string;
   category_product_type?: string;
-  fake_reason?: string;
-  theme?: string;
   id_type?: "general" | "custom";
   general_mefa_id?: string;
   custom_id?: string;
-  model?: string;
-  package_width?: number;
-  package_height?: number;
-  package_length?: number;
-  package_weight?: number;
-  disadvantages?: string[];
-  advantages?: string[];
+  brand_model?: string;
 };
 
 /**
@@ -287,24 +203,13 @@ export const getDetailsDefaultValues = (
   // Set defaults from current form data or defaults
   defaultValues.is_fake_product = currentFormData.is_fake_product ?? false;
   defaultValues.brand = currentFormData.brand || "";
-  defaultValues.status = currentFormData.status || "";
-  defaultValues.platform = currentFormData.platform || "";
-  defaultValues.product_class = currentFormData.product_class || "";
   defaultValues.category_product_type =
     currentFormData.category_product_type || "";
-  defaultValues.fake_reason = currentFormData.fake_reason || "";
-  defaultValues.theme = currentFormData.theme || "";
   defaultValues.id_type =
-    currentFormData.id_type || bind.category_mefa_type || "general";
+    currentFormData.id_type || "general";
   defaultValues.general_mefa_id = currentFormData.general_mefa_id || "";
   defaultValues.custom_id = currentFormData.custom_id || "";
-  defaultValues.model = currentFormData.model || bind.model?.value || "";
-  defaultValues.package_width = currentFormData.package_width ?? bind.package_width?.value ?? undefined;
-  defaultValues.package_height = currentFormData.package_height ?? bind.package_height?.value ?? undefined;
-  defaultValues.package_length = currentFormData.package_length ?? bind.package_length?.value ?? undefined;
-  defaultValues.package_weight = currentFormData.package_weight ?? bind.package_weight?.value ?? undefined;
-  defaultValues.disadvantages = currentFormData.disadvantages || bind.disadvantages?.value || [];
-  defaultValues.advantages = currentFormData.advantages || bind.advantages?.value || [];
+  defaultValues.brand_model = currentFormData.brand_model || bind.brand_model?.value || "";
 
   console.log("🔍 getDetailsDefaultValues - final defaultValues:", defaultValues);
   

@@ -41,14 +41,28 @@ export default function AttributesField({
           helperText={error || attr.hint}
           value={value || ""}
           onChange={(e) => {
-            // Convert string to number for number inputs, keep as string if empty
-            const numValue = e.target.value === "" ? "" : parseFloat(e.target.value) || e.target.value;
-            onChange(attr.id, numValue);
+            // Accept only non-negative numbers (>= 0). Keep empty string as empty.
+            const inputVal = e.target.value;
+            if (inputVal === "") {
+              onChange(attr.id, "");
+              return;
+            }
+
+            // Parse as float and enforce min 0
+            const parsed = parseFloat(inputVal);
+            if (isNaN(parsed)) {
+              onChange(attr.id, inputVal);
+              return;
+            }
+
+            const safe = parsed < 0 ? 0 : parsed;
+            onChange(attr.id, safe);
           }}
           required={attr.required}
           error={!!error}
           InputProps={{
             endAdornment: attr.postfix || attr.unit,
+            inputProps: { min: 0 },
           }}
         />
       );

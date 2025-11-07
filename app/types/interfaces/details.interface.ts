@@ -21,29 +21,13 @@ export interface ICategoryDetails {
 
 export interface IDetailsBind {
   brands: IBindBrand[];
-  statuses: IBindStatus[];
   divisions: any[];
-  guideline: IBindGL;
-  platforms: IBindPlatforms[];
   allow_fake: boolean;
   show_colors: boolean;
-  fake_reasons: IBindFakeReason[];
   general_mefa: { [key: string]: IBindGM };
-  category_data: any;
   brand_other_id: number;
-  dimension_level: "product";
-  product_classes: IBindProductClass[];
-  dimension_config?: any;
-  category_mefa_type: "general" | "specified";
   category_product_types: IBindCPT[];
-  model: IStringField;
-  package_width: INumberField;
-  package_height: INumberField;
-  package_length: INumberField;
-  package_weight: INumberField;
-  disadvantages: IListField;
-  advantages: IListField;
-  description: IStringField;
+  brand_model: IStringField;
 }
 
 export interface IBindBrand {

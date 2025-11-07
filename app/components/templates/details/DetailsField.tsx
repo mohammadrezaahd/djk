@@ -20,8 +20,6 @@ interface DetailsFieldProps {
   showBrandLogo?: boolean;
   isRadioGroup?: boolean;
   isTextField?: boolean;
-  isNumberField?: boolean;
-  isListField?: boolean;
   isObjectData?: boolean;
   required?: boolean;
   multiline?: boolean;
@@ -29,6 +27,7 @@ interface DetailsFieldProps {
   placeholder?: string;
   helperText?: string;
   error?: string;
+  isNumber?: boolean;
 }
 const DetailsField = ({
   fieldName,
@@ -40,8 +39,6 @@ const DetailsField = ({
   showBrandLogo = false,
   isRadioGroup = false,
   isTextField = false,
-  isNumberField = false,
-  isListField = false,
   isObjectData = false,
   required = false,
   multiline = false,
@@ -49,6 +46,7 @@ const DetailsField = ({
   placeholder = "",
   helperText = "",
   error = "",
+  isNumber = false,
 }: DetailsFieldProps) => {
   if (isTextField) {
     return (
@@ -59,47 +57,21 @@ const DetailsField = ({
         label={label + (required ? " *" : "")}
         placeholder={placeholder}
         value={value || ""}
-        onChange={(e) => onChange(fieldName, e.target.value)}
-        required={required}
-        helperText={error || helperText}
-        error={!!error}
-      />
-    );
-  }
-
-  if (isNumberField) {
-    return (
-      <TextField
-        fullWidth
-        type="number"
-        label={label + (required ? " *" : "")}
-        placeholder={placeholder}
-        value={value || ""}
-        onChange={(e) => onChange(fieldName, parseFloat(e.target.value) || 0)}
-        required={required}
-        helperText={error || helperText}
-        error={!!error}
-      />
-    );
-  }
-
-  if (isListField) {
-    const listValue = Array.isArray(value) ? value.join('\n') : value || "";
-    return (
-      <TextField
-        fullWidth
-        multiline
-        rows={rows || 3}
-        label={label + (required ? " *" : "")}
-        placeholder={placeholder || "هر آیتم را در یک خط وارد کنید"}
-        value={listValue}
         onChange={(e) => {
-          const lines = e.target.value.split('\n').map(line => line.trim()).filter(line => line);
-          onChange(fieldName, lines);
+          if (isNumber) {
+            const val = e.target.value;
+            if (val === "") return onChange(fieldName, "");
+            const parsed = parseFloat(val);
+            if (isNaN(parsed)) return onChange(fieldName, val);
+            onChange(fieldName, parsed < 0 ? 0 : parsed);
+          } else {
+            onChange(fieldName, e.target.value);
+          }
         }}
         required={required}
         helperText={error || helperText}
         error={!!error}
+        InputProps={isNumber ? { inputProps: { min: 0 } } : undefined}
       />
     );
   }

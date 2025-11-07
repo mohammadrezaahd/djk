@@ -81,13 +81,13 @@ const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
   }, [isFakeProduct, bind?.brands]);
 
   useEffect(() => {
-    if (bind?.category_mefa_type && !form.watch("id_type")) {
-      handleDetailsChange("id_type", bind.category_mefa_type);
+    if (!form.watch("id_type")) {
+      handleDetailsChange("id_type", "general");
     }
-  }, [bind?.category_mefa_type, form.watch("id_type")]);
+  }, [form.watch("id_type")]);
 
   const isGeneralId =
-    (form.watch("id_type") || bind?.category_mefa_type) === "general";
+    (form.watch("id_type")) === "general";
 
   if (!detailsData || !detailsData.bind) {
     return (
@@ -177,51 +177,6 @@ const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
         </Grid>
       )}
 
-      {bind?.statuses && bind.statuses.length > 0 && (
-        <Grid size={{ xs: 12, md: 6 }}>
-          <SectionCard title="وضعیت محصول">
-            <DetailsField
-              fieldName="status"
-              fieldData={bind.statuses}
-              label="وضعیت"
-              value={form.watch("status")}
-              onChange={handleDetailsChange}
-              error={form.formState.errors.status?.message as string}
-            />
-          </SectionCard>
-        </Grid>
-      )}
-
-      {bind?.platforms && bind.platforms.length > 0 && (
-        <Grid size={{ xs: 12, md: 6 }}>
-          <SectionCard title="پلتفرم">
-            <DetailsField
-              fieldName="platform"
-              fieldData={bind.platforms}
-              label="پلتفرم"
-              value={form.watch("platform")}
-              onChange={handleDetailsChange}
-              error={form.formState.errors.platform?.message as string}
-            />
-          </SectionCard>
-        </Grid>
-      )}
-
-      {bind?.product_classes && bind.product_classes.length > 0 && (
-        <Grid size={{ xs: 12, md: 6 }}>
-          <SectionCard title="کلاس محصول">
-            <DetailsField
-              fieldName="product_class"
-              fieldData={bind.product_classes}
-              label="کلاس محصول"
-              value={form.watch("product_class")}
-              onChange={handleDetailsChange}
-              error={form.formState.errors.product_class?.message as string}
-            />
-          </SectionCard>
-        </Grid>
-      )}
-
       {bind?.category_product_types &&
         bind.category_product_types.length > 0 && (
           <Grid size={{ xs: 12, md: 6 }}>
@@ -240,31 +195,19 @@ const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
           </Grid>
         )}
 
-      {bind?.fake_reasons && bind.fake_reasons.length > 0 && (
+      {/* Brand Model Section */}
+      {bind?.brand_model && (
         <Grid size={{ xs: 12, md: 6 }}>
-          <SectionCard title="دلایل تقلبی">
+          <SectionCard title="مدل برند">
             <DetailsField
-              fieldName="fake_reason"
-              fieldData={bind.fake_reasons}
-              label="دلیل تقلبی"
-              value={form.watch("fake_reason")}
+              fieldName="brand_model"
+              label="مدل برند"
+              value={form.watch("brand_model")}
               onChange={handleDetailsChange}
-              error={form.formState.errors.fake_reason?.message as string}
-            />
-          </SectionCard>
-        </Grid>
-      )}
-
-      {bind?.category_data?.themes && bind.category_data.themes.length > 0 && (
-        <Grid size={{ xs: 12, md: 6 }}>
-          <SectionCard title="تم دسته‌بندی">
-            <DetailsField
-              fieldName="theme"
-              fieldData={bind.category_data.themes}
-              label="تم"
-              value={form.watch("theme")}
-              onChange={handleDetailsChange}
-              error={form.formState.errors.theme?.message as string}
+              isTextField
+              required={bind.brand_model.require}
+              placeholder="مدل برند را وارد کنید"
+              error={form.formState.errors.brand_model?.message as string}
             />
           </SectionCard>
         </Grid>
@@ -282,7 +225,7 @@ const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
                 ]}
                 label=""
                 value={
-                  form.watch("id_type") || bind?.category_mefa_type || "general"
+                  form.watch("id_type") || "general"
                 }
                 onChange={(fieldName: string, value: any) => {
                   handleDetailsChange("id_type", value);
@@ -317,150 +260,6 @@ const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
                 />
               )}
             </Box>
-          </SectionCard>
-        </Grid>
-      )}
-
-      {/* Model Section */}
-      {bind?.model && (
-        <Grid size={{ xs: 12, md: 6 }}>
-          <SectionCard title="مدل محصول">
-            <DetailsField
-              fieldName="model"
-              label="مدل"
-              value={form.watch("model")}
-              onChange={handleDetailsChange}
-              isTextField
-              required={bind.model.require}
-              placeholder="مدل محصول را وارد کنید"
-              error={form.formState.errors.model?.message as string}
-            />
-          </SectionCard>
-        </Grid>
-      )}
-
-      {/* Packaging Section */}
-      {(bind?.package_width || bind?.package_height || bind?.package_length || bind?.package_weight) && (
-        <Grid size={{ xs: 12 }}>
-          <SectionCard title="مشخصات بسته‌بندی">
-            <Grid container spacing={2}>
-              {bind?.package_width && (
-                <Grid size={{ xs: 12, md: 3 }}>
-                  <DetailsField
-                    fieldName="package_width"
-                    label="عرض بسته (cm)"
-                    value={form.watch("package_width")}
-                    onChange={handleDetailsChange}
-                    isNumberField
-                    required={bind.package_width.require}
-                    placeholder="عرض بسته"
-                    error={form.formState.errors.package_width?.message as string}
-                  />
-                </Grid>
-              )}
-              {bind?.package_height && (
-                <Grid size={{ xs: 12, md: 3 }}>
-                  <DetailsField
-                    fieldName="package_height"
-                    label="ارتفاع بسته (cm)"
-                    value={form.watch("package_height")}
-                    onChange={handleDetailsChange}
-                    isNumberField
-                    required={bind.package_height.require}
-                    placeholder="ارتفاع بسته"
-                    error={form.formState.errors.package_height?.message as string}
-                  />
-                </Grid>
-              )}
-              {bind?.package_length && (
-                <Grid size={{ xs: 12, md: 3 }}>
-                  <DetailsField
-                    fieldName="package_length"
-                    label="طول بسته (cm)"
-                    value={form.watch("package_length")}
-                    onChange={handleDetailsChange}
-                    isNumberField
-                    required={bind.package_length.require}
-                    placeholder="طول بسته"
-                    error={form.formState.errors.package_length?.message as string}
-                  />
-                </Grid>
-              )}
-              {bind?.package_weight && (
-                <Grid size={{ xs: 12, md: 3 }}>
-                  <DetailsField
-                    fieldName="package_weight"
-                    label="وزن بسته (kg)"
-                    value={form.watch("package_weight")}
-                    onChange={handleDetailsChange}
-                    isNumberField
-                    required={bind.package_weight.require}
-                    placeholder="وزن بسته"
-                    error={form.formState.errors.package_weight?.message as string}
-                  />
-                </Grid>
-              )}
-            </Grid>
-          </SectionCard>
-        </Grid>
-      )}
-
-      {/* Advantages and Disadvantages Section */}
-      {(bind?.advantages || bind?.disadvantages) && (
-        <Grid size={{ xs: 12 }}>
-          <SectionCard title="مزایا و معایب">
-            <Grid container spacing={2}>
-              {bind?.advantages && (
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <DetailsField
-                    fieldName="advantages"
-                    label="مزایا"
-                    value={form.watch("advantages")}
-                    onChange={handleDetailsChange}
-                    isListField
-                    required={bind.advantages.require}
-                    rows={4}
-                    placeholder="هر مزیت را در یک خط وارد کنید"
-                    error={form.formState.errors.advantages?.message as string}
-                  />
-                </Grid>
-              )}
-              {bind?.disadvantages && (
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <DetailsField
-                    fieldName="disadvantages"
-                    label="معایب"
-                    value={form.watch("disadvantages")}
-                    onChange={handleDetailsChange}
-                    isListField
-                    required={bind.disadvantages.require}
-                    rows={4}
-                    placeholder="هر عیب را در یک خط وارد کنید"
-                    error={form.formState.errors.disadvantages?.message as string}
-                  />
-                </Grid>
-              )}
-            </Grid>
-          </SectionCard>
-        </Grid>
-      )}
-
-      {/* Product Description Section */}
-      {bind?.description && (
-        <Grid size={{ xs: 12 }}>
-          <SectionCard title="توضیحات محصول">
-            <DetailsField
-              fieldName="description"
-              label="توضیحات"
-              value={form.watch("description")}
-              onChange={handleDetailsChange}
-              isTextField
-              multiline
-              rows={4}
-              required={bind.description.require}
-              placeholder="توضیحات محصول را وارد کنید"
-              error={form.formState.errors.description?.message as string}
-            />
           </SectionCard>
         </Grid>
       )}

@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 import React, { useEffect } from "react";
 import type { IAttr } from "~/types/interfaces/attributes.interface";
+import { StaticCategoryIds } from "~/types/interfaces/attributes.interface";
 import { useAppSelector, useAppDispatch } from "~/store/hooks";
 import {
   updateFormField,
@@ -87,6 +88,24 @@ export default function AttributesTab({
 
     return allAttributes;
   }, [attributesData]);
+
+  // Separate packaging fields (package_width/height/length/weight) into their own section
+  const packagingAttributes = React.useMemo(() => {
+    return attributes.filter((attr) =>
+      [
+        StaticCategoryIds.PackageWidth,
+        StaticCategoryIds.PackageHeight,
+        StaticCategoryIds.PackageLength,
+        StaticCategoryIds.PackageWeight,
+      ].includes(attr.code as any)
+    );
+  }, [attributes]);
+
+  const otherAttributes = React.useMemo(() => {
+    return attributes.filter(
+      (attr) => !packagingAttributes.includes(attr)
+    );
+  }, [attributes, packagingAttributes]);
 
   const handleInputChange = (attrId: number, value: any) => {
     const fieldKey = attrId.toString();
@@ -178,10 +197,32 @@ export default function AttributesTab({
         </SectionCard>
       </Grid>
 
+      {/* Packaging section (compact layout) */}
+      {packagingAttributes.length > 0 && (
+        <Grid size={{ xs: 12 }}>
+          <SectionCard title="اطلاعات بسته‌بندی">
+            <Grid container spacing={2}>
+              {packagingAttributes.map((attr) => (
+                <Grid key={attr.id} size={{ xs: 12, md: 3 }}>
+                  <AttributesField
+                    attr={attr}
+                    value={form.watch(attr.id.toString())}
+                    onChange={handleInputChange}
+                    error={
+                      form.formState.errors[attr.id.toString()]?.message as string
+                    }
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </SectionCard>
+        </Grid>
+      )}
+
       <Grid size={{ xs: 12 }}>
         <SectionCard title="اطلاعات محصول">
           <Grid container spacing={3}>
-            {attributes.map((attr) => (
+            {otherAttributes.map((attr) => (
               <Grid key={attr.id} size={{ xs: 12, md: 6 }}>
                 <AttributesField
                   attr={attr}

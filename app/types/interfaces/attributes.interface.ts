@@ -42,6 +42,23 @@ interface ICategoryData {
   group_title: string;
 }
 
+export enum StaticCategoryIds {
+  // Packaging Dimensions
+  PackageWidth = "package_width",
+  PackageHeight = "package_height",
+  PackageLength = "package_length",
+  PackageWeight = "package_weight",
+
+  // Product Details
+  Advantage = "advantage",
+  Disadvantages = "disadvantages",
+  Description = "description",
+
+  // Categories
+  Divisions = "divisions",
+  CategoryProductType = "category_product_type",
+}
+
 interface ICategoryGroupAttr {
   [categoryId: string]: ICategoryData;
 }
