@@ -4,6 +4,7 @@ import { useLocation } from "react-router";
 import Drawer from "./Drawer";
 import MainContent from "./MainContent";
 import AppBar from "./TopBar";
+import PageTransition from "./PageTransition";
 
 const drawerWidth = 280;
 const collapsedDrawerWidth = 64;
@@ -87,7 +88,9 @@ const Layout = ({ children, title }: LayoutProps) => {
       />
 
       <MainContent currentDrawerWidth={currentDrawerWidth}>
-        {children}
+        <PageTransition>
+          {children}
+        </PageTransition>
       </MainContent>
     </Box>
   );

@@ -97,6 +97,7 @@ export default function AttributesField({
             <Box>
               <Autocomplete
                 fullWidth
+                openOnFocus
                 options={options}
                 getOptionLabel={(option) => option.label}
                 value={selectedOption}
@@ -128,6 +129,7 @@ export default function AttributesField({
               <Autocomplete
                 multiple
                 fullWidth
+                openOnFocus
                 options={options}
                 getOptionLabel={(option) => option.label}
                 value={selectedOptions}

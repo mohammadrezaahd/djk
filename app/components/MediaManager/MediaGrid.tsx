@@ -82,7 +82,7 @@ const MediaGrid: React.FC<MediaGridProps> = ({
     } else if (media.product) {
       return {
         label: "عکس محصول",
-        color: "primary" as const,
+        color: "secondary" as const,
       };
     } else {
       return {

@@ -204,6 +204,7 @@ const DetailsField = ({
   return (
     <Autocomplete
       fullWidth
+      openOnFocus
       disabled={disabled}
       options={options}
       getOptionLabel={(option) => option.label}

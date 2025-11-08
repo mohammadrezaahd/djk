@@ -167,6 +167,14 @@ export const theme = createTheme({
         },
         "*": {
           boxSizing: "border-box",
+          // مخفی کردن scrollbar برای تمام المنت‌ها
+          "&::-webkit-scrollbar": {
+            display: "none",
+          },
+          "&": {
+            msOverflowStyle: "none", // IE and Edge
+            scrollbarWidth: "none", // Firefox
+          },
         },
       },
     },
@@ -330,6 +338,17 @@ export const theme = createTheme({
             transform: "translateY(-50%) scaleX(-1)",
           },
         },
+        inputRoot: {
+          "&.MuiOutlinedInput-root": {
+            cursor: "pointer",
+          },
+        },
+        input: {
+          cursor: "pointer",
+        },
+      },
+      defaultProps: {
+        openOnFocus: true,
       },
     },
     MuiTextField: {
