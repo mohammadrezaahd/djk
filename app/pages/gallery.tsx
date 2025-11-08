@@ -13,8 +13,7 @@ import {
 import type { SelectChangeEvent } from "@mui/material";
 import { useSnackbar } from "notistack";
 import AppLayout from "~/components/layout/AppLayout";
-import { MediaManager, FileUpload } from "~/components/MediaManager";
-import { SearchInput } from "~/components/common";
+import { MediaManager } from "~/components/MediaManager";
 import { useImages, useRemoveImage } from "~/api/gallery.api";
 import { ApiStatus } from "~/types";
 import type { IGallery } from "~/types/interfaces/gallery.interface";
@@ -170,23 +169,6 @@ const GalleryPage = () => {
           </Alert>
         )}
 
-        {/* File Upload */}
-        <FileUpload
-          allowedType="none"
-          onUploadSuccess={handleUploadSuccess}
-          onUploadError={handleUploadError}
-          editImageId={editImageId}
-          onEditComplete={handleEditComplete}
-        />
-
-        {/* Search Filter */}
-        <SearchInput
-          onSearchChange={handleSearchChange}
-          label="جستجو در عناوین"
-          placeholder="عنوان تصویر را جستجو کنید..."
-          sx={{ mb: 2, maxWidth: 300 }}
-        />
-
         {!isLoading && (
           <MediaManager
             media={mediaFiles}
@@ -198,7 +180,18 @@ const GalleryPage = () => {
             pageSize={pageSize}
             onPageChange={handlePageChange}
             onPageSizeChange={handlePageSizeChange}
-            showUpload={false}
+            showUpload={true}
+            // FileUpload props
+            allowedType="none"
+            onUploadSuccess={handleUploadSuccess}
+            onUploadError={handleUploadError}
+            editImageId={editImageId}
+            onEditComplete={handleEditComplete}
+            // SearchInput props
+            onSearchChange={handleSearchChange}
+            searchLabel="جستجو در عناوین"
+            searchPlaceholder="عنوان تصویر را جستجو کنید..."
+            showSearch={true}
           />
         )}
 
@@ -213,7 +206,18 @@ const GalleryPage = () => {
             pageSize={pageSize}
             onPageChange={handlePageChange}
             onPageSizeChange={handlePageSizeChange}
-            showUpload={false}
+            showUpload={true}
+            // FileUpload props
+            allowedType="none"
+            onUploadSuccess={handleUploadSuccess}
+            onUploadError={handleUploadError}
+            editImageId={editImageId}
+            onEditComplete={handleEditComplete}
+            // SearchInput props
+            onSearchChange={handleSearchChange}
+            searchLabel="جستجو در عناوین"
+            searchPlaceholder="عنوان تصویر را جستجو کنید..."
+            showSearch={true}
           />
         )}
       </Container>

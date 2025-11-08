@@ -95,6 +95,74 @@ const attributesSlice = createSlice({
       state.description = "";
       state.images = [];
     },
+
+    loadTemplateData: (
+      state,
+      action: PayloadAction<{
+        templateData: any;
+        title: string;
+        description?: string;
+        images?: number[];
+      }>
+    ) => {
+      const { templateData, title, description, images } = action.payload;
+      
+      // Set basic template info
+      state.title = title;
+      state.description = description || "";
+      state.images = images || [];
+
+      // Extract form data from template
+      const formData: { [key: string]: any } = {};
+      
+      if (templateData?.category_group_attributes) {
+        Object.values(templateData.category_group_attributes).forEach(
+          (categoryData: any) => {
+            Object.values(categoryData.attributes).forEach((attr: any) => {
+              if (attr.value !== undefined && attr.value !== null && attr.value !== "") {
+                // برای text fields
+                if (attr.type === 'text') {
+                  if (typeof attr.value === 'object' && attr.value.text_lines) {
+                    // اگر به صورت آرایه ذخیره شده
+                    formData[attr.id] = attr.value.text_lines.join('\n');
+                  } else if (typeof attr.value === 'object' && attr.value.original_text) {
+                    // اگر متن اصلی ذخیره شده
+                    formData[attr.id] = attr.value.original_text;
+                  } else if (typeof attr.value === 'string') {
+                    // اگر به صورت متن ساده ذخیره شده
+                    formData[attr.id] = attr.value;
+                  }
+                }
+                // برای input fields
+                else if (attr.type === 'input') {
+                  formData[attr.id] = attr.value;
+                }
+                // برای select fields
+                else if (attr.type === 'select') {
+                  const selectedValues = Object.entries(attr.values)
+                    .filter(([_, valueData]: [string, any]) => valueData.selected)
+                    .map(([valueId, _]) => valueId);
+                  if (selectedValues.length > 0) {
+                    formData[attr.id] = selectedValues[0];
+                  }
+                }
+                // برای checkbox fields
+                else if (attr.type === 'checkbox') {
+                  const selectedValues = Object.entries(attr.values)
+                    .filter(([_, valueData]: [string, any]) => valueData.selected)
+                    .map(([valueId, _]) => valueId);
+                  if (selectedValues.length > 0) {
+                    formData[attr.id] = selectedValues;
+                  }
+                }
+              }
+            });
+          }
+        );
+      }
+      
+      state.formData = formData;
+    },
   },
 });
 
@@ -105,6 +173,7 @@ export const {
   setDescription,
   setImages,
   resetAttributes,
+  loadTemplateData,
 } = attributesSlice.actions;
 
 export const getFinalAttributesObject = (state: {
@@ -125,8 +194,16 @@ export const getFinalAttributesObject = (state: {
         if (formValue !== undefined && formValue !== null && formValue !== "") {
           switch (attr.type) {
             case "input":
-            case "text":
               attr.value = formValue.toString();
+              break;
+
+            case "text":
+              // ذخیره متن به صورت ساختاریافته برای نمایش بهتر
+              const lines = formValue.toString().split('\n').filter((line: string) => line.trim() !== '');
+              attr.value = {
+                text_lines: lines,
+                original_text: formValue.toString()
+              };
               break;
 
             case "select":

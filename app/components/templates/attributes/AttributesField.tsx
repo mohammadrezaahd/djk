@@ -18,6 +18,15 @@ export default function AttributesField({
   onChange,
   error,
 }: AttributesFieldProps) {
+  console.log("🔍 AttributesField rendering:", {
+    attrId: attr.id,
+    attrTitle: attr.title,
+    attrType: attr.type,
+    value,
+    error,
+    hasValues: attr.values ? Object.keys(attr.values).length : 0,
+  });
+
   const isMultiSelect = (attr: IAttr): boolean => {
     return attr.type === AttributeType.Checkbox;
   };
@@ -135,6 +144,7 @@ export default function AttributesField({
                       {...getTagProps({ index })}
                       key={option.id}
                       size="small"
+                      sx={{ zIndex: "9" }}
                     />
                   ))
                 }
@@ -157,8 +167,20 @@ export default function AttributesField({
             </Box>
           );
         }
+      } else {
+        // اگر values خالی است یا شرایط autocomplete برقرار نیست، یک TextField ساده نمایش بده
+        return (
+          <TextField
+            fullWidth
+            label={attr.title + (attr.required ? " *" : "")}
+            helperText={error || attr.hint || "گزینه‌ای برای انتخاب وجود ندارد"}
+            value=""
+            disabled
+            placeholder="گزینه‌ای موجود نیست"
+            error={!!error}
+          />
+        );
       }
-      return null;
 
     case AttributeType.Text:
       return (

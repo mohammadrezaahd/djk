@@ -218,9 +218,18 @@ const productSlice = createSlice({
           if (templateData.product_class) initialFormData.product_class = templateData.product_class;
           if (templateData.category_product_type) initialFormData.category_product_type = templateData.category_product_type;
           if (templateData.theme) initialFormData.theme = templateData.theme;
-          if (templateData.id_type) initialFormData.id_type = templateData.id_type;
-          if (templateData.general_mefa_id) initialFormData.general_mefa_id = templateData.general_mefa_id;
-          if (templateData.custom_id) initialFormData.custom_id = templateData.custom_id;
+          
+          // Handle id_type logic properly
+          const idType = templateData.id_type || "general";
+          initialFormData.id_type = idType;
+          
+          // Only set the relevant id field based on id_type
+          if (idType === "general" && templateData.general_mefa_id) {
+            initialFormData.general_mefa_id = templateData.general_mefa_id;
+          } else if (idType === "custom" && templateData.custom_id) {
+            initialFormData.custom_id = templateData.custom_id;
+          }
+          
           if (templateData.fake_reason) initialFormData.fake_reason = templateData.fake_reason;
           if (templateData.is_fake_product !== undefined) initialFormData.is_fake_product = templateData.is_fake_product;
           
@@ -250,6 +259,19 @@ const productSlice = createSlice({
                         ? parseFloat(attr.value)
                         : attr.value;
                     initialFormData[attr.id] = numericValue;
+                  }
+                  // For text fields (Advantage/Disadvantages), handle structured format
+                  else if (attr.type === "text" && attr.value !== undefined) {
+                    if (typeof attr.value === 'object' && attr.value.text_lines) {
+                      // اگر به صورت آرایه خطوط ذخیره شده
+                      initialFormData[attr.id] = attr.value.text_lines.join('\n');
+                    } else if (typeof attr.value === 'object' && attr.value.original_text) {
+                      // اگر متن اصلی ذخیره شده
+                      initialFormData[attr.id] = attr.value.original_text;
+                    } else if (typeof attr.value === 'string') {
+                      // اگر به صورت متن ساده ذخیره شده
+                      initialFormData[attr.id] = attr.value;
+                    }
                   }
                   // For select/checkbox fields, get selected values
                   else if (attr.values) {
@@ -334,8 +356,15 @@ const productSlice = createSlice({
               if (formValue !== undefined && formValue !== null && formValue !== "") {
                 switch (attr.type) {
                   case "input":
-                  case "text":
                     attr.value = formValue.toString();
+                    break;
+                  case "text":
+                    // ذخیره متن به صورت ساختاریافته برای نمایش بهتر
+                    const lines = formValue.toString().split('\n').filter((line: string) => line.trim() !== '');
+                    attr.value = {
+                      text_lines: lines,
+                      original_text: formValue.toString()
+                    };
                     break;
                   case "select":
                     Object.keys(attr.values).forEach((valueId) => {

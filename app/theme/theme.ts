@@ -201,16 +201,7 @@ export const theme = createTheme({
         },
       },
     },
-    // MuiTextField: {
-    //   styleOverrides: {
-    //     root: {
-    //       "& .MuiOutlinedInput-root": {
-    //         borderRadius: shape.borderRadius,
-    //         backgroundColor: palette.background.paper,
-    //       },
-    //     },
-    //   },
-    // },
+
     MuiSelect: {
       styleOverrides: {
         root: {
@@ -262,19 +253,7 @@ export const theme = createTheme({
         },
       },
     },
-    // MuiAutocomplete: {
-    //   styleOverrides: {
-    //     root: {
-    //       "& .MuiOutlinedInput-root": {
-    //         padding: "9px",
-    //       },
-    //     },
-    //     paper: {
-    //       borderRadius: shape.borderRadius,
-    //       boxShadow: `0 0 2px 0 rgba(145, 158, 171, 0.2), 0 12px 24px -4px rgba(145, 158, 171, 0.12)`,
-    //     },
-    //   },
-    // },
+
     MuiChip: {
       styleOverrides: {
         root: {

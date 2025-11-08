@@ -8,6 +8,8 @@ import {
   DialogActions,
   Typography,
   Alert,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
 import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
 import { useImages } from "~/api/gallery.api";
@@ -16,12 +18,16 @@ import { SearchInput } from "~/components/common";
 import type { SelectChangeEvent } from "@mui/material";
 import type { IGallery } from "~/types/interfaces/gallery.interface";
 import { fixImageUrl } from "~/utils/imageUtils";
+import { MediaType } from "../MediaManager/FileUpload";
 
 interface ImageSelectorProps {
   selectedImages: number[];
   onImagesChange: (images: number[]) => void;
   label?: string;
   helperText?: string;
+  packaging?: boolean;
+  product?: boolean;
+  defaultType?: MediaType;
 }
 
 // Media file interface matching MediaManager
@@ -41,6 +47,9 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
   onImagesChange,
   label = "تصاویر",
   helperText = "تصاویر مورد نظر را انتخاب کنید",
+  packaging = false,
+  product = false,
+  defaultType,
 }) => {
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState<number>(1);
@@ -50,7 +59,7 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
 
   const [previewPage, setPreviewPage] = useState<number>(1);
   const [previewPageSize, setPreviewPageSize] = useState<number>(8);
-
+  const [showUpload, setShowUpload] = useState<boolean>(false);
   const skip = (page - 1) * pageSize;
 
   const {
@@ -61,7 +70,8 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
     skip,
     limit: pageSize,
     search_title: searchValue,
-
+    packaging: packaging,
+    product: product,
   });
 
   const galleryData = imagesData?.data?.list || [];
@@ -124,7 +134,7 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
     const numericId = parseInt(imageId);
     const newImages = selectedImages.filter((id) => id !== numericId);
     onImagesChange(newImages);
-    
+
     // Check if current page becomes empty after deletion
     const newTotalItems = newImages.length;
     const totalPages = Math.ceil(newTotalItems / previewPageSize);
@@ -246,6 +256,19 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
           )}
 
           {/* Media grid */}
+          <Box>
+            <FormControlLabel
+              label="بارگزاری تصویر جدید"
+              control={
+                <Switch
+                  checked={showUpload}
+                  onChange={(e) => setShowUpload(e.target.checked)}
+                  color="primary"
+                  inputProps={{ "aria-label": "Show upload area" }}
+                />
+              }
+            />
+          </Box>
           <MediaManager
             media={mediaFiles}
             loading={isLoading}
@@ -254,10 +277,11 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
             pageSize={pageSize}
             onPageChange={handlePageChange}
             onPageSizeChange={handlePageSizeChange}
-            showUpload={false}
+            showUpload={showUpload}
             selectionMode={true}
             selectedItems={tempSelectedImages}
             onSelectionChange={handleSelectionChange}
+            defaultType={defaultType}
           />
         </DialogContent>
 

@@ -40,15 +40,19 @@ const getImages = async ({
   limit = 100,
   search_title = "",
   source = "app",
+  packaging = true,
+  product = true,
 }: {
   skip?: number;
   limit?: number;
   search_title?: string;
   source?: string;
+  packaging?: boolean;
+  product?: boolean;
 }) => {
   return apiUtils<{ list: IGallery[] }>(async () => {
     const response = await authorizedPost(
-      `/v1/images/list?skip=${skip}&limit=${limit}&search_title=${search_title}&source=${source}`
+      `/v1/images/list?skip=${skip}&limit=${limit}&search_title=${search_title}&source=${source}&packaging=${packaging}&product=${product}`
     );
     return response.data;
   });
@@ -101,15 +105,19 @@ export const useImages = ({
   limit = 100,
   search_title = "",
   source = "",
+  packaging = true,
+  product = true,
 }: {
   skip?: number;
   limit?: number;
   search_title?: string;
   source?: string;
+  packaging?: boolean;
+  product?: boolean;
 } = {}) => {
   return useQuery({
-    queryKey: ["images", { skip, limit, search_title, source }],
-    queryFn: () => getImages({ skip, limit, search_title, source }),
+    queryKey: ["images", { skip, limit, search_title, source, packaging, product }],
+    queryFn: () => getImages({ skip, limit, search_title, source, packaging, product }),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });

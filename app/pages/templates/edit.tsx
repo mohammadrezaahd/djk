@@ -23,6 +23,7 @@ import {
   updateFormField as updateAttributeFormField,
   getFinalAttributesObject,
   setImages as setAttributesImages,
+  loadTemplateData,
 } from "~/store/slices/attributesSlice";
 import {
   setDetailsData,
@@ -104,15 +105,6 @@ const EditTemplatePage = () => {
       attributeData?.status === ApiStatus.SUCCEEDED &&
       attributeData.data
     ) {
-      // Set template data in store
-      dispatch(setTitle(attributeData.data.title));
-      dispatch(setDescription(attributeData.data.description || ""));
-      
-      // Load images from template
-      if (attributeData.data.images && Array.isArray(attributeData.data.images)) {
-        dispatch(setAttributesImages(attributeData.data.images));
-      }
-
       // Load the category data for this template if it has data_json
       if (attributeData.data.data_json) {
         dispatch(
@@ -122,53 +114,15 @@ const EditTemplatePage = () => {
           })
         );
 
-        // Populate form data from stored values if they exist
-        // We need to extract the form values from data_json and populate them
-        const templateData = attributeData.data.data_json;
-        if (templateData.category_group_attributes) {
-          Object.values(templateData.category_group_attributes).forEach(
-            (categoryData: any) => {
-              Object.values(categoryData.attributes).forEach((attr: any) => {
-                // For input fields, check if there's a stored value
-                if (attr.type === "input" && attr.value !== undefined) {
-                  // Convert string numbers to proper format
-                  const numericValue =
-                    typeof attr.value === "string" &&
-                    !isNaN(parseFloat(attr.value))
-                      ? parseFloat(attr.value)
-                      : attr.value;
-                  dispatch(
-                    updateAttributeFormField({
-                      fieldId: attr.id.toString(),
-                      value: numericValue,
-                    })
-                  );
-                }
-                // For select/checkbox fields, get selected values
-                else if (attr.values) {
-                  const selectedValues = Object.entries(attr.values)
-                    .filter(
-                      ([_, valueData]: [string, any]) => valueData.selected
-                    )
-                    .map(([valueId, _]) => valueId);
-
-                  if (selectedValues.length > 0) {
-                    const value =
-                      attr.type === "checkbox"
-                        ? selectedValues
-                        : selectedValues[0];
-                    dispatch(
-                      updateAttributeFormField({
-                        fieldId: attr.id.toString(),
-                        value,
-                      })
-                    );
-                  }
-                }
-              });
-            }
-          );
-        }
+        // Use the new loadTemplateData action to properly handle all field types including text fields
+        dispatch(
+          loadTemplateData({
+            templateData: attributeData.data.data_json,
+            title: attributeData.data.title,
+            description: attributeData.data.description || "",
+            images: attributeData.data.images || [],
+          })
+        );
 
         // Mark form as ready after a small delay to ensure store updates are complete
         setTimeout(() => setIsFormReady(true), 100);

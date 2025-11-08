@@ -33,6 +33,7 @@ import {
   useProductInfoValidation,
   validateAllDetailsTemplates,
   validateAllAttributesTemplates,
+  getAttributesTemplatesValidationErrors,
 } from "~/validation";
 import Layout from "~/components/layout/Layout";
 import CategorySelector from "~/components/templates/CategorySelector";
@@ -86,14 +87,28 @@ const NewProductPage = () => {
   );
   // Validation hooks for product creation
   const activeDetailsValidation = useProductDetailsValidation(
-    activeDetailsTemplate?.data as any,
+    activeDetailsTemplateData?.data?.data_json as any,
     activeDetailsTemplate?.formData || {}
   );
 
-  const activeAttributesValidation = useProductAttributesValidation(
-    activeAttributesTemplate?.data as any,
-    activeAttributesTemplate?.formData || {}
-  );
+  // Get validation errors for all templates
+  const allAttributesValidationErrors = useMemo(() => {
+    const allErrors = getAttributesTemplatesValidationErrors(
+      productState.selectedAttributesTemplates
+    );
+    
+    // Debug logging
+    console.log("🔍 All attributes validation errors:", allErrors);
+    
+    // Flatten errors for the active template
+    const activeTemplateErrors = allErrors.find(
+      errorSet => errorSet.templateId === activeAttributesTemplate?.id
+    );
+    
+    console.log("🔍 Active template errors:", activeTemplateErrors);
+    
+    return activeTemplateErrors?.errors || {};
+  }, [productState.selectedAttributesTemplates, activeAttributesTemplate?.id]);
 
   const productInfoValidation = useProductInfoValidation(
     productState.productTitle,
@@ -615,7 +630,7 @@ const NewProductPage = () => {
                     })
                   )
                 }
-                validationErrors={activeAttributesValidation.errors}
+                validationErrors={allAttributesValidationErrors}
               />
             )}
           </TemplateForms>

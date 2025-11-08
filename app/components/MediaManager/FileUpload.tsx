@@ -23,19 +23,25 @@ import { useGalleryValidation, convertGalleryFormToApi } from "~/validation";
 import type { IGallery } from "~/types/interfaces/gallery.interface";
 import { fixImageUrl } from "~/utils/imageUtils";
 
+export enum MediaType {
+  PACKAGING = "packaging",
+  PRODUCT = "product",
+  NONE = "none",
+}
+
 const MEDIA_FILTER_TYPES = [
   {
-    value: "packaging",
+    value: MediaType.PACKAGING,
     label: "عکس بسته‌بندی",
     extensions: [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"],
   },
   {
-    value: "product",
+    value: MediaType.PRODUCT,
     label: "عکس محصول",
     extensions: [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"],
   },
   {
-    value: "none",
+    value: MediaType.NONE,
     label: "هیچکدام",
     extensions: [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"],
   },
@@ -48,15 +54,17 @@ interface FileUploadProps {
   editImageId?: number | null;
   onEditComplete?: () => void;
   allowMultiple?: boolean; // New prop for enabling multiple file upload
+  defaultType?: MediaType; // New prop for default type value (makes field readonly)
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({
-  allowedType = "none",
+  allowedType = MediaType.NONE,
   onUploadSuccess,
   onUploadError,
   editImageId = null,
   onEditComplete,
   allowMultiple = false,
+  defaultType, // New prop for default type value
 }) => {
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [previewUrls, setPreviewUrls] = useState<string[]>([]); // For multiple files
@@ -75,45 +83,57 @@ const FileUpload: React.FC<FileUploadProps> = ({
   } = useImage(editImageId || 0);
 
   // Use validation hook
-  const form = useGalleryValidation(allowedType, isEditMode, false); // Always start with false for toggle
-  const { handleSubmit, setValue, watch, formState: { errors, isValid }, reset } = form;
+  const form = useGalleryValidation(
+    defaultType || allowedType,
+    isEditMode,
+    false
+  ); // Use defaultType if provided
+  const {
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isValid },
+    reset,
+  } = form;
 
   // Watch form values
-  const selectedFile = watch('file');
-  const title = watch('title');
-  const currentAllowedType = watch('type');
-  const isMultipleUpload = watch('multipleUpload') || false;
+  const selectedFile = watch("file");
+  const title = watch("title");
+  const currentAllowedType = watch("type");
+  const isMultipleUpload = watch("multipleUpload") || false;
 
   // Effect to handle edit mode
   useEffect(() => {
     if (editImageId && editImageData?.data && !isEditMode) {
       const imageData = editImageData.data;
       setIsEditMode(true);
-      
+
       // Set form values from edit data
-      setValue('title', imageData.title);
-      
+      setValue("title", imageData.title);
+
       // Set type based on packaging/product flags
       if (imageData.packaging) {
-        setValue('type', 'packaging');
+        setValue("type", "packaging");
       } else if (imageData.product) {
-        setValue('type', 'product');
+        setValue("type", "product");
       } else {
-        setValue('type', 'none');
+        setValue("type", "none");
       }
-      
+
       // Set preview URL from existing image
       setPreviewUrl(fixImageUrl(imageData.image_url));
-      
+
       // In edit mode, file is not required, so we set it to null but preview remains
-      setValue('file', null);
+      setValue("file", null);
     } else if (!editImageId && isEditMode) {
       setIsEditMode(false);
       // Reset form to default values
       const defaultValues = {
-        title: '',
-        type: allowedType !== 'none' ? allowedType : 'none' as any,
-        file: null
+        title: "",
+        type:
+          defaultType ||
+          ((allowedType !== "none" ? allowedType : "none") as any),
+        file: null,
       };
       reset(defaultValues);
       setPreviewUrl("");
@@ -135,15 +155,22 @@ const FileUpload: React.FC<FileUploadProps> = ({
       // Only clear preview if not in edit mode
       setPreviewUrl("");
       setPreviewUrls([]);
-      setValue('file', null);
+      setValue("file", null);
     }
   };
 
   const processFile = (file: File) => {
     // Validate file type
-    const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"];
+    const allowedExtensions = [
+      ".jpg",
+      ".jpeg",
+      ".png",
+      ".gif",
+      ".webp",
+      ".svg",
+    ];
     const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
-    
+
     if (!allowedExtensions.includes(fileExtension)) {
       enqueueSnackbar("فرمت فایل پشتیبانی نمی‌شود", { variant: "error" });
       return;
@@ -152,12 +179,14 @@ const FileUpload: React.FC<FileUploadProps> = ({
     // Validate file size (max 10MB)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      enqueueSnackbar("حجم فایل نباید بیشتر از 10 مگابایت باشد", { variant: "error" });
+      enqueueSnackbar("حجم فایل نباید بیشتر از 10 مگابایت باشد", {
+        variant: "error",
+      });
       return;
     }
 
-    setValue('file', file);
-    setValue('multipleUpload', false);
+    setValue("file", file);
+    setValue("multipleUpload", false);
 
     // Create preview URL
     const reader = new FileReader();
@@ -178,29 +207,41 @@ const FileUpload: React.FC<FileUploadProps> = ({
     }
 
     // Validate each file
-    const allowedExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"];
+    const allowedExtensions = [
+      ".jpg",
+      ".jpeg",
+      ".png",
+      ".gif",
+      ".webp",
+      ".svg",
+    ];
     const maxSize = 10 * 1024 * 1024; // 10MB
-    
+
     for (const file of files) {
       const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
-      
+
       if (!allowedExtensions.includes(fileExtension)) {
-        enqueueSnackbar(`فرمت فایل ${file.name} پشتیبانی نمی‌شود`, { variant: "error" });
+        enqueueSnackbar(`فرمت فایل ${file.name} پشتیبانی نمی‌شود`, {
+          variant: "error",
+        });
         return;
       }
 
       if (file.size > maxSize) {
-        enqueueSnackbar(`حجم فایل ${file.name} نباید بیشتر از 10 مگابایت باشد`, { variant: "error" });
+        enqueueSnackbar(
+          `حجم فایل ${file.name} نباید بیشتر از 10 مگابایت باشد`,
+          { variant: "error" }
+        );
         return;
       }
     }
 
-    setValue('file', files);
-    setValue('multipleUpload', true);
-    setValue('title', ''); // Clear title for multiple upload
+    setValue("file", files);
+    setValue("multipleUpload", true);
+    setValue("title", ""); // Clear title for multiple upload
 
     // Create preview URLs
-    const readers = files.map(file => {
+    const readers = files.map((file) => {
       return new Promise<string>((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -212,7 +253,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
       });
     });
 
-    Promise.all(readers).then(urls => {
+    Promise.all(readers).then((urls) => {
       setPreviewUrls(urls);
       setPreviewUrl(""); // Clear single preview
     });
@@ -221,7 +262,12 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!isDragOver && !addImageMutation.isPending && !editImageMutation.isPending && !isLoadingEditData) {
+    if (
+      !isDragOver &&
+      !addImageMutation.isPending &&
+      !editImageMutation.isPending &&
+      !isLoadingEditData
+    ) {
       setIsDragOver(true);
     }
   };
@@ -233,7 +279,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX;
     const y = e.clientY;
-    
+
     if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
       setIsDragOver(false);
     }
@@ -244,7 +290,11 @@ const FileUpload: React.FC<FileUploadProps> = ({
     e.stopPropagation();
     setIsDragOver(false);
 
-    if (addImageMutation.isPending || editImageMutation.isPending || isLoadingEditData) {
+    if (
+      addImageMutation.isPending ||
+      editImageMutation.isPending ||
+      isLoadingEditData
+    ) {
       return;
     }
 
@@ -266,7 +316,12 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const handleGlobalDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!isDragOver && !addImageMutation.isPending && !editImageMutation.isPending && !isLoadingEditData) {
+    if (
+      !isDragOver &&
+      !addImageMutation.isPending &&
+      !editImageMutation.isPending &&
+      !isLoadingEditData
+    ) {
       setIsDragOver(true);
     }
   };
@@ -285,7 +340,11 @@ const FileUpload: React.FC<FileUploadProps> = ({
     e.stopPropagation();
     setIsDragOver(false);
 
-    if (addImageMutation.isPending || editImageMutation.isPending || isLoadingEditData) {
+    if (
+      addImageMutation.isPending ||
+      editImageMutation.isPending ||
+      isLoadingEditData
+    ) {
       return;
     }
 
@@ -309,10 +368,10 @@ const FileUpload: React.FC<FileUploadProps> = ({
         // Edit mode: call edit API
         const editData = {
           title: formData.title.trim(),
-          packaging: formData.type === 'packaging',
-          product: formData.type === 'product',
-          source: 'app' as any,
-          tag: 'edit',
+          packaging: formData.type === "packaging",
+          product: formData.type === "product",
+          source: "app" as any,
+          tag: "edit",
           file: formData.file as File, // file can be null in edit mode if not changing
         };
 
@@ -337,8 +396,10 @@ const FileUpload: React.FC<FileUploadProps> = ({
         if (result.status === ApiStatus.SUCCEEDED) {
           // Reset form after successful upload
           const defaultValues = {
-            title: '',
-            type: allowedType !== 'none' ? allowedType : 'none' as any,
+            title: "",
+            type:
+              defaultType ||
+              ((allowedType !== "none" ? allowedType : "none") as any),
             file: null,
             multipleUpload: false, // Reset to single mode
           };
@@ -360,7 +421,9 @@ const FileUpload: React.FC<FileUploadProps> = ({
         }
       }
     } catch (error: any) {
-      const errorMsg = error.message || (isEditMode ? "ویرایش ناموفق بود" : "آپلود ناموفق بود");
+      const errorMsg =
+        error.message ||
+        (isEditMode ? "ویرایش ناموفق بود" : "آپلود ناموفق بود");
 
       // نمایش snackbar خطا
       enqueueSnackbar(errorMsg, { variant: "error" });
@@ -371,18 +434,26 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
   const handleAllowedTypeChange = (event: SelectChangeEvent<string>) => {
     const newType = event.target.value as "packaging" | "product" | "none";
-    setValue('type', newType);
+    setValue("type", newType);
   };
 
+  // Check if type field should be disabled (when defaultType is provided)
+  const isTypeFieldDisabled =
+    !!defaultType ||
+    addImageMutation.isPending ||
+    editImageMutation.isPending ||
+    isLoadingEditData;
+
   // Check if form is valid - in edit mode, file is optional
-  const isFormValidForSubmit = isEditMode 
-    ? (title && title.trim().length >= 3) // In edit mode, only title is required
+  const isFormValidForSubmit = isEditMode
+    ? title && title.trim().length >= 3 // In edit mode, only title is required
     : isMultipleUpload
       ? !!selectedFile // In multiple mode, only files are required
       : isValid; // In single mode, all fields including title and file are required
 
-  const isSubmitDisabled = !isFormValidForSubmit || 
-    addImageMutation.isPending || 
+  const isSubmitDisabled =
+    !isFormValidForSubmit ||
+    addImageMutation.isPending ||
     editImageMutation.isPending ||
     isLoadingEditData;
 
@@ -399,10 +470,10 @@ const FileUpload: React.FC<FileUploadProps> = ({
   };
 
   return (
-    <Paper 
-      elevation={isDragOver ? 4 : 1} 
-      sx={{ 
-        p: 3, 
+    <Paper
+      elevation={isDragOver ? 4 : 1}
+      sx={{
+        p: 3,
         mb: 3,
         border: isDragOver ? "2px solid" : "1px solid transparent",
         borderColor: isDragOver ? "primary.main" : "transparent",
@@ -431,7 +502,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
           }}
         />
       )}
-      
+
       <Typography variant="h6" gutterBottom>
         {isEditMode ? "ویرایش تصویر" : "آپلود تصویر"}
       </Typography>
@@ -458,23 +529,27 @@ const FileUpload: React.FC<FileUploadProps> = ({
                 checked={isMultipleUpload}
                 onChange={(e) => {
                   const isMultiple = e.target.checked;
-                  setValue('multipleUpload', isMultiple, { shouldValidate: true });
-                  
+                  setValue("multipleUpload", isMultiple, {
+                    shouldValidate: true,
+                  });
+
                   // Clear form when switching modes
                   if (isMultiple) {
                     // Switching to multiple mode
-                    setValue('title', '');
-                    setValue('file', null);
+                    setValue("title", "");
+                    setValue("file", null);
                     setPreviewUrl("");
                     setPreviewUrls([]);
                   } else {
                     // Switching to single mode
-                    setValue('file', null);
+                    setValue("file", null);
                     setPreviewUrl("");
                     setPreviewUrls([]);
                   }
                 }}
-                disabled={addImageMutation.isPending || editImageMutation.isPending}
+                disabled={
+                  addImageMutation.isPending || editImageMutation.isPending
+                }
               />
             }
             label="آپلود چندتایی"
@@ -486,23 +561,32 @@ const FileUpload: React.FC<FileUploadProps> = ({
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: { 
-              xs: "1fr", 
-              sm: "auto auto", 
-              md: "auto 1fr 1fr" 
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "auto auto",
+              md: "auto 1fr 1fr",
             },
             gap: 3,
             alignItems: "start",
           }}
         >
           {/* مربع انتخاب فایل */}
-          <Box sx={{ position: "relative", gridRow: { xs: "1", sm: "1 / 3", md: "1" } }}>
+          <Box
+            sx={{
+              position: "relative",
+              gridRow: { xs: "1", sm: "1 / 3", md: "1" },
+            }}
+          >
             <input
               type="file"
               id="file-upload"
               onChange={handleFileChange}
               style={{ display: "none" }}
-              disabled={addImageMutation.isPending || editImageMutation.isPending || isLoadingEditData}
+              disabled={
+                addImageMutation.isPending ||
+                editImageMutation.isPending ||
+                isLoadingEditData
+              }
               accept=".jpg,.jpeg,.png,.gif,.webp,.svg"
               multiple={isMultipleUpload}
             />
@@ -512,22 +596,35 @@ const FileUpload: React.FC<FileUploadProps> = ({
                   width: 150,
                   height: 150,
                   border: "2px dashed",
-                  borderColor: isDragOver 
+                  borderColor: isDragOver
                     ? "primary.main"
-                    : selectedFile 
-                      ? (errors.file ? "error.main" : "primary.main") 
-                      : (errors.file ? "error.main" : "grey.400"),
+                    : selectedFile
+                      ? errors.file
+                        ? "error.main"
+                        : "primary.main"
+                      : errors.file
+                        ? "error.main"
+                        : "grey.400",
                   borderRadius: 2,
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  cursor: (addImageMutation.isPending || editImageMutation.isPending || isLoadingEditData) ? "not-allowed" : "pointer",
+                  cursor:
+                    addImageMutation.isPending ||
+                    editImageMutation.isPending ||
+                    isLoadingEditData
+                      ? "not-allowed"
+                      : "pointer",
                   bgcolor: isDragOver
                     ? "primary.100"
-                    : selectedFile 
-                      ? (errors.file ? "error.50" : "primary.50") 
-                      : (errors.file ? "error.50" : "grey.50"),
+                    : selectedFile
+                      ? errors.file
+                        ? "error.50"
+                        : "primary.50"
+                      : errors.file
+                        ? "error.50"
+                        : "grey.50",
                   transition: "all 0.2s ease-in-out",
                   position: "relative",
                   overflow: "hidden",
@@ -542,13 +639,16 @@ const FileUpload: React.FC<FileUploadProps> = ({
                 onDrop={handleDrop}
               >
                 {previewUrl || previewUrls.length > 0 ? (
-                  <Box sx={{ width: "100%", height: "100%", position: "relative" }}>
+                  <Box
+                    sx={{ width: "100%", height: "100%", position: "relative" }}
+                  >
                     {previewUrls.length > 0 ? (
                       // Multiple files preview
                       <Box
                         sx={{
                           display: "grid",
-                          gridTemplateColumns: previewUrls.length === 1 ? "1fr" : "1fr 1fr",
+                          gridTemplateColumns:
+                            previewUrls.length === 1 ? "1fr" : "1fr 1fr",
                           gap: 0.5,
                           width: "100%",
                           height: "100%",
@@ -608,10 +708,10 @@ const FileUpload: React.FC<FileUploadProps> = ({
                     <CloudUploadIcon
                       sx={{
                         fontSize: isDragOver ? 48 : 40,
-                        color: isDragOver 
-                          ? "primary.main" 
-                          : selectedFile 
-                            ? "primary.main" 
+                        color: isDragOver
+                          ? "primary.main"
+                          : selectedFile
+                            ? "primary.main"
                             : "grey.500",
                         mb: 1,
                         transition: "all 0.2s ease-in-out",
@@ -619,25 +719,29 @@ const FileUpload: React.FC<FileUploadProps> = ({
                     />
                     <Typography
                       variant="body2"
-                      color={isDragOver 
-                        ? "primary.main" 
-                        : selectedFile 
-                          ? "primary.main" 
-                          : "text.secondary"}
+                      color={
+                        isDragOver
+                          ? "primary.main"
+                          : selectedFile
+                            ? "primary.main"
+                            : "text.secondary"
+                      }
                       textAlign="center"
                       sx={{ px: 1 }}
                     >
-                      {isDragOver 
-                        ? (isMultipleUpload ? "فایل‌ها را اینجا رها کنید" : "فایل را اینجا رها کنید")
-                        : selectedFile 
-                          ? (Array.isArray(selectedFile) 
-                              ? `${selectedFile.length} فایل انتخاب شده` 
-                              : "فایل انتخاب شده")
-                          : isEditMode 
-                            ? "انتخاب فایل جدید (اختیاری)" 
-                            : (isMultipleUpload 
-                                ? "کلیک کنید یا فایل‌ها را بکشید" 
-                                : "کلیک کنید یا فایل را بکشید")}
+                      {isDragOver
+                        ? isMultipleUpload
+                          ? "فایل‌ها را اینجا رها کنید"
+                          : "فایل را اینجا رها کنید"
+                        : selectedFile
+                          ? Array.isArray(selectedFile)
+                            ? `${selectedFile.length} فایل انتخاب شده`
+                            : "فایل انتخاب شده"
+                          : isEditMode
+                            ? "انتخاب فایل جدید (اختیاری)"
+                            : isMultipleUpload
+                              ? "کلیک کنید یا فایل‌ها را بکشید"
+                              : "کلیک کنید یا فایل را بکشید"}
                     </Typography>
                   </>
                 )}
@@ -649,14 +753,29 @@ const FileUpload: React.FC<FileUploadProps> = ({
           <Box sx={{ minWidth: 200 }}>
             <Typography variant="body2" gutterBottom sx={{ fontWeight: 500 }}>
               نوع تصویر
+              {defaultType && (
+                <Typography
+                  component="span"
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ ml: 1, fontStyle: "italic" }}
+                >
+                  (ثابت)
+                </Typography>
+              )}
             </Typography>
-            <FormControl variant="outlined" size="small" fullWidth error={!!errors.type}>
+            <FormControl
+              variant="outlined"
+              size="small"
+              fullWidth
+              error={!!errors.type}
+            >
               <InputLabel>نوع تصویر</InputLabel>
               <Select
                 value={currentAllowedType}
                 onChange={handleAllowedTypeChange}
                 label="نوع تصویر"
-                disabled={addImageMutation.isPending || editImageMutation.isPending || isLoadingEditData}
+                disabled={isTypeFieldDisabled}
                 MenuProps={{
                   disablePortal: true,
                   disableScrollLock: true,
@@ -665,21 +784,21 @@ const FileUpload: React.FC<FileUploadProps> = ({
                       borderRadius: 2,
                       mt: 1,
                       maxHeight: 240,
-                      overflow: 'auto',
+                      overflow: "auto",
                     },
                   },
                   anchorOrigin: {
-                    vertical: 'bottom',
-                    horizontal: 'left',
+                    vertical: "bottom",
+                    horizontal: "left",
                   },
                   transformOrigin: {
-                    vertical: 'top',
-                    horizontal: 'left',
+                    vertical: "top",
+                    horizontal: "left",
                   },
                   slotProps: {
                     backdrop: {
                       sx: {
-                        backgroundColor: 'transparent',
+                        backgroundColor: "transparent",
                       },
                     },
                   },
@@ -696,6 +815,15 @@ const FileUpload: React.FC<FileUploadProps> = ({
                   {errors.type.message}
                 </Typography>
               )}
+              {defaultType && (
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ mt: 0.5 }}
+                >
+                  نوع تصویر به صورت پیش‌فرض تنظیم شده است
+                </Typography>
+              )}
             </FormControl>
           </Box>
 
@@ -706,16 +834,22 @@ const FileUpload: React.FC<FileUploadProps> = ({
             </Typography>
             <TextField
               value={title}
-              onChange={(e) => setValue('title', e.target.value, { shouldValidate: true })}
+              onChange={(e) =>
+                setValue("title", e.target.value, { shouldValidate: true })
+              }
               variant="outlined"
               size="small"
               disabled={addImageMutation.isPending || isMultipleUpload}
               required={!isMultipleUpload}
-              placeholder={isMultipleUpload ? "عنوان در حالت چندتایی غیرفعال است" : "عنوان تصویر را وارد کنید"}
+              placeholder={
+                isMultipleUpload
+                  ? "عنوان در حالت چندتایی غیرفعال است"
+                  : "عنوان تصویر را وارد کنید"
+              }
               fullWidth
               error={!!errors.title}
               helperText={
-                isMultipleUpload 
+                isMultipleUpload
                   ? "در حالت آپلود چندتایی، عنوان خودکار تنظیم می‌شود"
                   : errors.title?.message
               }
@@ -770,18 +904,30 @@ const FileUpload: React.FC<FileUploadProps> = ({
                     تعداد فایل‌ها: {selectedFile.length}
                   </Typography>
                   <Typography variant="caption" display="block">
-                    مجموع حجم: {formatFileSize(selectedFile.reduce((total, file) => total + file.size, 0))}
+                    مجموع حجم:{" "}
+                    {formatFileSize(
+                      selectedFile.reduce((total, file) => total + file.size, 0)
+                    )}
                   </Typography>
                   <Typography variant="caption" display="block" sx={{ mt: 1 }}>
                     فایل‌های انتخاب شده:
                   </Typography>
                   {selectedFile.slice(0, 3).map((file, index) => (
-                    <Typography key={index} variant="caption" display="block" sx={{ ml: 1 }}>
+                    <Typography
+                      key={index}
+                      variant="caption"
+                      display="block"
+                      sx={{ ml: 1 }}
+                    >
                       • {file.name} ({formatFileSize(file.size)})
                     </Typography>
                   ))}
                   {selectedFile.length > 3 && (
-                    <Typography variant="caption" display="block" sx={{ ml: 1 }}>
+                    <Typography
+                      variant="caption"
+                      display="block"
+                      sx={{ ml: 1 }}
+                    >
                       • و {selectedFile.length - 3} فایل دیگر...
                     </Typography>
                   )}
@@ -810,7 +956,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
               <Typography variant="caption" color="text.secondary">
                 هیچ فایلی انتخاب نشده است.
                 <br />
-                برای انتخاب فایل، روی مربع بالا کلیک کنید یا فایل را بکشید و رها کنید.
+                برای انتخاب فایل، روی مربع بالا کلیک کنید یا فایل را بکشید و رها
+                کنید.
               </Typography>
             )}
           </Box>
@@ -838,21 +985,21 @@ const FileUpload: React.FC<FileUploadProps> = ({
             },
           }}
         >
-          {(addImageMutation.isPending || editImageMutation.isPending) ? (
+          {addImageMutation.isPending || editImageMutation.isPending ? (
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <CircularProgress size={24} color="inherit" />
-              {isEditMode 
-                ? "در حال ویرایش..." 
-                : isMultipleUpload 
-                  ? "در حال آپلود فایل‌ها..." 
+              {isEditMode
+                ? "در حال ویرایش..."
+                : isMultipleUpload
+                  ? "در حال آپلود فایل‌ها..."
                   : "در حال آپلود..."}
             </Box>
+          ) : isEditMode ? (
+            "ویرایش تصویر"
+          ) : isMultipleUpload ? (
+            "آپلود فایل‌ها"
           ) : (
-            isEditMode 
-              ? "ویرایش تصویر" 
-              : isMultipleUpload 
-                ? "آپلود فایل‌ها" 
-                : "آپلود تصویر"
+            "آپلود تصویر"
           )}
         </Button>
       </Box>

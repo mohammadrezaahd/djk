@@ -28,6 +28,10 @@ export interface IDetailsBind {
   brand_other_id: number;
   category_product_types: IBindCPT[];
   brand_model: IStringField;
+  statuses?: IBindStatus[];
+  platforms?: IBindPlatforms[];
+  product_classes?: IBindProductClass[];
+  fake_reasons?: IBindFakeReason[];
 }
 
 export interface IBindBrand {

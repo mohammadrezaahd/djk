@@ -6,6 +6,7 @@ import type { RootState } from "~/store";
 import { useDetailsValidation } from "~/validation";
 import DetailsField from "./DetailsField";
 import ImageSelector from "../ImageSelector";
+import { MediaType } from "~/components/MediaManager/FileUpload";
 
 const SectionCard = ({ title, children, ...props }: any) => (
   <Card sx={{ p: 2, ...props.sx }} {...props}>
@@ -40,6 +41,10 @@ const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
 
   // Use validation hook only when form data is ready
   const form = useDetailsValidation(detailsData, detailsFormData);
+
+  console.log("🔍 Current id_type value:", form.watch("id_type"));
+  console.log("🔍 Current general_mefa_id value:", form.watch("general_mefa_id"));
+  console.log("🔍 Current custom_id value:", form.watch("custom_id"));
 
   // Notify parent component about validation state changes
   useEffect(() => {
@@ -81,13 +86,19 @@ const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
   }, [isFakeProduct, bind?.brands]);
 
   useEffect(() => {
-    if (!form.watch("id_type")) {
+    const currentIdType = form.watch("id_type");
+    console.log("🔍 Current id_type:", currentIdType);
+    
+    if (!currentIdType) {
+      console.log("🔧 Setting default id_type to general");
       handleDetailsChange("id_type", "general");
+      // Clear both fields when setting default
+      handleDetailsChange("general_mefa_id", "");
+      handleDetailsChange("custom_id", "");
     }
   }, [form.watch("id_type")]);
 
-  const isGeneralId =
-    (form.watch("id_type")) === "general";
+  const isGeneralId = form.watch("id_type") === "general";
 
   if (!detailsData || !detailsData.bind) {
     return (
@@ -224,13 +235,15 @@ const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
                   { value: "custom", label: "شناسه خصوصی" },
                 ]}
                 label=""
-                value={
-                  form.watch("id_type") || "general"
-                }
+                value={form.watch("id_type") || "general"}
                 onChange={(fieldName: string, value: any) => {
                   handleDetailsChange("id_type", value);
-                  handleDetailsChange("general_mefa_id", "");
-                  handleDetailsChange("custom_id", "");
+                  // Clear both fields when switching types
+                  if (value === "general") {
+                    handleDetailsChange("custom_id", "");
+                  } else if (value === "custom") {
+                    handleDetailsChange("general_mefa_id", "");
+                  }
                 }}
                 isRadioGroup
                 error={form.formState.errors.id_type?.message as string}
@@ -272,6 +285,8 @@ const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
             onImagesChange={handleImagesChange}
             label="انتخاب تصاویر"
             helperText="تصاویر مرتبط با این جزئیات محصول را انتخاب کنید"
+            packaging
+            defaultType={MediaType.PACKAGING}
           />
         </SectionCard>
       </Grid>

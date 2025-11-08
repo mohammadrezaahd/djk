@@ -19,6 +19,7 @@ import {
 import { useAttributesValidation } from "~/validation";
 import AttributesField from "./AttributesField";
 import ImageSelector from "../ImageSelector";
+import { MediaType } from "~/components/MediaManager/FileUpload";
 
 const SectionCard = ({ title, children, ...props }: any) => (
   <Card sx={{ p: 2, ...props.sx }} {...props}>
@@ -41,9 +42,8 @@ export default function AttributesTab({
   isLoading,
 }: AttributesTabProps) {
   const dispatch = useAppDispatch();
-  const { attributesData, formData, title, description, images } = useAppSelector(
-    (state) => state.attributes
-  );
+  const { attributesData, formData, title, description, images } =
+    useAppSelector((state) => state.attributes);
 
   // Use validation hook
   const form = useAttributesValidation(
@@ -102,9 +102,7 @@ export default function AttributesTab({
   }, [attributes]);
 
   const otherAttributes = React.useMemo(() => {
-    return attributes.filter(
-      (attr) => !packagingAttributes.includes(attr)
-    );
+    return attributes.filter((attr) => !packagingAttributes.includes(attr));
   }, [attributes, packagingAttributes]);
 
   const handleInputChange = (attrId: number, value: any) => {
@@ -209,7 +207,8 @@ export default function AttributesTab({
                     value={form.watch(attr.id.toString())}
                     onChange={handleInputChange}
                     error={
-                      form.formState.errors[attr.id.toString()]?.message as string
+                      form.formState.errors[attr.id.toString()]
+                        ?.message as string
                     }
                   />
                 </Grid>
@@ -245,6 +244,8 @@ export default function AttributesTab({
             onImagesChange={handleImagesChange}
             label="انتخاب تصاویر"
             helperText="تصاویر مرتبط با این قالب ویژگی‌ها را انتخاب کنید"
+            product
+            defaultType={MediaType.PRODUCT}
           />
         </SectionCard>
       </Grid>

@@ -278,12 +278,22 @@ export const validateAllAttributesTemplates = (
     formData: { [key: string]: any };
   }>
 ): boolean => {
+  if (templates.length === 0) {
+    return true; // No templates to validate
+  }
+
   return templates.every(template => {
     try {
+      // Skip validation if no data is available
+      if (!template.data || Object.keys(template.data).length === 0) {
+        return true; // Consider empty templates as valid for now
+      }
+
       const schema = createProductAttributesValidationSchema(template.data as ICategoryAttr);
       schema.validateSync(template.formData, { abortEarly: false });
       return true;
     } catch (error) {
+      console.error("Template validation failed:", template.id, error);
       return false;
     }
   });
