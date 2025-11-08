@@ -41,6 +41,7 @@ import {
   PageSizeSelector,
   PaginationControls,
   SearchInput,
+  TitleCard,
 } from "~/components/common";
 
 type TemplateType = "attributes" | "details";
@@ -327,12 +328,10 @@ const TemplatesList = () => {
   return (
     <AppLayout title="مدیریت قالب‌ها">
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" gutterBottom>
-          مدیریت قالب‌ها
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          مشاهده و مدیریت قالب‌های ویژگی‌ها و اطلاعات
-        </Typography>
+        <TitleCard
+          title="مدیریت قالب ها"
+          description="مشاهده و مدیریت قالب‌های ویژگی‌ها و اطلاعات"
+        />
       </Box>
 
       <Card>

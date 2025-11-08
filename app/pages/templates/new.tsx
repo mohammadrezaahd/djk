@@ -33,6 +33,7 @@ import AttributesTab from "~/components/templates/attributes/AttributesTab";
 import DetailsTab from "~/components/templates/details/DetailsTab";
 import { useSnackbar } from "notistack";
 import { ApiStatus } from "~/types";
+import { TitleCard } from "~/components/common";
 
 export function meta() {
   return [
@@ -242,10 +243,10 @@ const NewTemplatePage = () => {
 
   return (
     <AppLayout title="افزودن قالب جدید">
-      <Typography variant="h4" gutterBottom>
-        افزودن قالب جدید به فروشگاه
-      </Typography>
-
+      <TitleCard
+        title="افزودن قالب جدید"
+        description="ابتدا دسته بندی مورد نظر را انتخال کنید سپس قالب ویژگی و اطلاعات خود را بسازید"
+      />
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, lg: 12 }}>
           <Grid container spacing={3}>

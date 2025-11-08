@@ -50,6 +50,7 @@ import type { ICategoryList } from "~/types/interfaces/categories.interface";
 import type { ITemplateList } from "~/types/interfaces/templates.interface";
 import type { ICategoryAttr } from "~/types/interfaces/attributes.interface";
 import type { ICategoryDetails } from "~/types/interfaces/details.interface";
+import { TitleCard } from "~/components/common";
 
 const NewProductPage = () => {
   const dispatch = useDispatch();
@@ -96,17 +97,17 @@ const NewProductPage = () => {
     const allErrors = getAttributesTemplatesValidationErrors(
       productState.selectedAttributesTemplates
     );
-    
+
     // Debug logging
     console.log("🔍 All attributes validation errors:", allErrors);
-    
+
     // Flatten errors for the active template
     const activeTemplateErrors = allErrors.find(
-      errorSet => errorSet.templateId === activeAttributesTemplate?.id
+      (errorSet) => errorSet.templateId === activeAttributesTemplate?.id
     );
-    
+
     console.log("🔍 Active template errors:", activeTemplateErrors);
-    
+
     return activeTemplateErrors?.errors || {};
   }, [productState.selectedAttributesTemplates, activeAttributesTemplate?.id]);
 
@@ -303,7 +304,7 @@ const NewProductPage = () => {
     if (category) {
       // Reset image options when category changes
       setImageOptions([]);
-      
+
       dispatch(setSelectedCategory(category.id));
       dispatch(setCurrentStep(FormStep.DETAILS_SELECTION));
 
@@ -673,22 +674,10 @@ const NewProductPage = () => {
   return (
     <Layout title="افزودن محصول جدید">
       <Box sx={{ p: 3 }}>
-        <Paper
-          elevation={2}
-          sx={{
-            p: 3,
-            borderRadius: 2,
-            mb: 3,
-          }}
-        >
-          <Typography variant="h4" component="h1" gutterBottom>
-            ایجاد محصول جدید
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            محصول جدید را بر اساس قالب‌های انتخاب شده ایجاد کنید.
-          </Typography>
-        </Paper>
-
+        <TitleCard
+          title="ایجاد محصول جدید"
+          description="محصول جدید را بر اساس قالب‌های انتخاب شده ایجاد کنید."
+        />
         <FormSteps
           currentStep={productState.currentStep}
           stepValidationErrors={productState.stepValidationErrors}

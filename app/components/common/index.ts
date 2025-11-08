@@ -1,4 +1,8 @@
-export { default as PageSizeSelector } from './PageSizeSelector';
-export { default as PaginationControls } from './PaginationControls';
-export { default as SearchInput } from './SearchInput';
-export { default as LoadingSpinner } from './LoadingSpinner';
+export { default as PageSizeSelector } from "./PageSizeSelector";
+export { default as PaginationControls } from "./PaginationControls";
+export { default as SearchInput } from "./SearchInput";
+export { default as LoadingSpinner } from "./LoadingSpinner";
+export { default as TitleCard } from "./TitleCard";
+export { default as NotFoundPage } from "./NotFoundPage";
+export { default as AnimatedIllustration } from "./AnimatedIllustration";
+export { default as ErrorPage } from "./ErrorPage";

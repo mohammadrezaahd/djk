@@ -18,6 +18,7 @@ import { useImages, useRemoveImage } from "~/api/gallery.api";
 import { ApiStatus } from "~/types";
 import type { IGallery } from "~/types/interfaces/gallery.interface";
 import { fixImageUrl } from "~/utils/imageUtils";
+import TitleCard from "~/components/common/TitleCard";
 
 // Media file interface matching MediaManager
 interface IMediaFile {
@@ -157,9 +158,10 @@ const GalleryPage = () => {
   return (
     <AppLayout title="مدیریت رسانه">
       <Container maxWidth="lg">
-        <Typography variant="h4" gutterBottom>
-          مدیریت رسانه
-        </Typography>
+        <TitleCard
+          title="مدیریت رسانه "
+          description="مدیریت و ویرایش رسانه‌های بارگذاری شده و بارگزاری رسانه جدید"
+        />
 
         {(error || hasImagesFetchError) && (
           <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError("")}>
