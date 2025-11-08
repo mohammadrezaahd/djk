@@ -64,23 +64,6 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
     });
     allBadges.push(...Array.from(uniqueAttributes.values()));
 
-    // Extract selected brands from details
-    const uniqueBrands = new Map<string, DetailTag>();
-    detailsData.forEach((detailData) => {
-      if (detailData?.bind?.brands) {
-        detailData.bind.brands.forEach((brand) => {
-          if (brand.selected && !uniqueBrands.has(brand.id)) {
-            uniqueBrands.set(brand.id, {
-              id: brand.id,
-              title: "brand",
-              type: "detail",
-            });
-          }
-        });
-      }
-    });
-    allBadges.push(...Array.from(uniqueBrands.values()));
-
     return allBadges;
   }, [attributesData, detailsData]);
 

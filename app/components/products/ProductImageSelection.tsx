@@ -1,16 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Box,
   Paper,
   Typography,
   Button,
   CircularProgress,
+  Alert,
+  Stack,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { useSelectedImages } from "~/api/gallery.api";
-import { MediaGrid } from "~/components/MediaManager";
+import { MediaManager } from "~/components/MediaManager";
+import { MediaType } from "~/components/MediaManager/FileUpload";
 import type { IGallery } from "~/types/interfaces/gallery.interface";
+
+export enum MediaTypeCategory {
+  PACKAGING = "packaging",
+  PRODUCT = "product",
+  NONE = "none",
+}
 
 interface ProductImageSelectionProps {
   imageOptions: number[];
@@ -35,6 +46,7 @@ const ProductImageSelection: React.FC<ProductImageSelectionProps> = ({
     data: imagesData,
     isLoading,
     error,
+    refetch,
   } = useSelectedImages(imageOptions);
 
   const images: IGallery[] = imagesData?.data?.list || [];
@@ -67,6 +79,84 @@ const ProductImageSelection: React.FC<ProductImageSelectionProps> = ({
   const handlePageSizeChange = (event: any) => {
     setPageSize(event.target.value);
     setCurrentPage(1); // Reset to first page when page size changes
+  };
+
+  // Categorize media
+  const packagingMedia = mediaFiles.filter((m) => !!m.packaging);
+  const productMedia = mediaFiles.filter((m) => !!m.product);
+  const noneMedia = mediaFiles.filter((m) => !m.packaging && !m.product);
+
+  const [activeTab, setActiveTab] = useState<
+    "all" | "packaging" | "product" | "none"
+  >("all");
+  const [showUpload, setShowUpload] = useState(false);
+  const [uploadDefaultType, setUploadDefaultType] = useState<
+    MediaType | undefined
+  >(undefined);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
+    setActiveTab(newValue as any);
+    setCurrentPage(1);
+  };
+
+  const filteredMedia = useMemo(() => {
+    switch (activeTab) {
+      case "packaging":
+        return packagingMedia;
+      case "product":
+        return productMedia;
+      case "none":
+        return noneMedia;
+      default:
+        return mediaFiles;
+    }
+  }, [activeTab, mediaFiles]);
+
+  const totalFilteredItems = filteredMedia.length;
+  const paginatedFilteredMedia = filteredMedia.slice(startIndex, endIndex);
+
+  // Helper to map selected numeric ids to media objects
+  const selectedMediaObjects = useMemo(() => {
+    const ids = new Set(selectedImages.map((id) => id.toString()));
+    return mediaFiles.filter((m) => ids.has(m._id));
+  }, [selectedImages, mediaFiles]);
+
+  // Validation + next handler
+  const handleNext = () => {
+    setErrorMessage(null);
+
+    // 1) Ensure at least one image is selected
+    if (!selectedImages || selectedImages.length === 0) {
+      setErrorMessage("لطفاً حداقل یک تصویر انتخاب کنید.");
+      return;
+    }
+
+    // 2) Ensure among selected images there's at least one product image
+    const hasProductInSelection = selectedMediaObjects.some((m) => !!m.product);
+    if (!hasProductInSelection) {
+      // If there are no product images at all in the fetched media, open upload with product default
+      const hasAnyProduct = productMedia.length > 0;
+      if (!hasAnyProduct) {
+        setErrorMessage(
+          "تصویر محصول وجود ندارد. لطفاً یک تصویر محصول آپلود کنید."
+        );
+        setUploadDefaultType(MediaType.PRODUCT);
+        setShowUpload(true);
+        setActiveTab("product");
+        return;
+      }
+
+      // If there are product images but not selected, instruct user to select at least one product image
+      setErrorMessage(
+        "لطفاً حداقل یک تصویر محصول را نیز از تصاویر انتخاب‌شده وارد کنید."
+      );
+      setActiveTab("product");
+      return;
+    }
+
+    // All validations passed
+    onNext();
   };
 
   const handleSelectionChange = (selectedIds: string[]) => {
@@ -143,12 +233,30 @@ const ProductImageSelection: React.FC<ProductImageSelectionProps> = ({
         انتخاب شده شما استخراج شده‌اند.
       </Typography>
 
-      {mediaFiles.length > 0 ? (
-        <MediaGrid
-          media={paginatedMedia}
+      <Stack spacing={2} sx={{ mb: 2 }}>
+        <Tabs
+          value={activeTab}
+          onChange={handleTabChange}
+          variant="scrollable"
+          scrollButtons="auto"
+        >
+          <Tab label={`همه (${mediaFiles.length})`} value="all" />
+          <Tab label={`محصول (${productMedia.length})`} value="product" />
+          <Tab
+            label={`بسته‌بندی (${packagingMedia.length})`}
+            value="packaging"
+          />
+        </Tabs>
+
+        {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+      </Stack>
+
+      {totalFilteredItems > 0 ? (
+        <MediaManager
+          media={paginatedFilteredMedia}
           loading={isLoading}
           currentPage={currentPage}
-          totalItems={totalItems}
+          totalItems={totalFilteredItems}
           pageSize={pageSize}
           onPageChange={handlePageChange}
           onPageSizeChange={handlePageSizeChange}
@@ -156,12 +264,36 @@ const ProductImageSelection: React.FC<ProductImageSelectionProps> = ({
           selectionMode={true}
           selectedItems={selectedImages.map((id) => id.toString())}
           onSelectionChange={handleSelectionChange}
+          showUpload={showUpload}
+          defaultType={uploadDefaultType}
+          onUploadSuccess={() => {
+            // Refresh images and clear upload panel / errors
+            if (refetch) refetch();
+            setShowUpload(false);
+            setUploadDefaultType(undefined);
+            setErrorMessage(null);
+          }}
+          onUploadError={(err: any) => {
+            setErrorMessage(typeof err === "string" ? err : "خطا در آپلود");
+          }}
         />
       ) : (
         <Box sx={{ textAlign: "center", py: 4 }}>
           <Typography variant="body1" color="text.secondary">
             تصاویری برای نمایش یافت نشد.
           </Typography>
+          {/* If no images at all, show upload area */}
+          <Box sx={{ mt: 2 }}>
+            <Button
+              variant="contained"
+              onClick={() => {
+                setUploadDefaultType(MediaType.PRODUCT);
+                setShowUpload(true);
+              }}
+            >
+              آپلود تصویر
+            </Button>
+          </Box>
         </Box>
       )}
 
@@ -169,7 +301,7 @@ const ProductImageSelection: React.FC<ProductImageSelectionProps> = ({
         <Button variant="outlined" onClick={onBack}>
           مرحله قبل
         </Button>
-        <Button variant="contained" onClick={onNext}>
+        <Button variant="contained" onClick={handleNext}>
           مرحله بعد
         </Button>
       </Box>
