@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Typography, Box, Paper, Alert } from "@mui/material";
+import { Typography, Box, Paper, Alert, Backdrop } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
+import { useSnackbar } from "notistack";
+import { useNavigate } from "react-router";
 import type { RootState } from "~/store";
+import { TemplateSource } from "~/types/dtos/templates.dto";
 import {
   FormStep,
   setCurrentStep,
@@ -51,9 +54,13 @@ import type { ITemplateList } from "~/types/interfaces/templates.interface";
 import type { ICategoryAttr } from "~/types/interfaces/attributes.interface";
 import type { ICategoryDetails } from "~/types/interfaces/details.interface";
 import { TitleCard } from "~/components/common";
+import { useAddProduct } from "~/api/product.api";
+import ResultPage from "~/components/products/ResultPage";
 
 const NewProductPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
   const productState = useSelector((state: RootState) => state.product);
 
   // Local state for category management
@@ -61,11 +68,18 @@ const NewProductPage = () => {
   const [imageOptions, setImageOptions] = useState<number[]>([]);
   const [selectedCategory, setSelectedCategoryLocal] =
     useState<ICategoryList | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showResultPage, setShowResultPage] = useState(false);
 
   // Category queries
   const { data: categoriesData, isLoading: categoriesLoading } =
     useCategoriesList(categorySearch, 1, 50);
-
+  const {
+    mutateAsync: saveProduct,
+    isPending: isProductSaving,
+    error: productError,
+    isSuccess: productSuccess,
+  } = useAddProduct();
   // Details and attributes mutations
   const detailsMutation = useDetails();
   const attributesMutation = useAttrs();
@@ -491,15 +505,73 @@ const NewProductPage = () => {
   };
 
   // Handle form submissions
-  const handleCreateProduct = () => {
-    dispatch(generateFinalProductData());
+  const handleCreateProduct = async () => {
+    try {
+      setIsSubmitting(true);
+      
+      // First generate the final product data
+      dispatch(generateFinalProductData());
 
-    if (productState.finalProductData) {
-      console.log("🎉 Product created successfully!");
-      console.log(
-        "📋 Final product data:",
-        JSON.stringify(productState.finalProductData, null, 2)
-      );
+      // Use a temporary variable to store final data
+      // Since dispatch updates state, we need to wait for the next render cycle
+      setTimeout(async () => {
+        try {
+          // At this point, the state should be updated with finalProductData
+          // We'll pass the data directly from the current form state
+          const currentProductState = (
+            document as any
+          ).___REDUX_DEVTOOLS_EXTENSION__?.() || productState;
+
+          // More reliably, let's just create the data inline based on what we have
+          const finalProductData = {
+            category_id: productState.selectedCategoryId,
+            title: productState.productTitle,
+            description: productState.productDescription,
+            details: { list: productState.selectedDetailsTemplates.map((t) => t.data) },
+            attributes: { list: productState.selectedAttributesTemplates.map((t) => t.data) },
+            images: productState.selectedImages,
+            source: TemplateSource.App,
+            tag: "test",
+            variant_data: {},
+          };
+
+          console.log("🎉 Product data prepared!");
+          console.log(
+            "📋 Final product data:",
+            JSON.stringify(finalProductData, null, 2)
+          );
+
+          // Save product to server
+          const response = await saveProduct(finalProductData as any);
+
+          // Check both status and ApiStatus.SUCCEEDED
+          if (response?.status === "true") {
+            enqueueSnackbar("محصول با موفقیت ذخیره شد", {
+              variant: "success",
+            });
+            // Show result page after a short delay
+            setTimeout(() => {
+              setShowResultPage(true);
+              setIsSubmitting(false);
+            }, 500);
+          } else {
+            enqueueSnackbar("خطا در ذخیره محصول", { variant: "error" });
+            setIsSubmitting(false);
+          }
+        } catch (error: any) {
+          console.error("Error creating product:", error);
+          const errorMessage =
+            error?.response?.data?.message ||
+            error?.message ||
+            "خطا در ذخیره محصول";
+          enqueueSnackbar(errorMessage, { variant: "error" });
+          setIsSubmitting(false);
+        }
+      }, 0);
+    } catch (error: any) {
+      console.error("Error in product creation:", error);
+      enqueueSnackbar("خطا در آماده‌سازی محصول", { variant: "error" });
+      setIsSubmitting(false);
     }
   };
 
@@ -531,167 +603,237 @@ const NewProductPage = () => {
 
   // Render current step
   const renderCurrentStep = () => {
-    switch (productState.currentStep) {
-      case FormStep.CATEGORY_SELECTION:
-        return (
-          <CategorySelector
-            categories={categoriesData?.data?.items || []}
-            selectedCategory={selectedCategory}
-            loadingCategories={categoriesLoading}
-            onCategoryChange={handleCategorySelect}
-            onSearchChange={setCategorySearch}
-          />
-        );
+    const stepContent = (() => {
+      switch (productState.currentStep) {
+        case FormStep.CATEGORY_SELECTION:
+          return (
+            <CategorySelector
+              categories={categoriesData?.data?.items || []}
+              selectedCategory={selectedCategory}
+              loadingCategories={categoriesLoading}
+              onCategoryChange={handleCategorySelect}
+              onSearchChange={setCategorySearch}
+            />
+          );
 
-      case FormStep.DETAILS_SELECTION:
-        return (
-          <TemplateSelection
-            title="انتخاب قالب‌های اطلاعات"
-            availableTemplates={productState.availableDetailsTemplates}
-            selectedTemplateIds={productState.selectedDetailsTemplates.map(
-              (t) => t.id
-            )}
-            onTemplateToggle={handleDetailsTemplateToggle}
-            onNext={handleNextFromDetailsSelection}
-            onBack={handleBackToCategorySelection}
-            isLoading={detailsMutation.isPending}
-          />
-        );
+        case FormStep.DETAILS_SELECTION:
+          return (
+            <TemplateSelection
+              title="انتخاب قالب‌های اطلاعات"
+              availableTemplates={productState.availableDetailsTemplates}
+              selectedTemplateIds={productState.selectedDetailsTemplates.map(
+                (t) => t.id
+              )}
+              onTemplateToggle={handleDetailsTemplateToggle}
+              onNext={handleNextFromDetailsSelection}
+              onBack={handleBackToCategorySelection}
+              isLoading={detailsMutation.isPending || isSubmitting}
+            />
+          );
 
-      case FormStep.DETAILS_FORM:
-        return (
-          <TemplateForms
-            title="تکمیل فرم‌های اطلاعات"
-            selectedTemplates={productState.selectedDetailsTemplates}
-            activeTemplateIndex={productState.activeDetailsTemplateIndex}
-            onTabChange={(index) =>
-              dispatch(setActiveDetailsTemplateIndex(index))
-            }
-            onRemoveTemplate={(id) => dispatch(removeDetailsTemplate(id))}
-            onNext={handleNextFromDetailsForm}
-            onBack={handleBackToDetailsSelection}
-          >
-            {activeDetailsTemplate && activeDetailsTemplateData?.data && (
-              <ProductDetailsForm
-                data={activeDetailsTemplateData.data.data_json}
-                formData={activeDetailsTemplate.formData}
-                onFormDataChange={(fieldName: string, value: any) =>
-                  dispatch(
-                    updateDetailsTemplateFormData({
-                      templateIndex: productState.activeDetailsTemplateIndex,
-                      fieldName,
-                      value,
-                    })
-                  )
-                }
-                validationErrors={activeDetailsValidation.errors}
-              />
-            )}
-          </TemplateForms>
-        );
+        case FormStep.DETAILS_FORM:
+          return (
+            <TemplateForms
+              title="تکمیل فرم‌های اطلاعات"
+              selectedTemplates={productState.selectedDetailsTemplates}
+              activeTemplateIndex={productState.activeDetailsTemplateIndex}
+              onTabChange={(index) =>
+                dispatch(setActiveDetailsTemplateIndex(index))
+              }
+              onRemoveTemplate={(id) => dispatch(removeDetailsTemplate(id))}
+              onNext={handleNextFromDetailsForm}
+              onBack={handleBackToDetailsSelection}
+            >
+              {activeDetailsTemplate && activeDetailsTemplateData?.data && (
+                <ProductDetailsForm
+                  data={activeDetailsTemplateData.data.data_json}
+                  formData={activeDetailsTemplate.formData}
+                  onFormDataChange={(fieldName: string, value: any) =>
+                    dispatch(
+                      updateDetailsTemplateFormData({
+                        templateIndex: productState.activeDetailsTemplateIndex,
+                        fieldName,
+                        value,
+                      })
+                    )
+                  }
+                  validationErrors={activeDetailsValidation.errors}
+                />
+              )}
+            </TemplateForms>
+          );
 
-      case FormStep.ATTRIBUTES_SELECTION:
-        return (
-          <TemplateSelection
-            title="انتخاب قالب‌های ویژگی"
-            availableTemplates={productState.availableAttributesTemplates}
-            selectedTemplateIds={productState.selectedAttributesTemplates.map(
-              (t) => t.id
-            )}
-            onTemplateToggle={handleAttributesTemplateToggle}
-            onNext={handleNextFromAttributesSelection}
-            onBack={handleBackToDetailsSelectionFromAttributes}
-            isLoading={attributesMutation.isPending}
-          />
-        );
+        case FormStep.ATTRIBUTES_SELECTION:
+          return (
+            <TemplateSelection
+              title="انتخاب قالب‌های ویژگی"
+              availableTemplates={productState.availableAttributesTemplates}
+              selectedTemplateIds={productState.selectedAttributesTemplates.map(
+                (t) => t.id
+              )}
+              onTemplateToggle={handleAttributesTemplateToggle}
+              onNext={handleNextFromAttributesSelection}
+              onBack={handleBackToDetailsSelectionFromAttributes}
+              isLoading={attributesMutation.isPending || isSubmitting}
+            />
+          );
 
-      case FormStep.ATTRIBUTES_FORM:
-        return (
-          <TemplateForms
-            title="تکمیل فرم‌های ویژگی"
-            selectedTemplates={productState.selectedAttributesTemplates}
-            activeTemplateIndex={productState.activeAttributesTemplateIndex}
-            onTabChange={(index) =>
-              dispatch(setActiveAttributesTemplateIndex(index))
-            }
-            onRemoveTemplate={(id) => dispatch(removeAttributesTemplate(id))}
-            onNext={handleNextFromAttributesForm}
-            onBack={handleBackToAttributesSelection}
-          >
-            {activeAttributesTemplate && activeAttributesTemplateData?.data && (
-              <ProductAttributesForm
-                data={activeAttributesTemplateData.data.data_json}
-                formData={activeAttributesTemplate.formData}
-                onFormDataChange={(fieldId: number, value: any) =>
-                  dispatch(
-                    updateAttributesTemplateFormData({
-                      templateIndex: productState.activeAttributesTemplateIndex,
-                      fieldId: fieldId.toString(),
-                      value,
-                    })
-                  )
-                }
-                validationErrors={allAttributesValidationErrors}
-              />
-            )}
-          </TemplateForms>
-        );
+        case FormStep.ATTRIBUTES_FORM:
+          return (
+            <TemplateForms
+              title="تکمیل فرم‌های ویژگی"
+              selectedTemplates={productState.selectedAttributesTemplates}
+              activeTemplateIndex={productState.activeAttributesTemplateIndex}
+              onTabChange={(index) =>
+                dispatch(setActiveAttributesTemplateIndex(index))
+              }
+              onRemoveTemplate={(id) => dispatch(removeAttributesTemplate(id))}
+              onNext={handleNextFromAttributesForm}
+              onBack={handleBackToAttributesSelection}
+            >
+              {activeAttributesTemplate && activeAttributesTemplateData?.data && (
+                <ProductAttributesForm
+                  data={activeAttributesTemplateData.data.data_json}
+                  formData={activeAttributesTemplate.formData}
+                  onFormDataChange={(fieldId: number, value: any) =>
+                    dispatch(
+                      updateAttributesTemplateFormData({
+                        templateIndex: productState.activeAttributesTemplateIndex,
+                        fieldId: fieldId.toString(),
+                        value,
+                      })
+                    )
+                  }
+                  validationErrors={allAttributesValidationErrors}
+                />
+              )}
+            </TemplateForms>
+          );
 
-      case FormStep.IMAGE_SELECTION:
-        return (
-          <ProductImageSelection
-            imageOptions={imageOptions}
-            selectedImages={productState.selectedImages}
-            onImageSelectionChange={handleImageSelectionChange}
-            onNext={handleNextFromImageSelection}
-            onBack={handleBackFromImageSelection}
-          />
-        );
+        case FormStep.IMAGE_SELECTION:
+          return (
+            <ProductImageSelection
+              imageOptions={imageOptions}
+              selectedImages={productState.selectedImages}
+              onImageSelectionChange={handleImageSelectionChange}
+              onNext={handleNextFromImageSelection}
+              onBack={handleBackFromImageSelection}
+            />
+          );
 
-      case FormStep.PRODUCT_INFO:
-        return (
-          <ProductInfoForm
-            title={productState.productTitle}
-            description={productState.productDescription}
-            onTitleChange={(title) => dispatch(setProductTitle(title))}
-            onDescriptionChange={(description) =>
-              dispatch(setProductDescription(description))
-            }
-            onSubmit={handleCreateProduct}
-            onBack={handleBackToImageSelection}
-            hasValidationErrors={!productInfoValidation.isValid}
-            stepValidationErrors={productState.stepValidationErrors}
-            attributesData={getAllAttributesData}
-            detailsData={getAllDetailsData}
-          />
-        );
+        case FormStep.PRODUCT_INFO:
+          return (
+            <ProductInfoForm
+              title={productState.productTitle}
+              description={productState.productDescription}
+              onTitleChange={(title) => dispatch(setProductTitle(title))}
+              onDescriptionChange={(description) =>
+                dispatch(setProductDescription(description))
+              }
+              onSubmit={handleCreateProduct}
+              onBack={handleBackToImageSelection}
+              hasValidationErrors={!productInfoValidation.isValid}
+              isSubmitting={isSubmitting}
+              stepValidationErrors={productState.stepValidationErrors}
+              attributesData={getAllAttributesData}
+              detailsData={getAllDetailsData}
+            />
+          );
 
-      default:
-        return null;
-    }
+        default:
+          return null;
+      }
+    })();
+
+    // Wrap content with a disabled overlay if submitting
+    return (
+      <Box
+        sx={{
+          opacity: isSubmitting ? 0.5 : 1,
+          pointerEvents: isSubmitting ? "none" : "auto",
+          transition: "opacity 0.3s ease",
+        }}
+      >
+        {stepContent}
+      </Box>
+    );
   };
 
   return (
     <Layout title="افزودن محصول جدید">
       <Box sx={{ p: 3 }}>
-        <TitleCard
-          title="ایجاد محصول جدید"
-          description="محصول جدید را بر اساس قالب‌های انتخاب شده ایجاد کنید."
-        />
-        <FormSteps
-          currentStep={productState.currentStep}
-          stepValidationErrors={productState.stepValidationErrors}
-        />
+        {showResultPage ? (
+          <ResultPage />
+        ) : (
+          <>
+            <TitleCard
+              title="ایجاد محصول جدید"
+              description="محصول جدید را بر اساس قالب‌های انتخاب شده ایجاد کنید."
+            />
+            <FormSteps
+              currentStep={productState.currentStep}
+              stepValidationErrors={productState.stepValidationErrors}
+            />
 
-        {renderCurrentStep()}
+            {renderCurrentStep()}
 
-        {productState.finalProductData && (
-          <Alert severity="success" sx={{ mt: 3 }}>
-            <Typography variant="body2">
-              محصول با موفقیت ایجاد شد! داده‌های نهایی در کنسول مرورگر قابل
-              مشاهده است.
-            </Typography>
-          </Alert>
+            {productState.finalProductData && !isSubmitting && (
+              <Alert severity="success" sx={{ mt: 3 }}>
+                <Typography variant="body2">
+                  محصول با موفقیت ایجاد شد! داده‌های نهایی در کنسول مرورگر قابل
+                  مشاهده است.
+                </Typography>
+              </Alert>
+            )}
+
+            {/* Backdrop overlay when submitting */}
+            <Backdrop
+              sx={{
+                color: "#fff",
+                zIndex: (theme) => theme.zIndex.drawer + 1,
+              }}
+              open={isSubmitting}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 2,
+                }}
+              >
+                <Paper
+                  sx={{
+                    p: 3,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 2,
+                  }}
+                >
+                  <Typography variant="h6" color="primary" fontWeight="bold">
+                    در حال ذخیره محصول...
+                  </Typography>
+                  <div
+                    style={{
+                      width: 60,
+                      height: 60,
+                      border: "4px solid rgba(0, 0, 0, 0.1)",
+                      borderTop: "4px solid #1976d2",
+                      borderRadius: "50%",
+                      animation: "spin 1s linear infinite",
+                    }}
+                  />
+                </Paper>
+              </Box>
+            </Backdrop>
+            <style>{`
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+            `}</style>
+          </>
         )}
       </Box>
     </Layout>
