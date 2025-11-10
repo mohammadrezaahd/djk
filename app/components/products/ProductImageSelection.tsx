@@ -204,18 +204,10 @@ const ProductImageSelection: React.FC<ProductImageSelectionProps> = ({
         </Typography>
 
         <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
-          <Button
-            variant="outlined"
-            startIcon={<ArrowBackIcon />}
-            onClick={onBack}
-          >
+          <Button variant="outlined" onClick={onBack}>
             بازگشت
           </Button>
-          <Button
-            variant="contained"
-            endIcon={<ArrowForwardIcon />}
-            onClick={onNext}
-          >
+          <Button variant="contained" onClick={onNext}>
             ادامه
           </Button>
         </Box>

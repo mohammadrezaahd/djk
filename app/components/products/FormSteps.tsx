@@ -28,9 +28,15 @@ interface FormStepsProps {
 const Connector = styled(StepConnector)(({ theme }) => ({
   [`&.${stepConnectorClasses.alternativeLabel}`]: {
     // مقدار top رو طوری می‌ذاریم که خط از مرکز آیکون عبور کنه
-    top: 14, // ← عدد طلایی! (مقدار پیش‌فرض 22 بود)
+    top: 10, // برای آیکون‌های کوچکتر در موبایل
     left: theme.direction === "rtl" ? "calc(50% + 8px)" : "calc(-50% + 8px)",
     right: theme.direction === "rtl" ? "calc(-50% + 8px)" : "calc(50% + 8px)",
+    [theme.breakpoints.up('sm')]: {
+      top: 12,
+    },
+    [theme.breakpoints.up('md')]: {
+      top: 14,
+    },
   },
   [`& .${stepConnectorClasses.line}`]: {
     borderTopWidth: 2,
@@ -66,19 +72,21 @@ const CustomStepIcon = styled(StepIcon)(({ theme }) => ({
 const StepIconComponent = (props: any) => {
   const { active, completed, icon, hasError, hasBeenVisited } = props;
 
+  const iconSize = { xs: 20, sm: 24, md: 28 };
+
   if (completed && !hasError) {
-    return <CheckCircle sx={{ width: 28, height: 28, color: 'success.main' }} />;
+    return <CheckCircle sx={{ width: iconSize, height: iconSize, color: 'success.main' }} />;
   }
   
   if (hasBeenVisited && hasError) {
-    return <Error sx={{ width: 28, height: 28, color: 'error.main' }} />;
+    return <Error sx={{ width: iconSize, height: iconSize, color: 'error.main' }} />;
   }
 
   if (active) {
-    return <RadioButtonUnchecked sx={{ width: 28, height: 28, color: 'primary.main' }} />;
+    return <RadioButtonUnchecked sx={{ width: iconSize, height: iconSize, color: 'primary.main' }} />;
   }
 
-  return <RadioButtonUnchecked sx={{ width: 28, height: 28, color: 'grey.400' }} />;
+  return <RadioButtonUnchecked sx={{ width: iconSize, height: iconSize, color: 'grey.400' }} />;
 };
 
 const FormSteps: React.FC<FormStepsProps> = ({ currentStep, stepValidationErrors }) => {
@@ -116,17 +124,23 @@ const FormSteps: React.FC<FormStepsProps> = ({ currentStep, stepValidationErrors
   };
 
   return (
-    <Box sx={{ width: "100%", mb: 4, direction: "rtl" }}>
+    <Box sx={{ width: "100%", mb: 4, direction: "rtl", overflowX: "auto" }}>
       <Stepper
         activeStep={getActiveStep()}
         alternativeLabel
         connector={<Connector />}
         sx={{
           direction: "rtl",
+          minWidth: { xs: "max-content", md: "100%" },
+          px: { xs: 1, sm: 2 },
           "& .MuiStepLabel-label": {
-            fontSize: "0.875rem",
+            fontSize: { xs: "0.7rem", sm: "0.8rem", md: "0.875rem" },
             fontWeight: 500,
-            whiteSpace: "nowrap",
+            whiteSpace: { xs: "normal", md: "nowrap" },
+            textAlign: "center",
+            maxWidth: { xs: "80px", sm: "100px", md: "none" },
+            lineHeight: 1.2,
+            mt: 0.5,
           },
           "& .MuiStepLabel-label.Mui-active": {
             color: theme.palette.primary.main,
@@ -139,6 +153,9 @@ const FormSteps: React.FC<FormStepsProps> = ({ currentStep, stepValidationErrors
           "& .MuiStepLabel-label.Mui-error": {
             color: theme.palette.error.main,
             fontWeight: 500,
+          },
+          "& .MuiStep-root": {
+            px: { xs: 0.5, sm: 1, md: 2 },
           },
         }}
       >

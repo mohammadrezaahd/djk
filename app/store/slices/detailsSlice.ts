@@ -28,7 +28,6 @@ const detailsSlice = createSlice({
     ) => {
       const { categoryId, data } = action.payload;
 
-      // اگر دسته‌بندی عوض شده باشد، فرم داده‌ها را پاک کن
       if (state.currentCategoryId !== categoryId) {
         state.formData = {};
         state.currentCategoryId = categoryId;
@@ -63,16 +62,15 @@ const detailsSlice = createSlice({
   },
 });
 
-export const {
-  setDetailsData,
-  updateFormField,
-  setImages,
-  resetDetails,
-} = detailsSlice.actions;
+export const { setDetailsData, updateFormField, setImages, resetDetails } =
+  detailsSlice.actions;
 
 // Helper function to transform formData to final IPostDetail structure
-export const getFinalDetailsObject = (state: { details: DetailsState }): IPostDetail | null => {
-  if (!state.details.detailsData || !state.details.currentCategoryId) return null;
+export const getFinalDetailsObject = (state: {
+  details: DetailsState;
+}): IPostDetail | null => {
+  if (!state.details.detailsData || !state.details.currentCategoryId)
+    return null;
 
   // Deep clone the original data
   const finalData = JSON.parse(JSON.stringify(state.details.detailsData));

@@ -32,6 +32,7 @@ export interface IDetailsBind {
   platforms?: IBindPlatforms[];
   product_classes?: IBindProductClass[];
   fake_reasons?: IBindFakeReason[];
+  category_mefa_type?: any;
 }
 
 export interface IBindBrand {
