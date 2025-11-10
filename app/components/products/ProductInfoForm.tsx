@@ -26,6 +26,7 @@ interface ProductInfoFormProps {
   };
   attributesData?: ICategoryAttr[];
   detailsData?: ICategoryDetails[];
+  submitButtonLabel?: string;
 }
 
 const ProductInfoForm: React.FC<ProductInfoFormProps> = ({
@@ -40,6 +41,7 @@ const ProductInfoForm: React.FC<ProductInfoFormProps> = ({
   stepValidationErrors = {},
   attributesData = [],
   detailsData = [],
+  submitButtonLabel = "ایجاد محصول",
 }) => {
   const [errors, setErrors] = useState<{ title?: string }>({});
 
@@ -115,7 +117,7 @@ const ProductInfoForm: React.FC<ProductInfoFormProps> = ({
 
       <Alert severity="info" sx={{ mb: 3 }}>
         <Typography variant="body2">
-          پس از کلیک روی "ایجاد محصول"، اطلاعات نهایی محصول در کنسول نمایش داده خواهد شد.
+          پس از کلیک روی "{submitButtonLabel}"، اطلاعات نهایی محصول در کنسول نمایش داده خواهد شد.
         </Typography>
       </Alert>
 
@@ -134,7 +136,7 @@ const ProductInfoForm: React.FC<ProductInfoFormProps> = ({
           disabled={isSubmitting || hasPreviousStepErrors || (!!errors.title && !title.trim())}
           sx={{ minWidth: 120 }}
         >
-          {isSubmitting ? "در حال ایجاد..." : "ایجاد محصول"}
+          {isSubmitting ? `در حال ${submitButtonLabel}...` : submitButtonLabel}
         </Button>
       </Box>
     </Paper>

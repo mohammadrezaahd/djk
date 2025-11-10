@@ -13,4 +13,5 @@ export interface ITemplateBase {
   title: string;
   description?: string;
   images: number[];
+  category_id: number;
 }

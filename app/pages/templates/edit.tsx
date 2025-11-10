@@ -110,7 +110,7 @@ const EditTemplatePage = () => {
       if (attributeData.data.data_json) {
         dispatch(
           setAttributesData({
-            categoryId: 1, // We'll use a placeholder categoryId since we're in edit mode
+            categoryId: attributeData.data.category_id,
             data: attributeData.data.data_json,
           })
         );
@@ -175,7 +175,7 @@ const EditTemplatePage = () => {
       if (detailData.data.data_json) {
         dispatch(
           setDetailsData({
-            categoryId: 1, // We'll use a placeholder categoryId since we're in edit mode
+            categoryId: detailData.data.category_id || 1,
             data: detailData.data.data_json,
           })
         );

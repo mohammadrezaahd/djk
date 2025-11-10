@@ -333,7 +333,41 @@ const productSlice = createSlice({
               status.selected = status.value === formData.status;
             });
           }
-          // Add other bind updates as needed...
+
+          // Update platforms selected
+          if (bind.platforms && formData.platform) {
+            bind.platforms.forEach((platform: any) => {
+              platform.selected = platform.value === formData.platform;
+            });
+          }
+
+          // Update product_classes selected
+          if (bind.product_classes && formData.product_class) {
+            bind.product_classes.forEach((productClass: any) => {
+              productClass.selected = productClass.value === formData.product_class;
+            });
+          }
+
+          // Update category_product_types selected
+          if (bind.category_product_types && formData.category_product_type) {
+            bind.category_product_types.forEach((cpt: any) => {
+              cpt.selected = cpt.value === formData.category_product_type;
+            });
+          }
+
+          // Update fake_reasons selected (special case: text field matches form value)
+          if (bind.fake_reasons && formData.fake_reason) {
+            bind.fake_reasons.forEach((reason: any) => {
+              reason.selected = reason.text.toString() === formData.fake_reason;
+            });
+          }
+
+          // Update themes selected
+          if (bind.category_data?.themes && formData.theme) {
+            bind.category_data.themes.forEach((theme: any) => {
+              theme.selected = theme.value === formData.theme;
+            });
+          }
         }
 
         return finalData;

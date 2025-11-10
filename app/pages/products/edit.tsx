@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo } from "react";
+﻿import React, { useState, useEffect, useMemo } from "react";
 import { Typography, Box, Paper, Alert, Backdrop } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import type { RootState } from "~/store";
 import { TemplateSource } from "~/types/dtos/templates.dto";
+import { useProduct } from "~/api/product.api";
 import {
   FormStep,
   setCurrentStep,
@@ -57,11 +58,14 @@ import { TitleCard } from "~/components/common";
 import { useAddProduct } from "~/api/product.api";
 import ResultPage from "~/components/products/ResultPage";
 
-const NewProductPage = () => {
+const EditProductPage = () => {
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get("id");
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const productState = useSelector((state: RootState) => state.product);
+  const { data: existingProduct, isLoading: productLoading } = useProduct(parseInt(id || "0"));
 
   // Local state for category management
   const [categorySearch, setCategorySearch] = useState("");
@@ -70,6 +74,20 @@ const NewProductPage = () => {
     useState<ICategoryList | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showResultPage, setShowResultPage] = useState(false);
+
+  // Initialize form with existing product data
+  useEffect(() => {
+    if (existingProduct?.data && !productLoading) {
+      const product = existingProduct.data;
+      dispatch(setSelectedCategory(product.category_id));
+      setSelectedCategoryLocal({ id: product.category_id } as ICategoryList);
+      dispatch(setProductTitle(product.title));
+      dispatch(setProductDescription(product.description || ""));
+      if (product.images && Array.isArray(product.images)) {
+        dispatch(setSelectedImages(product.images));
+      }
+    }
+  }, [existingProduct, productLoading, dispatch]);
 
   // Category queries
   const { data: categoriesData, isLoading: categoriesLoading } =
@@ -847,6 +865,7 @@ const NewProductPage = () => {
               stepValidationErrors={productState.stepValidationErrors}
               attributesData={getAllAttributesData}
               detailsData={getAllDetailsData}
+              submitButtonLabel="ویرایش"
             />
           );
 
@@ -877,8 +896,8 @@ const NewProductPage = () => {
         ) : (
           <>
             <TitleCard
-              title="ایجاد محصول جدید"
-              description="محصول جدید را بر اساس قالب‌های انتخاب شده ایجاد کنید."
+              title="ویرایش محصول"
+              description="محصول را بر اساس قالب‌های انتخاب شده ویرایش کنید."
             />
             <FormSteps
               currentStep={productState.currentStep}
@@ -890,7 +909,7 @@ const NewProductPage = () => {
             {productState.finalProductData && !isSubmitting && (
               <Alert severity="success" sx={{ mt: 3 }}>
                 <Typography variant="body2">
-                  محصول با موفقیت ایجاد شد! داده‌های نهایی در کنسول مرورگر قابل
+                  محصول با موفقیت ویرایش شد! داده‌های نهایی در کنسول مرورگر قابل
                   مشاهده است.
                 </Typography>
               </Alert>
@@ -950,4 +969,4 @@ const NewProductPage = () => {
   );
 };
 
-export default NewProductPage;
+export default EditProductPage;
