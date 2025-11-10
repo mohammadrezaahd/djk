@@ -162,6 +162,29 @@ export const getFinalDetailsObject = (state: { details: DetailsState }): IPostDe
         bind.general_mefa[key].selected = key === formData.general_mefa_id;
       });
     }
+
+    // Update text field values (IStringField type fields like brand_model, color_pattern, warranty, etc.)
+    const textFields = [
+      "brand_model",
+      "color_pattern",
+      "warranty",
+      "size",
+      "weight",
+      "material",
+      "origin_country",
+      "manufacturer",
+      "model_number",
+      "barcode",
+      "package_dimensions",
+      "special_features",
+      "care_instructions",
+    ];
+
+    textFields.forEach((fieldName) => {
+      if (bind[fieldName] && formData[fieldName] !== undefined) {
+        bind[fieldName].value = formData[fieldName];
+      }
+    });
   }
 
   // Return IPostDetail object

@@ -5,6 +5,7 @@ import {
   CardContent,
   Typography,
   Grid,
+  CircularProgress,
 } from "@mui/material";
 import React from "react";
 
@@ -46,6 +47,7 @@ const ActionButtons = ({
             onClick={onSubmit}
             size="large"
             disabled={loading || !isFormValid}
+            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : undefined}
             sx={{
               opacity: !isFormValid ? 0.6 : 1,
             }}

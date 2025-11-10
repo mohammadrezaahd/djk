@@ -1,10 +1,11 @@
 import { Box, Typography, Card, CardContent, Grid } from "@mui/material";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useAppSelector, useAppDispatch } from "~/store/hooks";
 import { updateFormField, setImages } from "~/store/slices/detailsSlice";
 import type { RootState } from "~/store";
 import { useDetailsValidation } from "~/validation";
 import DetailsField from "./DetailsField";
+import DetailsFormFields from "./DetailsFormFields";
 import ImageSelector from "../ImageSelector";
 import { MediaType } from "~/components/MediaManager/FileUpload";
 
@@ -100,6 +101,24 @@ const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
 
   const isGeneralId = form.watch("id_type") === "general";
 
+  // Convert form errors to validation errors object
+  const validationErrors = useMemo(() => {
+    const errors: { [key: string]: string } = {};
+    Object.keys(form.formState.errors).forEach((key) => {
+      const error = form.formState.errors[key as keyof typeof form.formState.errors];
+      if (error && 'message' in error) {
+        errors[key] = error.message as string;
+      }
+    });
+    return errors;
+  }, [form.formState.errors]);
+
+  // Convert form.watch values to formData object
+  const currentFormData = useMemo(() => {
+    const watchedValues = form.watch();
+    return watchedValues as { [key: string]: any };
+  }, [form.watch()]);
+
   if (!detailsData || !detailsData.bind) {
     return (
       <Grid size={{ xs: 12 }}>
@@ -116,6 +135,7 @@ const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
 
   return (
     <Grid container spacing={3}>
+      {/* Title & Description Section */}
       <Grid size={{ xs: 12 }}>
         <SectionCard title="عنوان قالب اطلاعات">
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -146,136 +166,17 @@ const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
         </SectionCard>
       </Grid>
 
-      {bind?.allow_fake && (
-        <Grid size={{ xs: 12 }}>
-          <SectionCard title="نوع کالا">
-            <DetailsField
-              fieldName="is_fake_product"
-              fieldData={[
-                { value: "original", label: "فروش کالای اصل" },
-                { value: "fake", label: "فروش کالای غیر اصل" },
-              ]}
-              label=""
-              value={
-                form.watch("is_fake_product") === true ? "fake" : "original"
-              }
-              onChange={(fieldName: string, value: any) => {
-                const isFake = value === "fake";
-                handleDetailsChange("is_fake_product", isFake);
-              }}
-              isRadioGroup
-              error={form.formState.errors.is_fake_product?.message as string}
-            />
-          </SectionCard>
+      {/* Details Form Fields - Reusable Component */}
+      <Grid size={{ xs: 12 }}>
+        <Grid container spacing={3}>
+          <DetailsFormFields
+            detailsData={detailsData}
+            formData={currentFormData}
+            onFormDataChange={handleDetailsChange}
+            validationErrors={validationErrors}
+          />
         </Grid>
-      )}
-
-      {bind?.brands && bind.brands.length > 0 && (
-        <Grid size={{ xs: 12, md: 6 }}>
-          <SectionCard title="برند محصول">
-            <DetailsField
-              fieldName="brand"
-              fieldData={bind.brands}
-              label={isFakeProduct ? "برند (متفرقه - غیر قابل ویرایش)" : "برند"}
-              value={form.watch("brand")}
-              onChange={handleDetailsChange}
-              disabled={isFakeProduct}
-              showBrandLogo
-              required
-              error={form.formState.errors.brand?.message as string}
-            />
-          </SectionCard>
-        </Grid>
-      )}
-
-      {bind?.category_product_types &&
-        bind.category_product_types.length > 0 && (
-          <Grid size={{ xs: 12, md: 6 }}>
-            <SectionCard title="نوع محصول">
-              <DetailsField
-                fieldName="category_product_type"
-                fieldData={bind.category_product_types}
-                label="نوع محصول"
-                value={form.watch("category_product_type")}
-                onChange={handleDetailsChange}
-                error={
-                  form.formState.errors.category_product_type?.message as string
-                }
-              />
-            </SectionCard>
-          </Grid>
-        )}
-
-      {/* Brand Model Section */}
-      {bind?.brand_model && (
-        <Grid size={{ xs: 12, md: 6 }}>
-          <SectionCard title="مدل برند">
-            <DetailsField
-              fieldName="brand_model"
-              label="مدل برند"
-              value={form.watch("brand_model")}
-              onChange={handleDetailsChange}
-              isTextField
-              required={bind.brand_model.require}
-              placeholder="مدل برند را وارد کنید"
-              error={form.formState.errors.brand_model?.message as string}
-            />
-          </SectionCard>
-        </Grid>
-      )}
-
-      {bind?.general_mefa && Object.keys(bind.general_mefa).length > 0 && (
-        <Grid size={{ xs: 12 }}>
-          <SectionCard title="شناسه کالا">
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              <DetailsField
-                fieldName="id_type"
-                fieldData={[
-                  { value: "general", label: "شناسه عمومی" },
-                  { value: "custom", label: "شناسه خصوصی" },
-                ]}
-                label=""
-                value={form.watch("id_type") || "general"}
-                onChange={(fieldName: string, value: any) => {
-                  handleDetailsChange("id_type", value);
-                  // Clear both fields when switching types
-                  if (value === "general") {
-                    handleDetailsChange("custom_id", "");
-                  } else if (value === "custom") {
-                    handleDetailsChange("general_mefa_id", "");
-                  }
-                }}
-                isRadioGroup
-                error={form.formState.errors.id_type?.message as string}
-              />
-
-              {isGeneralId ? (
-                <DetailsField
-                  fieldName="general_mefa_id"
-                  fieldData={bind.general_mefa}
-                  label="شناسه عمومی"
-                  value={form.watch("general_mefa_id")}
-                  onChange={handleDetailsChange}
-                  isObjectData
-                  error={
-                    form.formState.errors.general_mefa_id?.message as string
-                  }
-                />
-              ) : (
-                <DetailsField
-                  fieldName="custom_id"
-                  label="شناسه خصوصی"
-                  value={form.watch("custom_id")}
-                  onChange={handleDetailsChange}
-                  isTextField
-                  placeholder="شناسه خصوصی را وارد کنید..."
-                  error={form.formState.errors.custom_id?.message as string}
-                />
-              )}
-            </Box>
-          </SectionCard>
-        </Grid>
-      )}
+      </Grid>
 
       {/* Images Section */}
       <Grid size={{ xs: 12 }}>

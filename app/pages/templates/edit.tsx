@@ -264,6 +264,37 @@ const EditTemplatePage = () => {
           );
         }
 
+        // Load text field values from bind (IStringField type fields)
+        if (templateData.bind) {
+          const bind = templateData.bind as any;
+          const textFields = [
+            "brand_model",
+            "color_pattern",
+            "warranty",
+            "size",
+            "weight",
+            "material",
+            "origin_country",
+            "manufacturer",
+            "model_number",
+            "barcode",
+            "package_dimensions",
+            "special_features",
+            "care_instructions",
+          ];
+
+          textFields.forEach((fieldName) => {
+            if (bind[fieldName]?.value) {
+              dispatch(
+                updateFormField({
+                  fieldName: fieldName,
+                  value: bind[fieldName].value,
+                })
+              );
+            }
+          });
+        }
+
         // Mark form as ready for details
         if (templateType === "details") {
           setTimeout(() => setIsFormReady(true), 100);
@@ -418,8 +449,8 @@ const EditTemplatePage = () => {
                 isEditMode={true}
                 loading={
                   templateType === "attributes"
-                    ? attributeLoading
-                    : detailLoading
+                    ? isAttributesSaving
+                    : isDetailsSaving
                 }
               />
             )}

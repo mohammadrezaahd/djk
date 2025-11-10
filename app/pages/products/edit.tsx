@@ -1,116 +1,111 @@
-﻿import React, { useState, useEffect, useMemo } from "react";
-import { Typography, Box, Paper, Alert, Backdrop } from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
-import { useSnackbar } from "notistack";
-import { useNavigate, useSearchParams } from "react-router";
-import type { RootState } from "~/store";
-import { TemplateSource } from "~/types/dtos/templates.dto";
-import { useProduct } from "~/api/product.api";
+import React, { useState, useEffect, useMemo } from "react";
 import {
-  FormStep,
-  setCurrentStep,
-  setSelectedCategory,
-  setAvailableDetailsTemplates,
-  addDetailsTemplate,
-  removeDetailsTemplate,
-  setActiveDetailsTemplateIndex,
-  updateDetailsTemplateFormData,
-  setAvailableAttributesTemplates,
-  addAttributesTemplate,
-  removeAttributesTemplate,
-  setActiveAttributesTemplateIndex,
-  updateAttributesTemplateFormData,
-  setProductTitle,
-  setProductDescription,
-  setSelectedImages,
-  updateSelectedTemplateData,
-  generateFinalProductData,
-  resetProduct,
-  setStepValidationError,
-} from "~/store/slices/productSlice";
+  Box,
+  Button,
+  TextField,
+  Grid,
+  Alert,
+  Typography,
+  CircularProgress,
+  Card,
+  CardHeader,
+  CardContent,
+  Chip,
+  Tabs,
+  Tab,
+  IconButton,
+  Divider,
+  Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  List,
+  ListItem,
+  ListItemText,
+  Checkbox,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { useSnackbar } from "notistack";
+import { useNavigate, useParams } from "react-router";
+import { TemplateSource } from "~/types/dtos/templates.dto";
+import Layout from "~/components/layout/Layout";
+import { TitleCard } from "~/components/common";
+import { useProduct, useEditProduct } from "~/api/product.api";
 import { useCategoriesList } from "~/api/categories.api";
 import { useDetails, useDetail } from "~/api/details.api";
 import { useAttrs, useAttr } from "~/api/attributes.api";
-import {
-  useProductDetailsValidation,
-  useProductAttributesValidation,
-  useProductInfoValidation,
-  validateAllDetailsTemplates,
-  validateAllAttributesTemplates,
-  getAttributesTemplatesValidationErrors,
-} from "~/validation";
-import Layout from "~/components/layout/Layout";
-import CategorySelector from "~/components/templates/CategorySelector";
-import {
-  FormSteps,
-  TemplateSelection,
-  TemplateForms,
-  ProductInfoForm,
-  ProductDetailsForm,
-  ProductAttributesForm,
-  ProductImageSelection,
-} from "~/components/products";
 import type { ICategoryList } from "~/types/interfaces/categories.interface";
 import type { ITemplateList } from "~/types/interfaces/templates.interface";
 import type { ICategoryAttr } from "~/types/interfaces/attributes.interface";
 import type { ICategoryDetails } from "~/types/interfaces/details.interface";
-import { TitleCard } from "~/components/common";
-import { useAddProduct } from "~/api/product.api";
-import ResultPage from "~/components/products/ResultPage";
+import ProductDetailsForm from "~/components/products/ProductDetailsForm";
+import ProductAttributesForm from "~/components/products/ProductAttributesForm";
+import DynamicTitleBuilder from "~/components/products/DynamicTitleBuilder";
+import ProductImageSelection from "~/components/products/ProductImageSelection";
+import {
+  useProductDetailsValidation,
+  useProductAttributesValidation,
+  getAttributesTemplatesValidationErrors,
+  getDetailsTemplatesValidationErrors,
+  useProductInfoValidation,
+} from "~/validation";
+import { useSelectedImages } from "~/api/gallery.api";
+
+interface TemplateData {
+  id: number;
+  title: string;
+  source: TemplateSource;
+  data: ICategoryDetails | ICategoryAttr;
+  formData: { [key: string]: any };
+}
 
 const EditProductPage = () => {
-  const [searchParams] = useSearchParams();
-  const id = searchParams.get("id");
-  const dispatch = useDispatch();
+  const { id } = useParams<{ id: string }>();
+  const productId = id ? parseInt(id, 10) : 0;
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-  const productState = useSelector((state: RootState) => state.product);
-  const { data: existingProduct, isLoading: productLoading } = useProduct(parseInt(id || "0"));
 
-  // Local state for category management
-  const [categorySearch, setCategorySearch] = useState("");
+  // State
+  const [productTitle, setProductTitle] = useState("");
+  const [productDescription, setProductDescription] = useState("");
+  const [selectedImages, setSelectedImages] = useState<number[]>([]);
   const [imageOptions, setImageOptions] = useState<number[]>([]);
-  const [selectedCategory, setSelectedCategoryLocal] =
+  const [selectedCategory, setSelectedCategory] =
     useState<ICategoryList | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showResultPage, setShowResultPage] = useState(false);
 
-  // Initialize form with existing product data
-  useEffect(() => {
-    if (existingProduct?.data && !productLoading) {
-      const product = existingProduct.data;
-      dispatch(setSelectedCategory(product.category_id));
-      setSelectedCategoryLocal({ id: product.category_id } as ICategoryList);
-      dispatch(setProductTitle(product.title));
-      dispatch(setProductDescription(product.description || ""));
-      if (product.images && Array.isArray(product.images)) {
-        dispatch(setSelectedImages(product.images));
-      }
-    }
-  }, [existingProduct, productLoading, dispatch]);
+  const [detailsTemplates, setDetailsTemplates] = useState<TemplateData[]>([]);
+  const [attributesTemplates, setAttributesTemplates] = useState<
+    TemplateData[]
+  >([]);
 
-  // Category queries
-  const { data: categoriesData, isLoading: categoriesLoading } =
-    useCategoriesList(categorySearch, 1, 50);
+  const [activeDetailsTab, setActiveDetailsTab] = useState(0);
+  const [activeAttributesTab, setActiveAttributesTab] = useState(0);
+
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [showAttributesDialog, setShowAttributesDialog] = useState(false);
+  const [showImageSelectionDialog, setShowImageSelectionDialog] = useState(false);
+
+  const [availableDetailsTemplates, setAvailableDetailsTemplates] = useState<
+    ITemplateList[]
+  >([]);
+  const [availableAttributesTemplates, setAvailableAttributesTemplates] =
+    useState<ITemplateList[]>([]);
+
+  // API hooks
   const {
-    mutateAsync: saveProduct,
-    isPending: isProductSaving,
+    data: productData,
+    isLoading: isProductLoading,
     error: productError,
-    isSuccess: productSuccess,
-  } = useAddProduct();
-  // Details and attributes mutations
+  } = useProduct(productId);
+  const { mutateAsync: editProduct, isPending: isUpdating } = useEditProduct();
+  const { data: categoriesData } = useCategoriesList("", 1, 50);
   const detailsMutation = useDetails();
   const attributesMutation = useAttrs();
 
-  // Template data hooks
-  const activeDetailsTemplate =
-    productState.selectedDetailsTemplates[
-      productState.activeDetailsTemplateIndex
-    ];
-  const activeAttributesTemplate =
-    productState.selectedAttributesTemplates[
-      productState.activeAttributesTemplateIndex
-    ];
+  // Template data hooks for active templates
+  const activeDetailsTemplate = detailsTemplates[activeDetailsTab];
+  const activeAttributesTemplate = attributesTemplates[activeAttributesTab];
 
   const { data: activeDetailsTemplateData } = useDetail(
     activeDetailsTemplate?.id || 0
@@ -118,178 +113,247 @@ const EditProductPage = () => {
   const { data: activeAttributesTemplateData } = useAttr(
     activeAttributesTemplate?.id || 0
   );
-  // Validation hooks for product creation
-  const activeDetailsValidation = useProductDetailsValidation(
-    activeDetailsTemplateData?.data?.data_json as any,
-    activeDetailsTemplate?.formData || {}
-  );
 
-  // Get validation errors for all templates
-  const allAttributesValidationErrors = useMemo(() => {
-    const allErrors = getAttributesTemplatesValidationErrors(
-      productState.selectedAttributesTemplates
+  // Get validation errors for all details templates
+  const allDetailsValidationErrors = useMemo(() => {
+    const allErrors = getDetailsTemplatesValidationErrors(
+      detailsTemplates
     );
 
-    // Debug logging
-    console.log("🔍 All attributes validation errors:", allErrors);
+    // Flatten errors for the active template
+    const activeTemplateErrors = allErrors.find(
+      (errorSet) => errorSet.templateId === activeDetailsTemplate?.id
+    );
+
+    return activeTemplateErrors?.errors || {};
+  }, [detailsTemplates, activeDetailsTemplate?.id]);
+
+  // Get validation errors for all attributes templates
+  const allAttributesValidationErrors = useMemo(() => {
+    const allErrors = getAttributesTemplatesValidationErrors(
+      attributesTemplates
+    );
 
     // Flatten errors for the active template
     const activeTemplateErrors = allErrors.find(
       (errorSet) => errorSet.templateId === activeAttributesTemplate?.id
     );
 
-    console.log("🔍 Active template errors:", activeTemplateErrors);
-
     return activeTemplateErrors?.errors || {};
-  }, [productState.selectedAttributesTemplates, activeAttributesTemplate?.id]);
+  }, [attributesTemplates, activeAttributesTemplate?.id]);
 
+  // Validate product info (title and description)
   const productInfoValidation = useProductInfoValidation(
-    productState.productTitle,
-    productState.productDescription
+    productTitle,
+    productDescription
   );
 
-  // Set image options
-  useEffect(() => {
-    if (
-      activeAttributesTemplateData?.data?.images ||
-      activeDetailsTemplateData?.data?.images
-    ) {
-      const allImages = [
-        ...(activeAttributesTemplateData?.data?.images || []),
-        ...(activeDetailsTemplateData?.data?.images || []),
-      ];
-      setImageOptions((prev) => {
-        const newImages = allImages.filter((image) => !prev.includes(image));
-        return [...prev, ...newImages];
+  // Calculate if form is valid
+  const isFormValid = useMemo(() => {
+    // Check product info validation (title and description)
+    if (!productInfoValidation.isValid) return false;
+
+    // Check if at least one image is selected
+    if (selectedImages.length === 0) return false;
+
+    // Check if templates exist
+    if (detailsTemplates.length === 0 || attributesTemplates.length === 0) {
+      return false;
+    }
+
+    // Check details validation - check if there are any errors in allDetailsValidationErrors
+    const hasDetailsErrors = Object.keys(allDetailsValidationErrors).length > 0;
+
+    // Check attributes validation - check if there are any errors in allAttributesValidationErrors
+    const hasAttributesErrors = Object.keys(allAttributesValidationErrors).length > 0;
+
+    return !hasDetailsErrors && !hasAttributesErrors;
+  }, [
+    productInfoValidation.isValid,
+    selectedImages.length,
+    detailsTemplates,
+    attributesTemplates,
+    allDetailsValidationErrors,
+    allAttributesValidationErrors,
+  ]);
+
+  // Get all attributes data for title builder
+  const getAllAttributesData = useMemo(() => {
+    return attributesTemplates
+      .filter((template) => template.data && Object.keys(template.data).length > 0)
+      .map((template) => template.data)
+      .filter((data): data is ICategoryAttr => {
+        return "category_group_attributes" in data;
       });
-    }
-  }, [activeAttributesTemplateData, activeDetailsTemplateData]);
+  }, [attributesTemplates]);
 
-  // Update validation errors in store when validation results change
-  // Reset state on component mount
+  // Get all details data for title builder
+  const getAllDetailsData = useMemo(() => {
+    return detailsTemplates
+      .filter((template) => template.data && Object.keys(template.data).length > 0)
+      .map((template) => template.data)
+      .filter((data): data is ICategoryDetails => {
+        return "bind" in data;
+      });
+  }, [detailsTemplates]);
+
+  // Fetch selected images data
+  const { data: selectedImagesData } = useSelectedImages(selectedImages);
+  const { data: availableImagesData } = useSelectedImages(imageOptions);
+
+  // Load product data
   useEffect(() => {
-    dispatch(resetProduct());
-    setImageOptions([]); // Reset local image options
-  }, [dispatch]);
+    if (!productData?.data || !categoriesData?.data) return;
 
-  // Update validation errors in store when validation results change
-  useEffect(() => {
-    // Only show validation error if user has visited the step but hasn't selected any templates
-    // or if templates are selected but not properly filled
-    let hasDetailsErrors = false;
+    const product = productData.data;
 
-    if (productState.selectedDetailsTemplates.length === 0) {
-      // Only consider it an error if user has passed through details selection step
-      const currentStepIndex = Object.values(FormStep).indexOf(
-        productState.currentStep
-      );
-      const detailsFormStepIndex = Object.values(FormStep).indexOf(
-        FormStep.DETAILS_FORM
-      );
-      hasDetailsErrors = currentStepIndex > detailsFormStepIndex;
-    } else {
-      // If templates are selected, validate them
-      hasDetailsErrors = !validateAllDetailsTemplates(
-        productState.selectedDetailsTemplates
-      );
-    }
+    setProductTitle(product.title);
+    setProductDescription(product.description || "");
+    setSelectedImages(product.images);
 
-    dispatch(
-      setStepValidationError({
-        step: FormStep.DETAILS_FORM,
-        hasError: hasDetailsErrors,
-      })
+    // Find category
+    const category = categoriesData.data.items.find(
+      (cat: ICategoryList) => cat.id === product.category_id
     );
-  }, [
-    productState.selectedDetailsTemplates,
-    productState.currentStep,
-    dispatch,
-  ]);
-
-  useEffect(() => {
-    // Only show validation error if user has visited the step but hasn't selected any templates
-    // or if templates are selected but not properly filled
-    let hasAttributesErrors = false;
-
-    if (productState.selectedAttributesTemplates.length === 0) {
-      // Only consider it an error if user has passed through attributes selection step
-      const currentStepIndex = Object.values(FormStep).indexOf(
-        productState.currentStep
-      );
-      const attributesFormStepIndex = Object.values(FormStep).indexOf(
-        FormStep.ATTRIBUTES_FORM
-      );
-      hasAttributesErrors = currentStepIndex > attributesFormStepIndex;
-    } else {
-      // If templates are selected, validate them
-      hasAttributesErrors = !validateAllAttributesTemplates(
-        productState.selectedAttributesTemplates
-      );
+    if (category) {
+      setSelectedCategory(category);
     }
 
-    dispatch(
-      setStepValidationError({
-        step: FormStep.ATTRIBUTES_FORM,
-        hasError: hasAttributesErrors,
-      })
-    );
-  }, [
-    productState.selectedAttributesTemplates,
-    productState.currentStep,
-    dispatch,
-  ]);
+    // Load details templates
+    if (product.details?.list && product.details.list.length > 0) {
+      const templates: TemplateData[] = product.details.list.map(
+        (detailData: ICategoryDetails, index: number) => {
+          const templateId = (detailData as any).template_id || index + 1000;
+          const templateTitle =
+            (detailData as any).template_title || `قالب ${index + 1}`;
 
-  useEffect(() => {
-    dispatch(
-      setStepValidationError({
-        step: FormStep.PRODUCT_INFO,
-        hasError: !productInfoValidation.isValid,
-      })
-    );
-  }, [productInfoValidation.isValid, dispatch]);
+          // Extract form data from the detail data
+          const formData: { [key: string]: any } = {};
 
-  // Image selection validation
-  useEffect(() => {
-    // Image selection is optional, so no validation required
-    dispatch(
-      setStepValidationError({
-        step: FormStep.IMAGE_SELECTION,
-        hasError: false,
-      })
-    );
-  }, [dispatch]);
+          // Extract static fields
+          const staticFields = [
+            "is_fake_product",
+            "brand",
+            "status",
+            "platform",
+            "product_class",
+            "category_product_type",
+            "fake_reason",
+            "theme",
+            "id_type",
+            "general_mefa_id",
+            "custom_id",
+          ];
+          staticFields.forEach((field) => {
+            if ((detailData as any)[field] !== undefined) {
+              formData[field] = (detailData as any)[field];
+            }
+          });
 
-  // Load template data when activeDetailsTemplate changes
-  useEffect(() => {
-    if (
-      activeDetailsTemplate &&
-      (!activeDetailsTemplate.data ||
-        Object.keys(activeDetailsTemplate.data).length === 0)
-    ) {
-      // Load the template data if it's not already loaded
-      console.log(
-        "Loading details template data for:",
-        activeDetailsTemplate.id
+          // Extract text fields from bind
+          if (detailData.bind) {
+            const bind = detailData.bind as any;
+            const textFields = [
+              "brand_model",
+              "color_pattern",
+              "warranty",
+              "size",
+              "weight",
+              "material",
+              "origin_country",
+              "manufacturer",
+              "model_number",
+              "barcode",
+              "package_dimensions",
+              "special_features",
+              "care_instructions",
+            ];
+            textFields.forEach((fieldName) => {
+              if (bind[fieldName]?.value !== undefined) {
+                formData[fieldName] = bind[fieldName].value;
+              }
+            });
+          }
+
+          return {
+            id: templateId,
+            title: templateTitle,
+            source: product.source,
+            data: detailData,
+            formData,
+          };
+        }
       );
+      setDetailsTemplates(templates);
     }
-  }, [activeDetailsTemplate]);
 
-  // Load template data when activeAttributesTemplate changes
-  useEffect(() => {
-    if (
-      activeAttributesTemplate &&
-      (!activeAttributesTemplate.data ||
-        Object.keys(activeAttributesTemplate.data).length === 0)
-    ) {
-      // Load the template data if it's not already loaded
-      console.log(
-        "Loading attributes template data for:",
-        activeAttributesTemplate.id
+    // Load attributes templates
+    if (product.attributes?.list && product.attributes.list.length > 0) {
+      const templates: TemplateData[] = product.attributes.list.map(
+        (attrData: ICategoryAttr, index: number) => {
+          const templateId = (attrData as any).template_id || index + 2000;
+          const templateTitle =
+            (attrData as any).template_title || `قالب ${index + 1}`;
+
+          // Extract form data from attributes
+          const formData: { [key: string]: any } = {};
+
+          if (attrData.category_group_attributes) {
+            Object.values(attrData.category_group_attributes).forEach(
+              (categoryData: any) => {
+                Object.values(categoryData.attributes).forEach((attr: any) => {
+                  const fieldKey = attr.code || attr.id.toString();
+
+                  switch (attr.type) {
+                    case "input":
+                    case "text":
+                      if (attr.value) {
+                        if (
+                          typeof attr.value === "object" &&
+                          attr.value.original_text
+                        ) {
+                          formData[fieldKey] = attr.value.original_text;
+                        } else if (typeof attr.value === "string") {
+                          formData[fieldKey] = attr.value;
+                        }
+                      }
+                      break;
+                    case "select":
+                      const selectedValue = Object.entries(
+                        attr.values || {}
+                      ).find(([_, v]: [string, any]) => v.selected)?.[0];
+                      if (selectedValue) {
+                        formData[fieldKey] = selectedValue;
+                      }
+                      break;
+                    case "checkbox":
+                      const selectedValues = Object.entries(attr.values || {})
+                        .filter(([_, v]: [string, any]) => v.selected)
+                        .map(([k, _]) => k);
+                      if (selectedValues.length > 0) {
+                        formData[fieldKey] = selectedValues;
+                      }
+                      break;
+                  }
+                });
+              }
+            );
+          }
+
+          return {
+            id: templateId,
+            title: templateTitle,
+            source: product.source,
+            data: attrData,
+            formData,
+          };
+        }
       );
+      setAttributesTemplates(templates);
     }
-  }, [activeAttributesTemplate]);
+  }, [productData?.data, categoriesData?.data]);
 
-  // Update template data when query data is available
+  // Update template data when loaded from API
   useEffect(() => {
     if (
       activeDetailsTemplateData?.data &&
@@ -297,17 +361,15 @@ const EditProductPage = () => {
       (!activeDetailsTemplate.data ||
         Object.keys(activeDetailsTemplate.data).length === 0)
     ) {
-      dispatch(
-        updateSelectedTemplateData({
-          templateId: activeDetailsTemplate.id,
-          data: activeDetailsTemplateData.data.data_json,
-          type: "details",
-        })
-      );
+      const updatedTemplates = [...detailsTemplates];
+      updatedTemplates[activeDetailsTab] = {
+        ...updatedTemplates[activeDetailsTab],
+        data: activeDetailsTemplateData.data.data_json,
+      };
+      setDetailsTemplates(updatedTemplates);
     }
-  }, [activeDetailsTemplateData?.data, activeDetailsTemplate?.id, dispatch]);
+  }, [activeDetailsTemplateData?.data, activeDetailsTemplate?.id]);
 
-  // Update attributes template data when query data is available
   useEffect(() => {
     if (
       activeAttributesTemplateData?.data &&
@@ -315,225 +377,153 @@ const EditProductPage = () => {
       (!activeAttributesTemplate.data ||
         Object.keys(activeAttributesTemplate.data).length === 0)
     ) {
-      dispatch(
-        updateSelectedTemplateData({
-          templateId: activeAttributesTemplate.id,
-          data: activeAttributesTemplateData.data.data_json,
-          type: "attributes",
-        })
-      );
+      const updatedTemplates = [...attributesTemplates];
+      updatedTemplates[activeAttributesTab] = {
+        ...updatedTemplates[activeAttributesTab],
+        data: activeAttributesTemplateData.data.data_json,
+      };
+      setAttributesTemplates(updatedTemplates);
     }
-  }, [
-    activeAttributesTemplateData?.data,
-    activeAttributesTemplate?.id,
-    dispatch,
-  ]);
+  }, [activeAttributesTemplateData?.data, activeAttributesTemplate?.id]);
 
-  // Handle category selection
-  const handleCategorySelect = async (category: ICategoryList | null) => {
-    setSelectedCategoryLocal(category);
-
-    if (category) {
-      // Reset image options when category changes
-      setImageOptions([]);
-
-      dispatch(setSelectedCategory(category.id));
-      dispatch(setCurrentStep(FormStep.DETAILS_SELECTION));
-
-      // Load details templates for this category
-      try {
-        const detailsResult = await detailsMutation.mutateAsync({
-          categoryId: category.id,
-          skip: 0,
-          limit: 100,
-        });
-
-        if (detailsResult.status === "true" && detailsResult.data?.list) {
-          dispatch(setAvailableDetailsTemplates(detailsResult.data.list));
-        }
-      } catch (error) {
-        console.error("Error loading details templates:", error);
+  // Populate imageOptions from all templates
+  useEffect(() => {
+    const allImages: number[] = [];
+    
+    // Collect images from details templates
+    detailsTemplates.forEach((template) => {
+      if (template.data && "images" in template.data) {
+        const templateImages = template.data.images as number[];
+        allImages.push(...templateImages);
       }
-    }
-  };
-
-  // Handle details template selection
-  const handleDetailsTemplateToggle = async (template: ITemplateList) => {
-    const isSelected = productState.selectedDetailsTemplates.some(
-      (t) => t.id === template.id
-    );
-
-    if (isSelected) {
-      dispatch(removeDetailsTemplate(template.id));
-    } else {
-      // Load template data using the existing hook
-      try {
-        // We'll use a simpler approach and fetch template data when needed
-        // For now, add template with empty data and load it when the form is displayed
-        dispatch(
-          addDetailsTemplate({
-            template,
-            data: {} as any, // This will be populated when the template is selected in the form
-          })
-        );
-      } catch (error) {
-        console.error("Error loading template data:", error);
+    });
+    
+    // Collect images from attributes templates
+    attributesTemplates.forEach((template) => {
+      if (template.data && "images" in template.data) {
+        const templateImages = template.data.images as number[];
+        allImages.push(...templateImages);
       }
+    });
+    
+    // Remove duplicates
+    const uniqueImages = Array.from(new Set(allImages));
+    setImageOptions(uniqueImages);
+  }, [detailsTemplates, attributesTemplates]);
+
+  // Handle form data changes
+  const handleDetailsFormDataChange = (fieldName: string, value: any) => {
+    const updatedTemplates = [...detailsTemplates];
+    updatedTemplates[activeDetailsTab].formData[fieldName] = value;
+    setDetailsTemplates(updatedTemplates);
+  };
+
+  const handleAttributesFormDataChange = (
+    fieldId: number | string,
+    value: any
+  ) => {
+    const updatedTemplates = [...attributesTemplates];
+    const fieldKey = typeof fieldId === "string" ? fieldId : fieldId.toString();
+    updatedTemplates[activeAttributesTab].formData[fieldKey] = value;
+    setAttributesTemplates(updatedTemplates);
+  };
+
+  // Handle template removal
+  const handleRemoveDetailsTemplate = (index: number) => {
+    const newTemplates = detailsTemplates.filter((_, i) => i !== index);
+    setDetailsTemplates(newTemplates);
+    if (activeDetailsTab >= newTemplates.length) {
+      setActiveDetailsTab(Math.max(0, newTemplates.length - 1));
     }
   };
 
-  // Handle attributes template selection
-  const handleAttributesTemplateToggle = async (template: ITemplateList) => {
-    const isSelected = productState.selectedAttributesTemplates.some(
-      (t) => t.id === template.id
-    );
-
-    if (isSelected) {
-      dispatch(removeAttributesTemplate(template.id));
-    } else {
-      // Load template data using the existing hook
-      try {
-        // We'll use a simpler approach and fetch template data when needed
-        // For now, add template with empty data and load it when the form is displayed
-        dispatch(
-          addAttributesTemplate({
-            template,
-            data: {} as any, // This will be populated when the template is selected in the form
-          })
-        );
-      } catch (error) {
-        console.error("Error loading template data:", error);
-      }
+  const handleRemoveAttributesTemplate = (index: number) => {
+    const newTemplates = attributesTemplates.filter((_, i) => i !== index);
+    setAttributesTemplates(newTemplates);
+    if (activeAttributesTab >= newTemplates.length) {
+      setActiveAttributesTab(Math.max(0, newTemplates.length - 1));
     }
   };
 
-  // Handle step navigation
-  const handleNextFromDetailsSelection = async () => {
-    // Always allow going to next step, regardless of selection
-    if (productState.selectedDetailsTemplates.length > 0) {
-      dispatch(setCurrentStep(FormStep.DETAILS_FORM));
-    } else {
-      // Skip to attributes selection if no details templates selected
-      // Load attributes templates for the category first
-      if (productState.selectedCategoryId) {
-        try {
-          const attributesResult = await attributesMutation.mutateAsync({
-            categoryId: productState.selectedCategoryId,
-            skip: 0,
-            limit: 100,
-          });
-
-          if (
-            attributesResult.status === "true" &&
-            attributesResult.data?.list
-          ) {
-            dispatch(
-              setAvailableAttributesTemplates(attributesResult.data.list)
-            );
-          }
-        } catch (error) {
-          console.error("Error loading attributes templates:", error);
-        }
-      }
-      dispatch(setCurrentStep(FormStep.ATTRIBUTES_SELECTION));
-    }
-  };
-
-  const handleNextFromDetailsForm = async () => {
-    // Load attributes templates for the category
-    if (productState.selectedCategoryId) {
-      try {
-        const attributesResult = await attributesMutation.mutateAsync({
-          categoryId: productState.selectedCategoryId,
-          skip: 0,
-          limit: 100,
-        });
-
-        if (attributesResult.status === "true" && attributesResult.data?.list) {
-          dispatch(setAvailableAttributesTemplates(attributesResult.data.list));
-          dispatch(setCurrentStep(FormStep.ATTRIBUTES_SELECTION));
-        }
-      } catch (error) {
-        console.error("Error loading attributes templates:", error);
-      }
-    }
-  };
-
-  const handleNextFromAttributesSelection = () => {
-    // Always allow going to next step, regardless of selection
-    // If no templates selected, the form step will be skipped to image selection
-    if (productState.selectedAttributesTemplates.length > 0) {
-      dispatch(setCurrentStep(FormStep.ATTRIBUTES_FORM));
-    } else {
-      // Skip to image selection if no attributes templates selected
-      dispatch(setCurrentStep(FormStep.IMAGE_SELECTION));
-    }
-  };
-
-  const handleNextFromAttributesForm = () => {
-    dispatch(setCurrentStep(FormStep.IMAGE_SELECTION));
-  };
-
-  const handleNextFromImageSelection = () => {
-    dispatch(setCurrentStep(FormStep.PRODUCT_INFO));
-  };
-
-  const handleBackToDetailsSelection = () => {
-    dispatch(setCurrentStep(FormStep.DETAILS_SELECTION));
-  };
-
-  const handleBackToDetailsForm = () => {
-    dispatch(setCurrentStep(FormStep.DETAILS_FORM));
-  };
-
-  const handleBackToAttributesSelection = () => {
-    dispatch(setCurrentStep(FormStep.ATTRIBUTES_SELECTION));
-  };
-
-  const handleBackToAttributesForm = () => {
-    dispatch(setCurrentStep(FormStep.ATTRIBUTES_FORM));
-  };
-
-  const handleBackToImageSelection = () => {
-    dispatch(setCurrentStep(FormStep.IMAGE_SELECTION));
-  };
-
-  // Handle image selection
-  const handleImageSelectionChange = (selectedIds: number[]) => {
-    dispatch(setSelectedImages(selectedIds));
-  };
-
-  const handleBackFromImageSelection = () => {
-    // Go back to the appropriate step
-    if (productState.selectedAttributesTemplates.length > 0) {
-      // If attributes templates are selected, go back to attributes form
-      dispatch(setCurrentStep(FormStep.ATTRIBUTES_FORM));
-    } else {
-      // If no attributes templates, go back to attributes selection
-      dispatch(setCurrentStep(FormStep.ATTRIBUTES_SELECTION));
-    }
-  };
-
-  const handleBackToCategorySelection = () => {
-    dispatch(setCurrentStep(FormStep.CATEGORY_SELECTION));
-  };
-
-  const handleBackToDetailsSelectionFromAttributes = () => {
-    dispatch(setCurrentStep(FormStep.DETAILS_SELECTION));
-  };
-
-  // Handle form submissions
-  const handleCreateProduct = async () => {
+  // Load available templates for adding
+  const handleOpenDetailsDialog = async () => {
+    if (!selectedCategory) return;
     try {
-      setIsSubmitting(true);
+      const result = await detailsMutation.mutateAsync({
+        categoryId: selectedCategory.id,
+        skip: 0,
+        limit: 100,
+      });
+      if (result.status === "true" && result.data?.list) {
+        setAvailableDetailsTemplates(result.data.list);
+        setShowDetailsDialog(true);
+      }
+    } catch (error) {
+      enqueueSnackbar("خطا در بارگذاری قالب‌ها", { variant: "error" });
+    }
+  };
 
-      // Build the final product data with form values (not just template data)
-      // This mirrors the logic in generateFinalProductData
-      const detailsList = productState.selectedDetailsTemplates.map((template) => {
+  const handleOpenAttributesDialog = async () => {
+    if (!selectedCategory) return;
+    try {
+      const result = await attributesMutation.mutateAsync({
+        categoryId: selectedCategory.id,
+        skip: 0,
+        limit: 100,
+      });
+      if (result.status === "true" && result.data?.list) {
+        setAvailableAttributesTemplates(result.data.list);
+        setShowAttributesDialog(true);
+      }
+    } catch (error) {
+      enqueueSnackbar("خطا در بارگذاری قالب‌ها", { variant: "error" });
+    }
+  };
+
+  // Add selected templates
+  const handleAddDetailsTemplates = (selectedIds: number[]) => {
+    const newTemplates = selectedIds
+      .filter((id) => !detailsTemplates.some((t) => t.id === id))
+      .map((id) => {
+        const template = availableDetailsTemplates.find((t) => t.id === id);
+        return {
+          id: template!.id,
+          title: template!.title,
+          source: template!.source,
+          data: {} as ICategoryDetails,
+          formData: {},
+        };
+      });
+    setDetailsTemplates([...detailsTemplates, ...newTemplates]);
+    setShowDetailsDialog(false);
+  };
+
+  const handleAddAttributesTemplates = (selectedIds: number[]) => {
+    const newTemplates = selectedIds
+      .filter((id) => !attributesTemplates.some((t) => t.id === id))
+      .map((id) => {
+        const template = availableAttributesTemplates.find((t) => t.id === id);
+        return {
+          id: template!.id,
+          title: template!.title,
+          source: template!.source,
+          data: {} as ICategoryAttr,
+          formData: {},
+        };
+      });
+    setAttributesTemplates([...attributesTemplates, ...newTemplates]);
+    setShowAttributesDialog(false);
+  };
+
+  // Handle save
+  const handleSave = async () => {
+    try {
+      // Build details list
+      const detailsList = detailsTemplates.map((template) => {
         const finalData = JSON.parse(JSON.stringify(template.data));
         const formData = template.formData;
 
-        // Apply form data to details structure
+        // Apply static fields
         const staticFields = [
           "is_fake_product",
           "brand",
@@ -547,7 +537,6 @@ const EditProductPage = () => {
           "general_mefa_id",
           "custom_id",
         ];
-
         staticFields.forEach((field) => {
           if (
             formData[field] !== undefined &&
@@ -558,7 +547,7 @@ const EditProductPage = () => {
           }
         });
 
-        // Update bind selections - this is critical
+        // Apply bind selections
         const bind = finalData.bind;
         if (bind) {
           if (bind.brands && formData.brand) {
@@ -578,7 +567,8 @@ const EditProductPage = () => {
           }
           if (bind.product_classes && formData.product_class) {
             bind.product_classes.forEach((productClass: any) => {
-              productClass.selected = productClass.value === formData.product_class;
+              productClass.selected =
+                productClass.value === formData.product_class;
             });
           }
           if (bind.category_product_types && formData.category_product_type) {
@@ -596,374 +586,526 @@ const EditProductPage = () => {
               theme.selected = theme.value === formData.theme;
             });
           }
-        }
 
-        return finalData;
-      });
-
-      // Process attributes
-      const attributesList = productState.selectedAttributesTemplates.map((template) => {
-        const finalData = JSON.parse(JSON.stringify(template.data));
-        const formData = template.formData;
-
-        if (finalData.category_group_attributes) {
-          Object.keys(finalData.category_group_attributes).forEach((categoryId) => {
-            const categoryData = finalData.category_group_attributes[categoryId];
-
-            Object.keys(categoryData.attributes).forEach((attributeId) => {
-              const attr = categoryData.attributes[attributeId];
-              const formValue = formData[attr.id];
-
-              if (formValue !== undefined && formValue !== null && formValue !== "") {
-                switch (attr.type) {
-                  case "input":
-                    attr.value = formValue.toString();
-                    break;
-                  case "text":
-                    const lines = formValue
-                      .toString()
-                      .split("\n")
-                      .filter((line: string) => line.trim() !== "");
-                    attr.value = {
-                      text_lines: lines,
-                      original_text: formValue.toString(),
-                    };
-                    break;
-                  case "select":
-                    Object.keys(attr.values).forEach((valueId) => {
-                      attr.values[valueId].selected = false;
-                    });
-                    if (formValue && attr.values[formValue]) {
-                      attr.values[formValue].selected = true;
-                    }
-                    break;
-                  case "checkbox":
-                    Object.keys(attr.values).forEach((valueId) => {
-                      attr.values[valueId].selected = false;
-                    });
-                    if (Array.isArray(formValue) && formValue.length > 0) {
-                      formValue.forEach((valueId: string) => {
-                        if (attr.values[valueId]) {
-                          attr.values[valueId].selected = true;
-                        }
-                      });
-                    }
-                    break;
-                }
-              }
-            });
+          // Apply text fields
+          const textFields = [
+            "brand_model",
+            "color_pattern",
+            "warranty",
+            "size",
+            "weight",
+            "material",
+            "origin_country",
+            "manufacturer",
+            "model_number",
+            "barcode",
+            "package_dimensions",
+            "special_features",
+            "care_instructions",
+          ];
+          textFields.forEach((fieldName) => {
+            if (bind[fieldName] && formData[fieldName] !== undefined) {
+              bind[fieldName].value = formData[fieldName];
+            }
           });
         }
 
         return finalData;
       });
 
+      // Build attributes list
+      const attributesList = attributesTemplates.map((template) => {
+        const finalData = JSON.parse(JSON.stringify(template.data));
+        const formData = template.formData;
+
+        if (finalData.category_group_attributes) {
+          Object.keys(finalData.category_group_attributes).forEach(
+            (categoryId) => {
+              const categoryData =
+                finalData.category_group_attributes[categoryId];
+              Object.keys(categoryData.attributes).forEach((attributeId) => {
+                const attr = categoryData.attributes[attributeId];
+                const fieldKey = attr.code || attr.id.toString();
+                const formValue = formData[fieldKey];
+                const hasFormValue = fieldKey in formData;
+
+                if (hasFormValue) {
+                  switch (attr.type) {
+                    case "input":
+                      attr.value =
+                        formValue !== null && formValue !== undefined
+                          ? formValue.toString()
+                          : "";
+                      break;
+                    case "text":
+                      if (
+                        formValue !== null &&
+                        formValue !== undefined &&
+                        formValue !== ""
+                      ) {
+                        const lines = formValue
+                          .toString()
+                          .split("\n")
+                          .filter((line: string) => line.trim() !== "");
+                        attr.value = {
+                          text_lines: lines,
+                          original_text: formValue.toString(),
+                        };
+                      } else {
+                        attr.value = "";
+                      }
+                      break;
+                    case "select":
+                      Object.keys(attr.values).forEach((valueId) => {
+                        attr.values[valueId].selected = false;
+                      });
+                      if (formValue) {
+                        // تبدیل به string برای اطمینان از تطابق کلید
+                        const formValueStr = formValue.toString();
+                        if (attr.values[formValueStr]) {
+                          attr.values[formValueStr].selected = true;
+                        }
+                      }
+                      break;
+                    case "checkbox":
+                      Object.keys(attr.values).forEach((valueId) => {
+                        attr.values[valueId].selected = false;
+                      });
+                      if (Array.isArray(formValue) && formValue.length > 0) {
+                        formValue.forEach((valueId: any) => {
+                          // تبدیل به string برای اطمینان از تطابق کلید
+                          const valueIdStr = valueId.toString();
+                          if (attr.values[valueIdStr]) {
+                            attr.values[valueIdStr].selected = true;
+                          }
+                        });
+                      }
+                      break;
+                  }
+                }
+              });
+            }
+          );
+        }
+
+        return finalData;
+      });
+
       const finalProductData = {
-        category_id: productState.selectedCategoryId,
-        title: productState.productTitle,
-        description: productState.productDescription,
+        category_id: selectedCategory?.id || productData?.data?.category_id || 0,
+        title: productTitle,
+        description: productDescription,
         details: { list: detailsList },
         attributes: { list: attributesList },
-        images: productState.selectedImages,
-        source: TemplateSource.App,
+        images: selectedImages,
+        source: productData?.data?.source || TemplateSource.App,
         tag: "test",
         variant_data: {},
       };
 
-      console.log("🎉 Product data prepared!");
-      console.log("📋 Selected Details Templates formData:", productState.selectedDetailsTemplates.map((t) => t.formData));
-      console.log("📋 Selected Attributes Templates formData:", productState.selectedAttributesTemplates.map((t) => t.formData));
-      console.log("📋 Final product data:", JSON.stringify(finalProductData, null, 2));
+      const response = await editProduct({
+        id: productId,
+        data: finalProductData as any,
+      });
 
-      // Save product to server
-      const response = await saveProduct(finalProductData as any);
-
-      // Check both status and ApiStatus.SUCCEEDED
       if (response?.status === "true") {
-        enqueueSnackbar("محصول با موفقیت ذخیره شد", {
+        enqueueSnackbar("محصول با موفقیت به‌روزرسانی شد", {
           variant: "success",
         });
-        // Show result page after a short delay
-        setTimeout(() => {
-          setShowResultPage(true);
-          setIsSubmitting(false);
-        }, 500);
+        navigate("/products/list");
       } else {
-        enqueueSnackbar("خطا در ذخیره محصول", { variant: "error" });
-        setIsSubmitting(false);
+        enqueueSnackbar("خطا در به‌روزرسانی محصول", { variant: "error" });
       }
     } catch (error: any) {
-      console.error("Error creating product:", error);
-      const errorMessage =
-        error?.response?.data?.message ||
-        error?.message ||
-        "خطا در ذخیره محصول";
-      enqueueSnackbar(errorMessage, { variant: "error" });
-      setIsSubmitting(false);
+      console.error("Error updating product:", error);
+      enqueueSnackbar(error?.message || "خطا در به‌روزرسانی محصول", {
+        variant: "error",
+      });
     }
   };
 
-  // Get all attributes data from selected templates for title builder
-  const getAllAttributesData = useMemo(() => {
-    return productState.selectedAttributesTemplates
-      .filter(
-        (template) => template.data && Object.keys(template.data).length > 0
-      )
-      .map((template) => template.data)
-      .filter((data): data is ICategoryAttr => {
-        // Type guard to ensure we only get ICategoryAttr types
-        return "category_group_attributes" in data;
-      });
-  }, [productState.selectedAttributesTemplates]);
-
-  // Get all details data from selected templates for title builder
-  const getAllDetailsData = useMemo(() => {
-    return productState.selectedDetailsTemplates
-      .filter(
-        (template) => template.data && Object.keys(template.data).length > 0
-      )
-      .map((template) => template.data)
-      .filter((data): data is ICategoryDetails => {
-        // Type guard to ensure we only get ICategoryDetails types
-        return "bind" in data;
-      });
-  }, [productState.selectedDetailsTemplates]);
-
-  // Render current step
-  const renderCurrentStep = () => {
-    const stepContent = (() => {
-      switch (productState.currentStep) {
-        case FormStep.CATEGORY_SELECTION:
-          return (
-            <CategorySelector
-              categories={categoriesData?.data?.items || []}
-              selectedCategory={selectedCategory}
-              loadingCategories={categoriesLoading}
-              onCategoryChange={handleCategorySelect}
-              onSearchChange={setCategorySearch}
-            />
-          );
-
-        case FormStep.DETAILS_SELECTION:
-          return (
-            <TemplateSelection
-              title="انتخاب قالب‌های اطلاعات"
-              availableTemplates={productState.availableDetailsTemplates}
-              selectedTemplateIds={productState.selectedDetailsTemplates.map(
-                (t) => t.id
-              )}
-              onTemplateToggle={handleDetailsTemplateToggle}
-              onNext={handleNextFromDetailsSelection}
-              onBack={handleBackToCategorySelection}
-              isLoading={detailsMutation.isPending || isSubmitting}
-            />
-          );
-
-        case FormStep.DETAILS_FORM:
-          return (
-            <TemplateForms
-              title="تکمیل فرم‌های اطلاعات"
-              selectedTemplates={productState.selectedDetailsTemplates}
-              activeTemplateIndex={productState.activeDetailsTemplateIndex}
-              onTabChange={(index) =>
-                dispatch(setActiveDetailsTemplateIndex(index))
-              }
-              onRemoveTemplate={(id) => dispatch(removeDetailsTemplate(id))}
-              onNext={handleNextFromDetailsForm}
-              onBack={handleBackToDetailsSelection}
-            >
-              {activeDetailsTemplate && activeDetailsTemplateData?.data && (
-                <ProductDetailsForm
-                  data={activeDetailsTemplateData.data.data_json}
-                  formData={activeDetailsTemplate.formData}
-                  onFormDataChange={(fieldName: string, value: any) =>
-                    dispatch(
-                      updateDetailsTemplateFormData({
-                        templateIndex: productState.activeDetailsTemplateIndex,
-                        fieldName,
-                        value,
-                      })
-                    )
-                  }
-                  validationErrors={activeDetailsValidation.errors}
-                />
-              )}
-            </TemplateForms>
-          );
-
-        case FormStep.ATTRIBUTES_SELECTION:
-          return (
-            <TemplateSelection
-              title="انتخاب قالب‌های ویژگی"
-              availableTemplates={productState.availableAttributesTemplates}
-              selectedTemplateIds={productState.selectedAttributesTemplates.map(
-                (t) => t.id
-              )}
-              onTemplateToggle={handleAttributesTemplateToggle}
-              onNext={handleNextFromAttributesSelection}
-              onBack={handleBackToDetailsSelectionFromAttributes}
-              isLoading={attributesMutation.isPending || isSubmitting}
-            />
-          );
-
-        case FormStep.ATTRIBUTES_FORM:
-          return (
-            <TemplateForms
-              title="تکمیل فرم‌های ویژگی"
-              selectedTemplates={productState.selectedAttributesTemplates}
-              activeTemplateIndex={productState.activeAttributesTemplateIndex}
-              onTabChange={(index) =>
-                dispatch(setActiveAttributesTemplateIndex(index))
-              }
-              onRemoveTemplate={(id) => dispatch(removeAttributesTemplate(id))}
-              onNext={handleNextFromAttributesForm}
-              onBack={handleBackToAttributesSelection}
-            >
-              {activeAttributesTemplate && activeAttributesTemplateData?.data && (
-                <ProductAttributesForm
-                  data={activeAttributesTemplateData.data.data_json}
-                  formData={activeAttributesTemplate.formData}
-                  onFormDataChange={(fieldId: number, value: any) =>
-                    dispatch(
-                      updateAttributesTemplateFormData({
-                        templateIndex: productState.activeAttributesTemplateIndex,
-                        fieldId: fieldId.toString(),
-                        value,
-                      })
-                    )
-                  }
-                  validationErrors={allAttributesValidationErrors}
-                />
-              )}
-            </TemplateForms>
-          );
-
-        case FormStep.IMAGE_SELECTION:
-          return (
-            <ProductImageSelection
-              imageOptions={imageOptions}
-              selectedImages={productState.selectedImages}
-              onImageSelectionChange={handleImageSelectionChange}
-              onNext={handleNextFromImageSelection}
-              onBack={handleBackFromImageSelection}
-            />
-          );
-
-        case FormStep.PRODUCT_INFO:
-          return (
-            <ProductInfoForm
-              title={productState.productTitle}
-              description={productState.productDescription}
-              onTitleChange={(title) => dispatch(setProductTitle(title))}
-              onDescriptionChange={(description) =>
-                dispatch(setProductDescription(description))
-              }
-              onSubmit={handleCreateProduct}
-              onBack={handleBackToImageSelection}
-              hasValidationErrors={!productInfoValidation.isValid}
-              isSubmitting={isSubmitting}
-              stepValidationErrors={productState.stepValidationErrors}
-              attributesData={getAllAttributesData}
-              detailsData={getAllDetailsData}
-              submitButtonLabel="ویرایش"
-            />
-          );
-
-        default:
-          return null;
-      }
-    })();
-
-    // Wrap content with a disabled overlay if submitting
+  // Loading state
+  if (!productId || productId === 0) {
     return (
-      <Box
-        sx={{
-          opacity: isSubmitting ? 0.5 : 1,
-          pointerEvents: isSubmitting ? "none" : "auto",
-          transition: "opacity 0.3s ease",
-        }}
-      >
-        {stepContent}
-      </Box>
+      <Layout title="ویرایش محصول">
+        <Box sx={{ p: 3 }}>
+          <Alert severity="error">شناسه محصول نامعتبر است.</Alert>
+        </Box>
+      </Layout>
     );
-  };
+  }
+
+  if (isProductLoading) {
+    return (
+      <Layout title="ویرایش محصول">
+        <Box
+          sx={{
+            p: 3,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "400px",
+            gap: 2,
+          }}
+        >
+          <CircularProgress size={60} />
+          <Typography variant="body1" color="text.secondary">
+            در حال بارگذاری اطلاعات محصول...
+          </Typography>
+        </Box>
+      </Layout>
+    );
+  }
+
+  if (productError || !productData?.data) {
+    return (
+      <Layout title="ویرایش محصول">
+        <Box sx={{ p: 3 }}>
+          <Alert severity="error">
+            خطا در بارگذاری اطلاعات محصول. لطفاً دوباره تلاش کنید.
+          </Alert>
+        </Box>
+      </Layout>
+    );
+  }
 
   return (
-    <Layout title="افزودن محصول جدید">
+    <Layout title="ویرایش محصول">
       <Box sx={{ p: 3 }}>
-        {showResultPage ? (
-          <ResultPage />
-        ) : (
-          <>
-            <TitleCard
-              title="ویرایش محصول"
-              description="محصول را بر اساس قالب‌های انتخاب شده ویرایش کنید."
-            />
-            <FormSteps
-              currentStep={productState.currentStep}
-              stepValidationErrors={productState.stepValidationErrors}
-            />
+        <TitleCard
+          title={`ویرایش محصول: ${productData.data.title}`}
+          description="اطلاعات محصول را ویرایش کنید."
+        />
 
-            {renderCurrentStep()}
+        <Grid container spacing={3} sx={{ mt: 1 }}>
+          {/* Product Info Section */}
+          <Grid size={{ xs: 12 }}>
+            <Card>
+              <CardHeader
+                title="اطلاعات اصلی محصول"
+                avatar={<Chip label="اجباری" color="primary" size="small" />}
+              />
+              <CardContent>
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12 }}>
+                    <DynamicTitleBuilder
+                      value={productTitle}
+                      onChange={setProductTitle}
+                      attributesData={getAllAttributesData}
+                      detailsData={getAllDetailsData}
+                      label="عنوان محصول"
+                      placeholder="عنوان محصول را وارد کنید..."
+                    />
+                    {productInfoValidation.errors.title && (
+                      <Typography variant="caption" color="error" sx={{ mt: 0.5, display: "block" }}>
+                        {productInfoValidation.errors.title}
+                      </Typography>
+                    )}
+                  </Grid>
+                  <Grid size={{ xs: 12 }}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={3}
+                      label="توضیحات محصول"
+                      value={productDescription}
+                      onChange={(e) => setProductDescription(e.target.value)}
+                      error={!!productInfoValidation.errors.description}
+                      helperText={productInfoValidation.errors.description}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12 }}>
+                    <Alert severity="info">
+                      دسته‌بندی محصول:{" "}
+                      <strong>{selectedCategory?.title}</strong> (قابل تغییر
+                      نیست)
+                    </Alert>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
 
-            {productState.finalProductData && !isSubmitting && (
-              <Alert severity="success" sx={{ mt: 3 }}>
-                <Typography variant="body2">
-                  محصول با موفقیت ویرایش شد! داده‌های نهایی در کنسول مرورگر قابل
-                  مشاهده است.
-                </Typography>
+          {/* Details Templates Section */}
+          <Grid size={{ xs: 12 }}>
+            <Card>
+              {/* <CardHeader
+                title="قالب‌های اطلاعات"
+                action={
+                  <Button
+                    startIcon={<AddIcon />}
+                    onClick={handleOpenDetailsDialog}
+                    variant="outlined"
+                    size="small"
+                  >
+                    افزودن قالب
+                  </Button>
+                }
+              /> */}
+              <CardContent>
+                {detailsTemplates.length === 0 ? (
+                  <Alert severity="warning">
+                    هیچ قالب اطلاعاتی انتخاب نشده است.
+                  </Alert>
+                ) : (
+                  <>
+                    <Tabs
+                      value={activeDetailsTab}
+                      onChange={(_, newValue) => setActiveDetailsTab(newValue)}
+                      variant="scrollable"
+                      scrollButtons="auto"
+                    >
+                      {detailsTemplates.map((template, index) => (
+                        <Tab
+                          key={index}
+                          label={
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
+                            >
+                              {template.title}
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemoveDetailsTemplate(index);
+                                }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
+                          }
+                        />
+                      ))}
+                    </Tabs>
+                    <Divider sx={{ my: 2 }} />
+                    {activeDetailsTemplate &&
+                      activeDetailsTemplate.data &&
+                      Object.keys(activeDetailsTemplate.data).length > 0 && (
+                        <ProductDetailsForm
+                          data={activeDetailsTemplate.data as ICategoryDetails}
+                          formData={activeDetailsTemplate.formData}
+                          onFormDataChange={handleDetailsFormDataChange}
+                          validationErrors={allDetailsValidationErrors}
+                        />
+                      )}
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Attributes Templates Section */}
+          <Grid size={{ xs: 12 }}>
+            <Card>
+              {/* <CardHeader
+                title="قالب‌های ویژگی"
+                action={
+                  <Button
+                    startIcon={<AddIcon />}
+                    onClick={handleOpenAttributesDialog}
+                    variant="outlined"
+                    size="small"
+                  >
+                    افزودن قالب
+                  </Button>
+                }
+              /> */}
+              <CardContent>
+                {attributesTemplates.length === 0 ? (
+                  <Alert severity="warning">
+                    هیچ قالب ویژگی انتخاب نشده است.
+                  </Alert>
+                ) : (
+                  <>
+                    <Tabs
+                      value={activeAttributesTab}
+                      onChange={(_, newValue) =>
+                        setActiveAttributesTab(newValue)
+                      }
+                      variant="scrollable"
+                      scrollButtons="auto"
+                    >
+                      {attributesTemplates.map((template, index) => (
+                        <Tab
+                          key={index}
+                          label={
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
+                            >
+                              {template.title}
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemoveAttributesTemplate(index);
+                                }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
+                          }
+                        />
+                      ))}
+                    </Tabs>
+                    <Divider sx={{ my: 2 }} />
+                    {activeAttributesTemplate &&
+                      activeAttributesTemplate.data &&
+                      Object.keys(activeAttributesTemplate.data).length > 0 && (
+                        <ProductAttributesForm
+                          data={activeAttributesTemplate.data as ICategoryAttr}
+                          formData={activeAttributesTemplate.formData}
+                          onFormDataChange={handleAttributesFormDataChange}
+                          validationErrors={allAttributesValidationErrors}
+                        />
+                      )}
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Image Selection Section */}
+          <Grid size={{ xs: 12 }}>
+            <Card>
+              <CardHeader 
+                title="تصاویر محصول" 
+                action={
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => setShowImageSelectionDialog(true)}
+                  >
+                    انتخاب از قالب‌ها
+                  </Button>
+                }
+              />
+              <CardContent>
+                {selectedImagesData?.data?.list && selectedImagesData.data.list.length > 0 ? (
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+                    {selectedImagesData.data.list.map((image) => (
+                      <Box
+                        key={image.id}
+                        sx={{
+                          position: "relative",
+                          width: 150,
+                          height: 150,
+                          borderRadius: 1,
+                          overflow: "hidden",
+                          border: "2px solid",
+                          borderColor: "primary.main",
+                        }}
+                      >
+                        <img
+                          src={image.image_url}
+                          alt={image.title || "Product"}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+                        <IconButton
+                          size="small"
+                          sx={{
+                            position: "absolute",
+                            top: 4,
+                            right: 4,
+                            bgcolor: "background.paper",
+                            "&:hover": { bgcolor: "error.main", color: "white" },
+                          }}
+                          onClick={() => {
+                            setSelectedImages((prev) =>
+                              prev.filter((id) => id !== image.id)
+                            );
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    ))}
+                  </Box>
+                ) : (
+                  <Alert severity="info">
+                    هیچ تصویری انتخاب نشده است. برای انتخاب تصویر از قالب‌ها، روی دکمه "انتخاب از قالب‌ها" کلیک کنید.
+                  </Alert>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Image Selection Dialog */}
+          <Dialog
+            open={showImageSelectionDialog}
+            onClose={() => setShowImageSelectionDialog(false)}
+            maxWidth="lg"
+            fullWidth
+          >
+            <DialogTitle>انتخاب تصویر از قالب‌ها</DialogTitle>
+            <DialogContent>
+              <ProductImageSelection
+                imageOptions={imageOptions}
+                selectedImages={selectedImages}
+                onImageSelectionChange={(selectedIds) => setSelectedImages(selectedIds)}
+                onNext={() => setShowImageSelectionDialog(false)}
+                onBack={() => setShowImageSelectionDialog(false)}
+              />
+            </DialogContent>
+          </Dialog>
+
+          {/* Validation Summary */}
+          {!isFormValid && (
+            <Grid size={{ xs: 12 }}>
+              <Alert severity="warning">
+                لطفاً تمام فیلدهای الزامی را پر کنید:
+                <ul style={{ margin: "8px 0", paddingRight: "20px" }}>
+                  {!productInfoValidation.isValid && (
+                    <li>عنوان و توضیحات محصول را به درستی وارد کنید</li>
+                  )}
+                  {selectedImages.length === 0 && (
+                    <li>حداقل یک تصویر برای محصول انتخاب کنید</li>
+                  )}
+                  {(detailsTemplates.length === 0 || attributesTemplates.length === 0) && (
+                    <li>حداقل یک قالب برای جزئیات و ویژگی‌ها انتخاب کنید</li>
+                  )}
+                  {Object.keys(allDetailsValidationErrors).length > 0 && (
+                    <li>فیلدهای الزامی در قالب‌های جزئیات را پر کنید</li>
+                  )}
+                  {Object.keys(allAttributesValidationErrors).length > 0 && (
+                    <li>فیلدهای الزامی در قالب‌های ویژگی‌ها را پر کنید</li>
+                  )}
+                </ul>
               </Alert>
-            )}
+            </Grid>
+          )}
 
-            {/* Backdrop overlay when submitting */}
-            <Backdrop
-              sx={{
-                color: "#fff",
-                zIndex: (theme) => theme.zIndex.drawer + 1,
-              }}
-              open={isSubmitting}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 2,
-                }}
+          {/* Action Buttons */}
+          <Grid size={{ xs: 12 }}>
+            <Stack direction="row" spacing={2} justifyContent="flex-end">
+              <Button
+                onClick={() => navigate("/products/list")}
+                variant="outlined"
               >
-                <Paper
-                  sx={{
-                    p: 3,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 2,
-                  }}
-                >
-                  <Typography variant="h6" color="primary" fontWeight="bold">
-                    در حال ذخیره محصول...
-                  </Typography>
-                  <div
-                    style={{
-                      width: 60,
-                      height: 60,
-                      border: "4px solid rgba(0, 0, 0, 0.1)",
-                      borderTop: "4px solid #1976d2",
-                      borderRadius: "50%",
-                      animation: "spin 1s linear infinite",
-                    }}
-                  />
-                </Paper>
-              </Box>
-            </Backdrop>
-            <style>{`
-              @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-              }
-            `}</style>
-          </>
-        )}
+                بازگشت
+              </Button>
+              <Button
+                onClick={handleSave}
+                variant="contained"
+                disabled={!isFormValid || isUpdating}
+              >
+                {isUpdating ? "در حال ذخیره..." : "ذخیره تغییرات"}
+              </Button>
+            </Stack>
+          </Grid>
+        </Grid>
       </Box>
     </Layout>
   );

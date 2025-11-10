@@ -184,8 +184,8 @@ export const getAttributesDefaultValues = (
   currentFormData: { [key: string]: any } = {}
 ): AttributesFormData => {
   const defaultValues: AttributesFormData = {
-    title: currentFormData.title || '',
-    description: currentFormData.description || '',
+    title: currentFormData.title ?? '',
+    description: currentFormData.description ?? '',
   };
 
   if (!attributesData?.category_group_attributes) {

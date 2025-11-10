@@ -304,8 +304,8 @@ const NewTemplatePage = () => {
                 isFormValid={isCurrentFormValid}
                 loading={
                   activeTab === 0
-                    ? categoryLoading || isDetailsSaving
-                    : categoryLoading || isAttributesSaving
+                    ? isAttributesSaving
+                    : isDetailsSaving
                 }
               />
             )}

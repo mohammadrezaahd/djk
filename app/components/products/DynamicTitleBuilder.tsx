@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from "react";
+import React, { useRef, useMemo, useEffect } from "react";
 import { Box, Typography, Chip, Paper } from "@mui/material";
 import type {
   ICategoryAttr,
@@ -66,6 +66,34 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
 
     return allBadges;
   }, [attributesData, detailsData]);
+
+  // Convert value to HTML and update the contentEditable div
+  useEffect(() => {
+    if (!ref.current || !value) return;
+
+    // Only update if the current content doesn't match the value
+    const currentText = ref.current.innerText || "";
+    const valueText = value.replace(/\{[^}]+\}/g, ""); // Remove tags for comparison
+    
+    // Parse the value and create HTML
+    const parts = value.split(/(\{[^}]+\})/g);
+    const html = parts.map((part) => {
+      if (part.startsWith("{") && part.endsWith("}")) {
+        const id = part.slice(1, -1);
+        const badge = badges.find((b) => b.id.toString() === id);
+        if (badge) {
+          return `<span style="display: inline-flex; align-items: center; background: #E3F2FD; border-radius: 8px; padding: 2px 6px; margin: 0 2px; cursor: pointer;" contenteditable="false" data-id="${id}">${badge.title}</span>`;
+        }
+        return part;
+      }
+      return part;
+    }).join("");
+
+    // Only update if content is different
+    if (ref.current.innerHTML !== html) {
+      ref.current.innerHTML = html;
+    }
+  }, [value, badges]);
 
   // Get currently used tags
   const usedTags = useMemo(() => {

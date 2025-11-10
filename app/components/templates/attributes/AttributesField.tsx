@@ -8,7 +8,7 @@ import {
 interface AttributesFieldProps {
   attr: IAttr;
   value: any;
-  onChange: (attrId: number, value: any) => void;
+  onChange: (attrId: number | string, value: any) => void;
   error?: string;
 }
 
@@ -18,6 +18,8 @@ export default function AttributesField({
   onChange,
   error,
 }: AttributesFieldProps) {
+  // برای فیلدهای خاص از code استفاده می‌کنیم، در غیر این صورت از id
+  const fieldKey = attr.code || attr.id;
   console.log("🔍 AttributesField rendering:", {
     attrId: attr.id,
     attrTitle: attr.title,
@@ -53,19 +55,19 @@ export default function AttributesField({
             // Accept only non-negative numbers (>= 0). Keep empty string as empty.
             const inputVal = e.target.value;
             if (inputVal === "") {
-              onChange(attr.id, "");
+              onChange(fieldKey, "");
               return;
             }
 
             // Parse as float and enforce min 0
             const parsed = parseFloat(inputVal);
             if (isNaN(parsed)) {
-              onChange(attr.id, inputVal);
+              onChange(fieldKey, inputVal);
               return;
             }
 
             const safe = parsed < 0 ? 0 : parsed;
-            onChange(attr.id, safe);
+            onChange(fieldKey, safe);
           }}
           required={attr.required}
           error={!!error}
@@ -102,7 +104,7 @@ export default function AttributesField({
                 getOptionLabel={(option) => option.label}
                 value={selectedOption}
                 onChange={(_, newValue) => {
-                  onChange(attr.id, newValue?.id || "");
+                  onChange(fieldKey, newValue?.id || "");
                 }}
                 renderInput={(params) => (
                   <TextField
@@ -135,7 +137,7 @@ export default function AttributesField({
                 value={selectedOptions}
                 onChange={(_, newValues) => {
                   const selectedIds = newValues.map((item) => item.id);
-                  onChange(attr.id, selectedIds);
+                  onChange(fieldKey, selectedIds);
                 }}
                 disableCloseOnSelect
                 renderTags={(value, getTagProps) =>
@@ -193,7 +195,7 @@ export default function AttributesField({
           label={attr.title + (attr.required ? " *" : "")}
           helperText={error || attr.hint}
           value={value || ""}
-          onChange={(e) => onChange(attr.id, e.target.value)}
+          onChange={(e) => onChange(fieldKey, e.target.value)}
           required={attr.required}
           error={!!error}
         />

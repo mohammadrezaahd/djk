@@ -88,6 +88,13 @@ const createProductDetailsValidationSchema = (detailsData: ICategoryDetails | nu
     dynamicFields.fake_reason = createOptionValidation(bind.fake_reasons, true, "text");
   }
 
+  // Brand model validation
+  if (bind.brand_model) {
+    dynamicFields.brand_model = bind.brand_model.require
+      ? yup.string().required(messages.required)
+      : yup.string();
+  }
+
   // ID type validation
   if (bind.general_mefa && Object.keys(bind.general_mefa).length > 0) {
     dynamicFields.id_type = yup

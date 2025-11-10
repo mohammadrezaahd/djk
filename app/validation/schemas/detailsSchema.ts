@@ -187,9 +187,9 @@ export const getDetailsDefaultValues = (
   console.log("🔍 getDetailsDefaultValues - currentFormData:", currentFormData);
   
   const defaultValues: DetailsFormData = {
-    title: currentFormData.title || "",
-    description: currentFormData.description || "",
-    tag: currentFormData.tag || "",
+    title: currentFormData.title ?? "",
+    description: currentFormData.description ?? "",
+    tag: currentFormData.tag ?? "",
   };
 
   console.log("🔍 getDetailsDefaultValues - defaultValues.title:", defaultValues.title);
@@ -201,15 +201,16 @@ export const getDetailsDefaultValues = (
   const bind = detailsData.bind;
 
   // Set defaults from current form data or defaults
+  // Use ?? instead of || to allow empty strings
   defaultValues.is_fake_product = currentFormData.is_fake_product ?? false;
-  defaultValues.brand = currentFormData.brand || "";
+  defaultValues.brand = currentFormData.brand ?? "";
   defaultValues.category_product_type =
-    currentFormData.category_product_type || "";
+    currentFormData.category_product_type ?? "";
   defaultValues.id_type =
-    currentFormData.id_type || "general";
-  defaultValues.general_mefa_id = currentFormData.general_mefa_id || "";
-  defaultValues.custom_id = currentFormData.custom_id || "";
-  defaultValues.brand_model = currentFormData.brand_model || bind.brand_model?.value || "";
+    currentFormData.id_type ?? "general";
+  defaultValues.general_mefa_id = currentFormData.general_mefa_id ?? "";
+  defaultValues.custom_id = currentFormData.custom_id ?? "";
+  defaultValues.brand_model = currentFormData.brand_model ?? (bind.brand_model?.value || "");
 
   console.log("🔍 getDetailsDefaultValues - final defaultValues:", defaultValues);
   

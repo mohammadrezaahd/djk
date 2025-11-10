@@ -154,11 +154,60 @@ const productSlice = createSlice({
       // Check if template is already selected
       const exists = state.selectedAttributesTemplates.find(t => t.id === template.id);
       if (!exists) {
+        // Extract initial form data from template
+        const initialFormData: { [key: string]: any } = {};
+        
+        if (data?.category_group_attributes) {
+          Object.values(data.category_group_attributes).forEach((categoryData: any) => {
+            Object.values(categoryData.attributes).forEach((attr: any) => {
+              // استفاده از code برای فیلدهای خاص، در غیر این صورت id را به string تبدیل می‌کنیم
+              const fieldKey = attr.code || attr.id.toString();
+              
+              // برای text fields
+              if (attr.type === 'text') {
+                if (attr.value !== undefined && attr.value !== null && attr.value !== "") {
+                  if (typeof attr.value === 'object' && attr.value.text_lines) {
+                    initialFormData[fieldKey] = attr.value.text_lines.join('\n');
+                  } else if (typeof attr.value === 'object' && attr.value.original_text) {
+                    initialFormData[fieldKey] = attr.value.original_text;
+                  } else if (typeof attr.value === 'string') {
+                    initialFormData[fieldKey] = attr.value;
+                  }
+                } else {
+                  initialFormData[fieldKey] = "";
+                }
+              }
+              // برای input fields
+              else if (attr.type === 'input') {
+                initialFormData[fieldKey] = attr.value !== undefined && attr.value !== null ? attr.value : "";
+              }
+              // برای select fields
+              else if (attr.type === 'select') {
+                const selectedValues = Object.entries(attr.values)
+                  .filter(([_, valueData]: [string, any]) => valueData.selected)
+                  .map(([valueId, _]) => valueId);
+                if (selectedValues.length > 0) {
+                  initialFormData[fieldKey] = selectedValues[0];
+                } else {
+                  initialFormData[fieldKey] = "";
+                }
+              }
+              // برای checkbox fields
+              else if (attr.type === 'checkbox') {
+                const selectedValues = Object.entries(attr.values)
+                  .filter(([_, valueData]: [string, any]) => valueData.selected)
+                  .map(([valueId, _]) => valueId);
+                initialFormData[fieldKey] = selectedValues.length > 0 ? selectedValues : [];
+              }
+            });
+          });
+        }
+        
         state.selectedAttributesTemplates.push({
           id: template.id,
           title: template.title,
           data,
-          formData: {}
+          formData: initialFormData
         });
       }
     },
@@ -250,44 +299,45 @@ const productSlice = createSlice({
             Object.values(templateData.category_group_attributes).forEach(
               (categoryData: any) => {
                 Object.values(categoryData.attributes).forEach((attr: any) => {
-                  // For input fields, check if there's a stored value
-                  if (attr.type === "input" && attr.value !== undefined) {
-                    // Convert string numbers to proper format
-                    const numericValue =
-                      typeof attr.value === "string" &&
-                      !isNaN(parseFloat(attr.value))
-                        ? parseFloat(attr.value)
-                        : attr.value;
-                    initialFormData[attr.id] = numericValue;
-                  }
-                  // For text fields (Advantage/Disadvantages), handle structured format
-                  else if (attr.type === "text" && attr.value !== undefined) {
-                    if (typeof attr.value === 'object' && attr.value.text_lines) {
-                      // اگر به صورت آرایه خطوط ذخیره شده
-                      initialFormData[attr.id] = attr.value.text_lines.join('\n');
-                    } else if (typeof attr.value === 'object' && attr.value.original_text) {
-                      // اگر متن اصلی ذخیره شده
-                      initialFormData[attr.id] = attr.value.original_text;
-                    } else if (typeof attr.value === 'string') {
-                      // اگر به صورت متن ساده ذخیره شده
-                      initialFormData[attr.id] = attr.value;
+                  // استفاده از code برای فیلدهای خاص، در غیر این صورت id را به string تبدیل می‌کنیم
+                  const fieldKey = attr.code || attr.id.toString();
+                  
+                  // For text fields
+                  if (attr.type === 'text') {
+                    if (attr.value !== undefined && attr.value !== null && attr.value !== "") {
+                      if (typeof attr.value === 'object' && attr.value.text_lines) {
+                        initialFormData[fieldKey] = attr.value.text_lines.join('\n');
+                      } else if (typeof attr.value === 'object' && attr.value.original_text) {
+                        initialFormData[fieldKey] = attr.value.original_text;
+                      } else if (typeof attr.value === 'string') {
+                        initialFormData[fieldKey] = attr.value;
+                      }
+                    } else {
+                      // Load empty value
+                      initialFormData[fieldKey] = "";
                     }
                   }
-                  // For select/checkbox fields, get selected values
-                  else if (attr.values) {
+                  // For input fields
+                  else if (attr.type === 'input') {
+                    initialFormData[fieldKey] = attr.value !== undefined && attr.value !== null ? attr.value : "";
+                  }
+                  // For select fields
+                  else if (attr.type === 'select') {
                     const selectedValues = Object.entries(attr.values)
-                      .filter(
-                        ([_, valueData]: [string, any]) => valueData.selected
-                      )
+                      .filter(([_, valueData]: [string, any]) => valueData.selected)
                       .map(([valueId, _]) => valueId);
-
                     if (selectedValues.length > 0) {
-                      const value =
-                        attr.type === "checkbox"
-                          ? selectedValues
-                          : selectedValues[0];
-                      initialFormData[attr.id] = value;
+                      initialFormData[fieldKey] = selectedValues[0];
+                    } else {
+                      initialFormData[fieldKey] = "";
                     }
+                  }
+                  // For checkbox fields
+                  else if (attr.type === 'checkbox') {
+                    const selectedValues = Object.entries(attr.values)
+                      .filter(([_, valueData]: [string, any]) => valueData.selected)
+                      .map(([valueId, _]) => valueId);
+                    initialFormData[fieldKey] = selectedValues.length > 0 ? selectedValues : [];
                   }
                 });
               }
@@ -368,6 +418,18 @@ const productSlice = createSlice({
               theme.selected = theme.value === formData.theme;
             });
           }
+
+          // Apply text fields
+          const textFields = [
+            "brand_model", "color_pattern", "warranty", "size", "weight", 
+            "material", "origin_country", "manufacturer", "model_number", 
+            "barcode", "package_dimensions", "special_features", "care_instructions"
+          ];
+          textFields.forEach((fieldName) => {
+            if (bind[fieldName] && formData[fieldName] !== undefined) {
+              bind[fieldName].value = formData[fieldName];
+            }
+          });
         }
 
         return finalData;
@@ -385,42 +447,58 @@ const productSlice = createSlice({
 
             Object.keys(categoryData.attributes).forEach((attributeId) => {
               const attr = categoryData.attributes[attributeId];
-              const formValue = formData[attr.id];
+              const fieldKey = attr.code || attr.id.toString();
+              const formValue = formData[fieldKey];
+              const hasFormValue = fieldKey in formData;
 
-              if (formValue !== undefined && formValue !== null && formValue !== "") {
-                switch (attr.type) {
-                  case "input":
+              switch (attr.type) {
+                case "input":
+                  if (hasFormValue && formValue !== null && formValue !== undefined && formValue !== "") {
                     attr.value = formValue.toString();
-                    break;
-                  case "text":
+                  }
+                  break;
+                case "text":
+                  if (hasFormValue && formValue !== null && formValue !== undefined && formValue !== "") {
                     // ذخیره متن به صورت ساختاریافته برای نمایش بهتر
                     const lines = formValue.toString().split('\n').filter((line: string) => line.trim() !== '');
                     attr.value = {
                       text_lines: lines,
                       original_text: formValue.toString()
                     };
-                    break;
-                  case "select":
-                    Object.keys(attr.values).forEach((valueId) => {
-                      attr.values[valueId].selected = false;
-                    });
-                    if (formValue && attr.values[formValue]) {
-                      attr.values[formValue].selected = true;
+                  } else {
+                    attr.value = "";
+                  }
+                  break;
+                case "select":
+                  // همیشه ابتدا همه را false می‌کنیم
+                  Object.keys(attr.values).forEach((valueId) => {
+                    attr.values[valueId].selected = false;
+                  });
+                  // سپس اگر مقدار وجود داشت، آن را true می‌کنیم
+                  if (hasFormValue && formValue) {
+                    // تبدیل به string برای اطمینان از تطابق کلید
+                    const formValueStr = formValue.toString();
+                    if (attr.values[formValueStr]) {
+                      attr.values[formValueStr].selected = true;
                     }
-                    break;
-                  case "checkbox":
-                    Object.keys(attr.values).forEach((valueId) => {
-                      attr.values[valueId].selected = false;
+                  }
+                  break;
+                case "checkbox":
+                  // همیشه ابتدا همه را false می‌کنیم
+                  Object.keys(attr.values).forEach((valueId) => {
+                    attr.values[valueId].selected = false;
+                  });
+                  // سپس اگر آرایه‌ای از مقادیر وجود داشت، آن‌ها را true می‌کنیم
+                  if (hasFormValue && Array.isArray(formValue) && formValue.length > 0) {
+                    formValue.forEach((valueId: any) => {
+                      // تبدیل به string برای اطمینان از تطابق کلید
+                      const valueIdStr = valueId.toString();
+                      if (attr.values[valueIdStr]) {
+                        attr.values[valueIdStr].selected = true;
+                      }
                     });
-                    if (Array.isArray(formValue) && formValue.length > 0) {
-                      formValue.forEach((valueId: string) => {
-                        if (attr.values[valueId]) {
-                          attr.values[valueId].selected = true;
-                        }
-                      });
-                    }
-                    break;
-                }
+                  }
+                  break;
               }
             });
           });

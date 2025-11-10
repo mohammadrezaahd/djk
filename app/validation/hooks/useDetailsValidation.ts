@@ -37,11 +37,14 @@ export const useDetailsValidation = (
     mode: 'onChange', // Validate on change for immediate feedback
   });
 
-  // Reset form when details data changes
+  // Reset form only when details data structure changes (not when form values change)
+  // We use a ref to track if this is the initial load
   useEffect(() => {
+    // Only reset on initial load or when detailsData changes
+    // Don't reset when currentFormData changes (user is typing)
     const newDefaults = getDetailsDefaultValues(detailsData, currentFormData);
     form.reset(newDefaults);
-  }, [detailsData, currentFormData, form]);
+  }, [detailsData]); // Only depend on detailsData, not currentFormData
 
   // Check form validity
   const isFormValid = form.formState.isValid && !form.formState.isSubmitting;

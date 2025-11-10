@@ -45,13 +45,13 @@ export const useAttributesValidation = (
     mode: 'onChange', // Validate on change for immediate feedback
   });
 
-  // Reset form when attributes data changes
+  // Reset form only when attributes data structure changes (not when form values change)
   useEffect(() => {
     const newDefaults = getAttributesDefaultValues(attributesData, currentFormData);
     newDefaults.title = title;
     newDefaults.description = description;
     form.reset(newDefaults);
-  }, [attributesData, currentFormData, title, description, form]);
+  }, [attributesData]); // Only depend on attributesData structure, not form values
 
   // Check form validity
   const isFormValid = form.formState.isValid && !form.formState.isSubmitting;

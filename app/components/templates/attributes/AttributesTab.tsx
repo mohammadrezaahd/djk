@@ -6,7 +6,7 @@ import {
   Grid,
   TextField,
 } from "@mui/material";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import type { IAttr } from "~/types/interfaces/attributes.interface";
 import { StaticCategoryIds } from "~/types/interfaces/attributes.interface";
 import { useAppSelector, useAppDispatch } from "~/store/hooks";
@@ -18,6 +18,7 @@ import {
 } from "~/store/slices/attributesSlice";
 import { useAttributesValidation } from "~/validation";
 import AttributesField from "./AttributesField";
+import AttributesFormFields from "./AttributesFormFields";
 import ImageSelector from "../ImageSelector";
 import { MediaType } from "~/components/MediaManager/FileUpload";
 
@@ -105,8 +106,8 @@ export default function AttributesTab({
     return attributes.filter((attr) => !packagingAttributes.includes(attr));
   }, [attributes, packagingAttributes]);
 
-  const handleInputChange = (attrId: number, value: any) => {
-    const fieldKey = attrId.toString();
+  const handleInputChange = (attrId: number | string, value: any) => {
+    const fieldKey = typeof attrId === 'number' ? attrId.toString() : attrId;
     form.setValue(fieldKey, value, { shouldValidate: true, shouldDirty: true });
     dispatch(updateFormField({ fieldId: fieldKey, value }));
   };

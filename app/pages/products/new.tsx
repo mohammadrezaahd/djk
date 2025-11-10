@@ -578,6 +578,29 @@ const NewProductPage = () => {
               theme.selected = theme.value === formData.theme;
             });
           }
+          
+          // Update text field values (IStringField type fields like brand_model, color_pattern, warranty, etc.)
+          const textFields = [
+            "brand_model",
+            "color_pattern",
+            "warranty",
+            "size",
+            "weight",
+            "material",
+            "origin_country",
+            "manufacturer",
+            "model_number",
+            "barcode",
+            "package_dimensions",
+            "special_features",
+            "care_instructions",
+          ];
+
+          textFields.forEach((fieldName) => {
+            if (bind[fieldName] && formData[fieldName] !== undefined) {
+              bind[fieldName].value = formData[fieldName];
+            }
+          });
         }
 
         return finalData;
@@ -596,20 +619,29 @@ const NewProductPage = () => {
               const attr = categoryData.attributes[attributeId];
               const formValue = formData[attr.id];
 
-              if (formValue !== undefined && formValue !== null && formValue !== "") {
+              // Check if field exists in formData (even if empty string)
+              const hasFormValue = attr.id in formData;
+
+              if (hasFormValue) {
                 switch (attr.type) {
                   case "input":
-                    attr.value = formValue.toString();
+                    // Set value even if empty string
+                    attr.value = formValue !== null && formValue !== undefined ? formValue.toString() : "";
                     break;
                   case "text":
-                    const lines = formValue
-                      .toString()
-                      .split("\n")
-                      .filter((line: string) => line.trim() !== "");
-                    attr.value = {
-                      text_lines: lines,
-                      original_text: formValue.toString(),
-                    };
+                    // Set value even if empty string
+                    if (formValue !== null && formValue !== undefined && formValue !== "") {
+                      const lines = formValue
+                        .toString()
+                        .split("\n")
+                        .filter((line: string) => line.trim() !== "");
+                      attr.value = {
+                        text_lines: lines,
+                        original_text: formValue.toString(),
+                      };
+                    } else {
+                      attr.value = "";
+                    }
                     break;
                   case "select":
                     Object.keys(attr.values).forEach((valueId) => {
@@ -633,6 +665,7 @@ const NewProductPage = () => {
                     break;
                 }
               }
+              // If field not in formData, preserve original template value
             });
           });
         }
@@ -805,11 +838,11 @@ const NewProductPage = () => {
                 <ProductAttributesForm
                   data={activeAttributesTemplateData.data.data_json}
                   formData={activeAttributesTemplate.formData}
-                  onFormDataChange={(fieldId: number, value: any) =>
+                  onFormDataChange={(fieldId: number | string, value: any) =>
                     dispatch(
                       updateAttributesTemplateFormData({
                         templateIndex: productState.activeAttributesTemplateIndex,
-                        fieldId: fieldId.toString(),
+                        fieldId: typeof fieldId === 'string' ? fieldId : fieldId.toString(),
                         value,
                       })
                     )

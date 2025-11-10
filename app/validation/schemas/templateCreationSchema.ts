@@ -31,7 +31,7 @@ export const getTemplateCreationDefaultValues = (
   currentFormData: { [key: string]: any } = {}
 ): TemplateCreationFormData => {
   return {
-    title: currentFormData.title || '',
-    description: currentFormData.description || '',
+    title: currentFormData.title ?? '',
+    description: currentFormData.description ?? '',
   };
 };

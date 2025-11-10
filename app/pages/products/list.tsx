@@ -142,7 +142,7 @@ const ProductsList = () => {
 
   // Handle edit action
   const handleEdit = (id: number) => {
-    navigate(`/products/edit?id=${id}`);
+    navigate(`/products/edit/${id}`);
   };
 
   // Handle delete action

@@ -119,9 +119,9 @@ const attributesSlice = createSlice({
         Object.values(templateData.category_group_attributes).forEach(
           (categoryData: any) => {
             Object.values(categoryData.attributes).forEach((attr: any) => {
-              if (attr.value !== undefined && attr.value !== null && attr.value !== "") {
-                // برای text fields
-                if (attr.type === 'text') {
+              // برای text fields
+              if (attr.type === 'text') {
+                if (attr.value !== undefined && attr.value !== null && attr.value !== "") {
                   if (typeof attr.value === 'object' && attr.value.text_lines) {
                     // اگر به صورت آرایه ذخیره شده
                     formData[attr.id] = attr.value.text_lines.join('\n');
@@ -132,29 +132,32 @@ const attributesSlice = createSlice({
                     // اگر به صورت متن ساده ذخیره شده
                     formData[attr.id] = attr.value;
                   }
+                } else {
+                  // Load empty value
+                  formData[attr.id] = "";
                 }
-                // برای input fields
-                else if (attr.type === 'input') {
-                  formData[attr.id] = attr.value;
+              }
+              // برای input fields
+              else if (attr.type === 'input') {
+                formData[attr.id] = attr.value !== undefined && attr.value !== null ? attr.value : "";
+              }
+              // برای select fields
+              else if (attr.type === 'select') {
+                const selectedValues = Object.entries(attr.values)
+                  .filter(([_, valueData]: [string, any]) => valueData.selected)
+                  .map(([valueId, _]) => valueId);
+                if (selectedValues.length > 0) {
+                  formData[attr.id] = selectedValues[0];
+                } else {
+                  formData[attr.id] = "";
                 }
-                // برای select fields
-                else if (attr.type === 'select') {
-                  const selectedValues = Object.entries(attr.values)
-                    .filter(([_, valueData]: [string, any]) => valueData.selected)
-                    .map(([valueId, _]) => valueId);
-                  if (selectedValues.length > 0) {
-                    formData[attr.id] = selectedValues[0];
-                  }
-                }
-                // برای checkbox fields
-                else if (attr.type === 'checkbox') {
-                  const selectedValues = Object.entries(attr.values)
-                    .filter(([_, valueData]: [string, any]) => valueData.selected)
-                    .map(([valueId, _]) => valueId);
-                  if (selectedValues.length > 0) {
-                    formData[attr.id] = selectedValues;
-                  }
-                }
+              }
+              // برای checkbox fields
+              else if (attr.type === 'checkbox') {
+                const selectedValues = Object.entries(attr.values)
+                  .filter(([_, valueData]: [string, any]) => valueData.selected)
+                  .map(([valueId, _]) => valueId);
+                formData[attr.id] = selectedValues.length > 0 ? selectedValues : [];
               }
             });
           }
@@ -191,19 +194,28 @@ export const getFinalAttributesObject = (state: {
         const attr = categoryData.attributes[attributeId];
         const formValue = state.attributes.formData[attr.id];
 
-        if (formValue !== undefined && formValue !== null && formValue !== "") {
+        // Check if field exists in formData (even if empty string)
+        const hasFormValue = attr.id in state.attributes.formData;
+
+        if (hasFormValue) {
           switch (attr.type) {
             case "input":
-              attr.value = formValue.toString();
+              // Set value even if empty string
+              attr.value = formValue !== null && formValue !== undefined ? formValue.toString() : "";
               break;
 
             case "text":
-              // ذخیره متن به صورت ساختاریافته برای نمایش بهتر
-              const lines = formValue.toString().split('\n').filter((line: string) => line.trim() !== '');
-              attr.value = {
-                text_lines: lines,
-                original_text: formValue.toString()
-              };
+              // Set value even if empty string
+              if (formValue !== null && formValue !== undefined && formValue !== "") {
+                // ذخیره متن به صورت ساختاریافته برای نمایش بهتر
+                const lines = formValue.toString().split('\n').filter((line: string) => line.trim() !== '');
+                attr.value = {
+                  text_lines: lines,
+                  original_text: formValue.toString()
+                };
+              } else {
+                attr.value = "";
+              }
               break;
 
             case "select":
@@ -235,14 +247,8 @@ export const getFinalAttributesObject = (state: {
               break;
           }
         } else {
-          // Reset selection state for select/checkbox when no value is set
-          if (attr.type === "select" || attr.type === "checkbox") {
-            Object.keys(attr.values).forEach((valueId) => {
-              attr.values[valueId].selected = false;
-            });
-          } else if (attr.type === "input" || attr.type === "text") {
-            attr.value = "";
-          }
+          // Field not in formData - don't modify existing value
+          // This preserves the original template values
         }
       });
     });

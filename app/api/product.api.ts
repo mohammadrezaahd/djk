@@ -4,6 +4,7 @@ import {
   authorizedPost,
   authorizedDelete,
   authorizedGet,
+  authorizedPut,
 } from "~/utils/authorizeReq";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
@@ -15,6 +16,18 @@ import type {
 const addNewProduct = async (data: IPostProduct) => {
   return apiUtils<{ data: { id: number } }>(async () => {
     const response = await authorizedPost("/v1/cp_products/save", data);
+
+    return {
+      status: "true" as any,
+      code: response.status as any,
+      data: response.data.data,
+    };
+  });
+};
+
+const updateProduct = async (id: number, data: IPostProduct) => {
+  return apiUtils<{ data: { id: number } }>(async () => {
+    const response = await authorizedPost(`/v1/cp_products/update/${id}`, data);
 
     return {
       status: "true" as any,
@@ -67,6 +80,19 @@ const removeProduct = async (id: number) => {
 const publishProduct = async (id: number) => {
   return apiUtils(async () => {
     const response = await authorizedPost(`/v1/cp_products/publish/${id}`);
+    return response.data;
+  });
+};
+
+const editProduct = async ({
+  id,
+  data,
+}: {
+  id: number;
+  data: IPostProduct;
+}) => {
+  return apiUtils<{ status: string }>(async () => {
+    const response = await authorizedPut(`/v1/cp_products/edit/${id}`, data);
     return response.data;
   });
 };
@@ -136,6 +162,39 @@ export const usePublishProduct = () => {
     },
     onError: (error) => {
       console.error("❌ Error publishing product:", error);
+    },
+  });
+};
+
+export const useUpdateProduct = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: IPostProduct }) =>
+      updateProduct(id, data),
+    onSuccess: (data, variables) => {
+      // Invalidate related queries after successful update
+      queryClient.invalidateQueries({ queryKey: ["product", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["products list"] });
+      console.log("✅ Product updated successfully:", data);
+    },
+    onError: (error) => {
+      console.error("❌ Error updating product:", error);
+    },
+  });
+};
+
+export const useEditProduct = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: editProduct,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products modify"] });
+      // console.log("✅ Attribute added successfully:", data);
+    },
+    onError: (error) => {
+      console.error("❌ Error modifying product:", error);
     },
   });
 };
