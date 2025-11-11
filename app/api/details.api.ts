@@ -76,7 +76,6 @@ export const useAddDetail = () => {
     onSuccess: (data) => {
       // Invalidate related queries after successful creation
       queryClient.invalidateQueries({ queryKey: ["categories"] });
-      console.log("✅ Detail added successfully:", data);
     },
     onError: (error) => {
       console.error("❌ Error adding detail:", error);
@@ -129,7 +128,6 @@ export const useEditDetail = () => {
     mutationFn: editDetail,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["details modify"] });
-      // console.log("✅ Attribute added successfully:", data);
     },
     onError: (error) => {
       console.error("❌ Error modifying attribute:", error);

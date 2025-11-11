@@ -184,7 +184,6 @@ export const getDetailsDefaultValues = (
   detailsData: ICategoryDetails | null,
   currentFormData: { [key: string]: any } = {}
 ): DetailsFormData => {
-  console.log("🔍 getDetailsDefaultValues - currentFormData:", currentFormData);
   
   const defaultValues: DetailsFormData = {
     title: currentFormData.title ?? "",
@@ -192,7 +191,6 @@ export const getDetailsDefaultValues = (
     tag: currentFormData.tag ?? "",
   };
 
-  console.log("🔍 getDetailsDefaultValues - defaultValues.title:", defaultValues.title);
 
   if (!detailsData?.bind) {
     return defaultValues;
@@ -212,7 +210,6 @@ export const getDetailsDefaultValues = (
   defaultValues.custom_id = currentFormData.custom_id ?? "";
   defaultValues.brand_model = currentFormData.brand_model ?? (bind.brand_model?.value || "");
 
-  console.log("🔍 getDetailsDefaultValues - final defaultValues:", defaultValues);
   
   return defaultValues;
 };

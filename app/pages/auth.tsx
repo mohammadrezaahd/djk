@@ -82,7 +82,6 @@ const Auth = () => {
       try {
         const result = await login({ username, password });
 
-        console.log("Login successful:", result);
 
         // Clear form
         setUsername("");

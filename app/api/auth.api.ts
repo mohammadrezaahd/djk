@@ -112,7 +112,6 @@ export const useLogin = () => {
     mutationFn: loginApi,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
-      console.log("✅ Login successful:", data);
     },
     onError: (error) => {
       console.error("❌ Login error:", error);
@@ -127,7 +126,6 @@ export const useLoginNumber = () => {
     mutationFn: loginApiNumber,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
-      console.log("✅ Login successful:", data);
     },
     onError: (error) => {
       console.error("❌ Login error:", error);
@@ -142,7 +140,6 @@ export const useLogout = () => {
     mutationFn: logout,
     onSuccess: () => {
       queryClient.clear(); // پاک کردن تمام cache ها
-      console.log("✅ Logout successful");
     },
     onError: (error) => {
       console.error("❌ Logout error:", error);

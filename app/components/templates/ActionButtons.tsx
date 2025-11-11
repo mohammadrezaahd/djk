@@ -1,73 +1,41 @@
-import {
-  Button,
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Grid,
-  CircularProgress,
-} from "@mui/material";
-import React from "react";
-
-const SectionCard = ({ title, children, ...props }: any) => (
-  <Card sx={{ p: 2, ...props.sx }} {...props}>
-    <CardContent>
-      <Typography variant="h6" gutterBottom>
-        {title}
-      </Typography>
-      {children}
-    </CardContent>
-  </Card>
-);
+import { Grid, Card, CardActions, Button } from "@mui/material";
 
 interface ActionButtonsProps {
-  activeTab: number;
   onSubmit: () => void;
   onReset: () => void;
-  loading?: boolean;
-  isFormValid?: boolean;
+  isFormValid: boolean;
+  loading: boolean;
   isEditMode?: boolean;
 }
 
 const ActionButtons = ({
-  activeTab,
   onSubmit,
   onReset,
-  loading = false,
-  isFormValid = false,
+  isFormValid,
+  loading,
   isEditMode = false,
 }: ActionButtonsProps) => {
   return (
-    <Grid size={{ xs: 12 }}>
-      <SectionCard>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+    <Grid item xs={12}>
+      <Card>
+        <CardActions sx={{ justifyContent: "flex-end", p: 2 }}>
+          <Button variant="outlined" color="secondary" onClick={onReset}>
+            {isEditMode ? "بازنشانی تغییرات" : "شروع مجدد"}
+          </Button>
           <Button
             variant="contained"
             color="primary"
             onClick={onSubmit}
-            size="large"
-            disabled={loading || !isFormValid}
-            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : undefined}
-            sx={{
-              opacity: !isFormValid ? 0.6 : 1,
-            }}
+            disabled={!isFormValid || loading}
           >
-            {loading 
-              ? (activeTab === 0 ? (isEditMode ? "در حال ویرایش ویژگی‌ها..." : "در حال ذخیره ویژگی‌ها...") : (isEditMode ? "در حال ویرایش اطلاعات..." : "در حال ذخیره اطلاعات..."))
-              : (activeTab === 0 ? (isEditMode ? "ویرایش قالب ویژگی‌ها" : "ذخیره قالب ویژگی‌ها") : (isEditMode ? "ویرایش قالب اطلاعات" : "ذخیره قالب اطلاعات"))
-            }
+            {loading
+              ? "در حال ذخیره..."
+              : isEditMode
+              ? "ذخیره تغییرات"
+              : "ذخیره قالب"}
           </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            size="large"
-            onClick={onReset}
-            disabled={loading}
-          >
-            {isEditMode ? "انصراف از ویرایش" : "انصراف از افزودن"}
-          </Button>
-        </Box>
-      </SectionCard>
+        </CardActions>
+      </Card>
     </Grid>
   );
 };

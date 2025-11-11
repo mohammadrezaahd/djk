@@ -36,7 +36,6 @@ export default function EditableInputWithBadges() {
   };
 
   const handleInput = () => {
-    console.log("content:", ref.current?.innerText);
   };
 
   return (

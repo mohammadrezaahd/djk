@@ -154,7 +154,6 @@ export const useEditImage = () => {
     mutationFn: editImage,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["image modify"] });
-      // console.log("✅ Attribute added successfully:", data);
     },
     onError: (error) => {
       console.error("❌ Error modifying image:", error);

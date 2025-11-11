@@ -74,7 +74,6 @@ export const useAddAttribute = () => {
     mutationFn: addNewAttr,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["attributes new"] });
-      // console.log("✅ Attribute added successfully:", data);
     },
     onError: (error) => {
       console.error("❌ Error adding attribute:", error);
@@ -126,7 +125,6 @@ export const useEditAttr = () => {
     mutationFn: editAttr,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["attributes modify"] });
-      // console.log("✅ Attribute added successfully:", data);
     },
     onError: (error) => {
       console.error("❌ Error adding attribute:", error);

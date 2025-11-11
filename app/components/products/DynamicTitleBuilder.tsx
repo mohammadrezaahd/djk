@@ -232,7 +232,6 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
   };
 
   const handleInput = () => {
-    console.log("content:", ref.current?.innerText);
 
     if (!ref.current) return;
 
@@ -252,7 +251,6 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
       }
     });
 
-    console.log("extracted value:", newValue);
     onChange(newValue);
   };
   return (
