@@ -6,3 +6,4 @@ export { default as TitleCard } from "./TitleCard";
 export { default as NotFoundPage } from "./NotFoundPage";
 export { default as AnimatedIllustration } from "./AnimatedIllustration";
 export { default as ErrorPage } from "./ErrorPage";
+export { default as ComingSoon } from "./ComingSoon";

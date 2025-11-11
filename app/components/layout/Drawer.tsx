@@ -295,9 +295,9 @@ const Drawer = ({
         <ListItem disablePadding>
           <ListItemButton
             component={Link}
-            to="/shipping"
+            to="/transportation"
             sx={{
-              backgroundColor: isPathActive("/shipping")
+              backgroundColor: isPathActive("/transportation")
                 ? theme.palette.action.selected
                 : "transparent",
               "&:hover": {
@@ -310,7 +310,7 @@ const Drawer = ({
                 minWidth: "auto",
                 ml: desktopCollapsed ? 0 : 1,
                 justifyContent: "center",
-                color: isPathActive("/shipping")
+                color: isPathActive("/transportation")
                   ? theme.palette.primary.main
                   : "inherit",
               }}
@@ -323,10 +323,12 @@ const Drawer = ({
                 sx={{
                   textAlign: "start",
                   "& .MuiListItemText-primary": {
-                    color: isPathActive("/shipping")
+                    color: isPathActive("/transportation")
                       ? theme.palette.primary.main
                       : "inherit",
-                    fontWeight: isPathActive("/shipping") ? "bold" : "normal",
+                    fontWeight: isPathActive("/transportation")
+                      ? "bold"
+                      : "normal",
                   },
                 }}
               />
@@ -369,9 +371,7 @@ const Drawer = ({
                       color: isPathActive("/products")
                         ? theme.palette.primary.main
                         : "inherit",
-                      fontWeight: isPathActive("/products")
-                        ? "bold"
-                        : "normal",
+                      fontWeight: isPathActive("/products") ? "bold" : "normal",
                     },
                   }}
                 />

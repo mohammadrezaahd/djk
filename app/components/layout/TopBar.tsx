@@ -3,8 +3,10 @@ import {
   IconButton,
   Toolbar,
   Typography,
+  Box,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import Navbar from "./Navbar";
 
 interface AppBarProps {
   currentDrawerWidth: number;
@@ -12,7 +14,11 @@ interface AppBarProps {
   title?: string;
 }
 
-const TopBar = ({ currentDrawerWidth, handleDrawerToggle, title = "پنل مدیریت" }: AppBarProps) => {
+const TopBar = ({
+  currentDrawerWidth,
+  handleDrawerToggle,
+  title = "پنل مدیریت",
+}: AppBarProps) => {
   return (
     <MuiAppBar
       position="fixed"
@@ -27,18 +33,39 @@ const TopBar = ({ currentDrawerWidth, handleDrawerToggle, title = "پنل مدی
       }}
     >
       <Toolbar>
-        <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-          {title}
-        </Typography>
+        {/* Mobile Menu Button */}
         <IconButton
           color="inherit"
           aria-label="open drawer"
-          edge="end"
+          edge="start"
           onClick={handleDrawerToggle}
           sx={{ ml: 2, display: { sm: "none" } }}
         >
           <MenuIcon />
         </IconButton>
+
+        {/* Title */}
+        <Typography
+          variant="h6"
+          noWrap
+          component="div"
+          sx={{
+            flexGrow: 1,
+            fontWeight: "bold",
+          }}
+        >
+          {title}
+        </Typography>
+
+        {/* Navbar - Desktop & Mobile */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <Navbar />
+        </Box>
       </Toolbar>
     </MuiAppBar>
   );

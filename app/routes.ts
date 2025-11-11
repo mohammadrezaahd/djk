@@ -21,5 +21,11 @@ export default [
     route("/products/list", "pages/products/list.tsx"),
     route("/products/edit/:id", "pages/products/edit.tsx"),
     route("/test", "pages/test.tsx"),
+    // Coming Soon Pages
+    route("/profile", "pages/profile.tsx"),
+    route("/settings", "pages/settings.tsx"),
+    route("/security", "pages/security.tsx"),
+    route("/help", "pages/help.tsx"),
+    route("/transportation", "pages/transportation.tsx"),
   ]),
 ] satisfies RouteConfig;

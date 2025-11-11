@@ -1,5 +1,5 @@
-import React from 'react';
-import ErrorPage from './ErrorPage';
+import React from "react";
+import ErrorPage from "./ErrorPage";
 
 interface NotFoundPageProps {
   title?: string;
@@ -9,13 +9,7 @@ interface NotFoundPageProps {
 }
 
 const NotFoundPage: React.FC<NotFoundPageProps> = (props) => {
-  return (
-    <ErrorPage
-      errorCode={404}
-      illustrationType="search"
-      {...props}
-    />
-  );
+  return <ErrorPage errorCode={404} {...props} />;
 };
 
 export default NotFoundPage;
