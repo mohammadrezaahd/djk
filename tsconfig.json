@@ -1,27 +1,28 @@
 {
   "include": [
-    "**/*",
-    "**/.server/**/*",
-    "**/.client/**/*",
-    ".react-router/types/**/*"
+    "app",
+    "remix.env.d.ts",
+    "vite.config.ts",
+    "react-router.config.ts"
   ],
   "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ES2022"],
-    "types": ["node", "vite/client"],
-    "target": "ES2022",
-    "module": "ES2022",
-    "moduleResolution": "bundler",
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "jsx": "react-jsx",
-    "rootDirs": [".", "./.react-router/types"],
-    "baseUrl": ".",
-    "paths": {
-      "~/*": ["./app/*"]
-    },
-    "esModuleInterop": true,
-    "verbatimModuleSyntax": true,
-    "noEmit": true,
+    "strict": true,
     "resolveJsonModule": true,
+    "allowJs": true,
+    "esModuleInterop": true,
     "skipLibCheck": true,
-    "strict": true
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+    "noEmit": true,
+    "paths": {
+      "~/*": ["./app/*"],
+      "~/axios": ["./app/utils/axios"],
+      "~/constants": ["./app/constants"]
+    }
   }
 }
