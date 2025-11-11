@@ -47,6 +47,13 @@ import {
   TitleCard,
 } from "~/components/common";
 
+export function meta() {
+  return [
+    { title: " لیست محصولات" },
+    { name: "description", content: "صفحه لیست محصولات در فروشگاه" },
+  ];
+}
+
 const ProductsList = () => {
   // State for pagination and filters
   const [page, setPage] = useState<number>(1);

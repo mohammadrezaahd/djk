@@ -58,6 +58,13 @@ import { TitleCard } from "~/components/common";
 import { useAddProduct } from "~/api/product.api";
 import ResultPage from "~/components/products/ResultPage";
 
+export function meta() {
+  return [
+    { title: "افزودن محصول جدید" },
+    { name: "description", content: "صفحه افزودن محصول جدید به فروشگاه" },
+  ];
+}
+
 const NewProductPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -112,15 +119,10 @@ const NewProductPage = () => {
       productState.selectedAttributesTemplates
     );
 
-    // Debug logging
-    console.log("🔍 All attributes validation errors:", allErrors);
-
     // Flatten errors for the active template
     const activeTemplateErrors = allErrors.find(
       (errorSet) => errorSet.templateId === activeAttributesTemplate?.id
     );
-
-    console.log("🔍 Active template errors:", activeTemplateErrors);
 
     return activeTemplateErrors?.errors || {};
   }, [productState.selectedAttributesTemplates, activeAttributesTemplate?.id]);
@@ -219,12 +221,12 @@ const NewProductPage = () => {
   // Image selection validation - at least one product image is required
   useEffect(() => {
     const hasImages = productState.selectedImages.length > 0;
-    const hasProductImage = selectedImagesData?.data?.list?.some(
-      (img) => img.product === true
-    ) || false;
-    
+    const hasProductImage =
+      selectedImagesData?.data?.list?.some((img) => img.product === true) ||
+      false;
+
     const hasError = !hasImages || !hasProductImage;
-    
+
     dispatch(
       setStepValidationError({
         step: FormStep.IMAGE_SELECTION,
@@ -500,167 +502,183 @@ const NewProductPage = () => {
 
       // Build the final product data with form values (not just template data)
       // This mirrors the logic in generateFinalProductData
-      const detailsList = productState.selectedDetailsTemplates.map((template) => {
-        const finalData = JSON.parse(JSON.stringify(template.data));
-        const formData = template.formData;
+      const detailsList = productState.selectedDetailsTemplates.map(
+        (template) => {
+          const finalData = JSON.parse(JSON.stringify(template.data));
+          const formData = template.formData;
 
-        // Apply form data to details structure
-        const staticFields = [
-          "is_fake_product",
-          "brand",
-          "status",
-          "platform",
-          "product_class",
-          "category_product_type",
-          "fake_reason",
-          "theme",
-          "id_type",
-          "general_mefa_id",
-          "custom_id",
-        ];
-
-        staticFields.forEach((field) => {
-          if (
-            formData[field] !== undefined &&
-            formData[field] !== null &&
-            formData[field] !== ""
-          ) {
-            (finalData as any)[field] = formData[field];
-          }
-        });
-
-        // Update bind selections - this is critical
-        const bind = finalData.bind;
-        if (bind) {
-          if (bind.brands && formData.brand) {
-            bind.brands.forEach((brand: any) => {
-              brand.selected = brand.id === formData.brand;
-            });
-          }
-          if (bind.statuses && formData.status) {
-            bind.statuses.forEach((status: any) => {
-              status.selected = status.value === formData.status;
-            });
-          }
-          if (bind.platforms && formData.platform) {
-            bind.platforms.forEach((platform: any) => {
-              platform.selected = platform.value === formData.platform;
-            });
-          }
-          if (bind.product_classes && formData.product_class) {
-            bind.product_classes.forEach((productClass: any) => {
-              productClass.selected = productClass.value === formData.product_class;
-            });
-          }
-          if (bind.category_product_types && formData.category_product_type) {
-            bind.category_product_types.forEach((cpt: any) => {
-              cpt.selected = cpt.value === formData.category_product_type;
-            });
-          }
-          if (bind.fake_reasons && formData.fake_reason) {
-            bind.fake_reasons.forEach((reason: any) => {
-              reason.selected = reason.text.toString() === formData.fake_reason;
-            });
-          }
-          if (bind.category_data?.themes && formData.theme) {
-            bind.category_data.themes.forEach((theme: any) => {
-              theme.selected = theme.value === formData.theme;
-            });
-          }
-          
-          // Update text field values (IStringField type fields like brand_model, color_pattern, warranty, etc.)
-          const textFields = [
-            "brand_model",
-            "color_pattern",
-            "warranty",
-            "size",
-            "weight",
-            "material",
-            "origin_country",
-            "manufacturer",
-            "model_number",
-            "barcode",
-            "package_dimensions",
-            "special_features",
-            "care_instructions",
+          // Apply form data to details structure
+          const staticFields = [
+            "is_fake_product",
+            "brand",
+            "status",
+            "platform",
+            "product_class",
+            "category_product_type",
+            "fake_reason",
+            "theme",
+            "id_type",
+            "general_mefa_id",
+            "custom_id",
           ];
 
-          textFields.forEach((fieldName) => {
-            if (bind[fieldName] && formData[fieldName] !== undefined) {
-              bind[fieldName].value = formData[fieldName];
+          staticFields.forEach((field) => {
+            if (
+              formData[field] !== undefined &&
+              formData[field] !== null &&
+              formData[field] !== ""
+            ) {
+              (finalData as any)[field] = formData[field];
             }
           });
-        }
 
-        return finalData;
-      });
+          // Update bind selections - this is critical
+          const bind = finalData.bind;
+          if (bind) {
+            if (bind.brands && formData.brand) {
+              bind.brands.forEach((brand: any) => {
+                brand.selected = brand.id === formData.brand;
+              });
+            }
+            if (bind.statuses && formData.status) {
+              bind.statuses.forEach((status: any) => {
+                status.selected = status.value === formData.status;
+              });
+            }
+            if (bind.platforms && formData.platform) {
+              bind.platforms.forEach((platform: any) => {
+                platform.selected = platform.value === formData.platform;
+              });
+            }
+            if (bind.product_classes && formData.product_class) {
+              bind.product_classes.forEach((productClass: any) => {
+                productClass.selected =
+                  productClass.value === formData.product_class;
+              });
+            }
+            if (bind.category_product_types && formData.category_product_type) {
+              bind.category_product_types.forEach((cpt: any) => {
+                cpt.selected = cpt.value === formData.category_product_type;
+              });
+            }
+            if (bind.fake_reasons && formData.fake_reason) {
+              bind.fake_reasons.forEach((reason: any) => {
+                reason.selected =
+                  reason.text.toString() === formData.fake_reason;
+              });
+            }
+            if (bind.category_data?.themes && formData.theme) {
+              bind.category_data.themes.forEach((theme: any) => {
+                theme.selected = theme.value === formData.theme;
+              });
+            }
+
+            // Update text field values (IStringField type fields like brand_model, color_pattern, warranty, etc.)
+            const textFields = [
+              "brand_model",
+              "color_pattern",
+              "warranty",
+              "size",
+              "weight",
+              "material",
+              "origin_country",
+              "manufacturer",
+              "model_number",
+              "barcode",
+              "package_dimensions",
+              "special_features",
+              "care_instructions",
+            ];
+
+            textFields.forEach((fieldName) => {
+              if (bind[fieldName] && formData[fieldName] !== undefined) {
+                bind[fieldName].value = formData[fieldName];
+              }
+            });
+          }
+
+          return finalData;
+        }
+      );
 
       // Process attributes
-      const attributesList = productState.selectedAttributesTemplates.map((template) => {
-        const finalData = JSON.parse(JSON.stringify(template.data));
-        const formData = template.formData;
+      const attributesList = productState.selectedAttributesTemplates.map(
+        (template) => {
+          const finalData = JSON.parse(JSON.stringify(template.data));
+          const formData = template.formData;
 
-        if (finalData.category_group_attributes) {
-          Object.keys(finalData.category_group_attributes).forEach((categoryId) => {
-            const categoryData = finalData.category_group_attributes[categoryId];
+          if (finalData.category_group_attributes) {
+            Object.keys(finalData.category_group_attributes).forEach(
+              (categoryId) => {
+                const categoryData =
+                  finalData.category_group_attributes[categoryId];
 
-            Object.keys(categoryData.attributes).forEach((attributeId) => {
-              const attr = categoryData.attributes[attributeId];
-              const formValue = formData[attr.id];
+                Object.keys(categoryData.attributes).forEach((attributeId) => {
+                  const attr = categoryData.attributes[attributeId];
+                  const formValue = formData[attr.id];
 
-              // Check if field exists in formData (even if empty string)
-              const hasFormValue = attr.id in formData;
+                  // Check if field exists in formData (even if empty string)
+                  const hasFormValue = attr.id in formData;
 
-              if (hasFormValue) {
-                switch (attr.type) {
-                  case "input":
-                    // Set value even if empty string
-                    attr.value = formValue !== null && formValue !== undefined ? formValue.toString() : "";
-                    break;
-                  case "text":
-                    // Set value even if empty string
-                    if (formValue !== null && formValue !== undefined && formValue !== "") {
-                      const lines = formValue
-                        .toString()
-                        .split("\n")
-                        .filter((line: string) => line.trim() !== "");
-                      attr.value = {
-                        text_lines: lines,
-                        original_text: formValue.toString(),
-                      };
-                    } else {
-                      attr.value = "";
-                    }
-                    break;
-                  case "select":
-                    Object.keys(attr.values).forEach((valueId) => {
-                      attr.values[valueId].selected = false;
-                    });
-                    if (formValue && attr.values[formValue]) {
-                      attr.values[formValue].selected = true;
-                    }
-                    break;
-                  case "checkbox":
-                    Object.keys(attr.values).forEach((valueId) => {
-                      attr.values[valueId].selected = false;
-                    });
-                    if (Array.isArray(formValue) && formValue.length > 0) {
-                      formValue.forEach((valueId: string) => {
-                        if (attr.values[valueId]) {
-                          attr.values[valueId].selected = true;
+                  if (hasFormValue) {
+                    switch (attr.type) {
+                      case "input":
+                        // Set value even if empty string
+                        attr.value =
+                          formValue !== null && formValue !== undefined
+                            ? formValue.toString()
+                            : "";
+                        break;
+                      case "text":
+                        // Set value even if empty string
+                        if (
+                          formValue !== null &&
+                          formValue !== undefined &&
+                          formValue !== ""
+                        ) {
+                          const lines = formValue
+                            .toString()
+                            .split("\n")
+                            .filter((line: string) => line.trim() !== "");
+                          attr.value = {
+                            text_lines: lines,
+                            original_text: formValue.toString(),
+                          };
+                        } else {
+                          attr.value = "";
                         }
-                      });
+                        break;
+                      case "select":
+                        Object.keys(attr.values).forEach((valueId) => {
+                          attr.values[valueId].selected = false;
+                        });
+                        if (formValue && attr.values[formValue]) {
+                          attr.values[formValue].selected = true;
+                        }
+                        break;
+                      case "checkbox":
+                        Object.keys(attr.values).forEach((valueId) => {
+                          attr.values[valueId].selected = false;
+                        });
+                        if (Array.isArray(formValue) && formValue.length > 0) {
+                          formValue.forEach((valueId: string) => {
+                            if (attr.values[valueId]) {
+                              attr.values[valueId].selected = true;
+                            }
+                          });
+                        }
+                        break;
                     }
-                    break;
-                }
+                  }
+                  // If field not in formData, preserve original template value
+                });
               }
-              // If field not in formData, preserve original template value
-            });
-          });
-        }
+            );
+          }
 
-        return finalData;
-      });
+          return finalData;
+        }
+      );
 
       const finalProductData = {
         category_id: productState.selectedCategoryId,
@@ -673,11 +691,6 @@ const NewProductPage = () => {
         tag: "test",
         variant_data: {},
       };
-
-      console.log("🎉 Product data prepared!");
-      console.log("📋 Selected Details Templates formData:", productState.selectedDetailsTemplates.map((t) => t.formData));
-      console.log("📋 Selected Attributes Templates formData:", productState.selectedAttributesTemplates.map((t) => t.formData));
-      console.log("📋 Final product data:", JSON.stringify(finalProductData, null, 2));
 
       // Save product to server
       const response = await saveProduct(finalProductData as any);
@@ -823,22 +836,27 @@ const NewProductPage = () => {
               onNext={handleNextFromAttributesForm}
               onBack={handleBackToAttributesSelection}
             >
-              {activeAttributesTemplate && activeAttributesTemplateData?.data && (
-                <ProductAttributesForm
-                  data={activeAttributesTemplateData.data.data_json}
-                  formData={activeAttributesTemplate.formData}
-                  onFormDataChange={(fieldId: number | string, value: any) =>
-                    dispatch(
-                      updateAttributesTemplateFormData({
-                        templateIndex: productState.activeAttributesTemplateIndex,
-                        fieldId: typeof fieldId === 'string' ? fieldId : fieldId.toString(),
-                        value,
-                      })
-                    )
-                  }
-                  validationErrors={allAttributesValidationErrors}
-                />
-              )}
+              {activeAttributesTemplate &&
+                activeAttributesTemplateData?.data && (
+                  <ProductAttributesForm
+                    data={activeAttributesTemplateData.data.data_json}
+                    formData={activeAttributesTemplate.formData}
+                    onFormDataChange={(fieldId: number | string, value: any) =>
+                      dispatch(
+                        updateAttributesTemplateFormData({
+                          templateIndex:
+                            productState.activeAttributesTemplateIndex,
+                          fieldId:
+                            typeof fieldId === "string"
+                              ? fieldId
+                              : fieldId.toString(),
+                          value,
+                        })
+                      )
+                    }
+                    validationErrors={allAttributesValidationErrors}
+                  />
+                )}
             </TemplateForms>
           );
 

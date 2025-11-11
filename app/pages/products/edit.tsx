@@ -60,6 +60,13 @@ interface TemplateData {
   formData: { [key: string]: any };
 }
 
+export function meta() {
+  return [
+    { title: "ویرایش محصول" },
+    { name: "description", content: "صفحه ویرایش محصول در فروشگاه" },
+  ];
+}
+
 const EditProductPage = () => {
   const { id } = useParams<{ id: string }>();
   const productId = id ? parseInt(id, 10) : 0;
@@ -83,7 +90,8 @@ const EditProductPage = () => {
 
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [showAttributesDialog, setShowAttributesDialog] = useState(false);
-  const [showImageSelectionDialog, setShowImageSelectionDialog] = useState(false);
+  const [showImageSelectionDialog, setShowImageSelectionDialog] =
+    useState(false);
 
   const [availableDetailsTemplates, setAvailableDetailsTemplates] = useState<
     ITemplateList[]
@@ -115,9 +123,7 @@ const EditProductPage = () => {
 
   // Get validation errors for all details templates
   const allDetailsValidationErrors = useMemo(() => {
-    const allErrors = getDetailsTemplatesValidationErrors(
-      detailsTemplates
-    );
+    const allErrors = getDetailsTemplatesValidationErrors(detailsTemplates);
 
     // Flatten errors for the active template
     const activeTemplateErrors = allErrors.find(
@@ -129,9 +135,8 @@ const EditProductPage = () => {
 
   // Get validation errors for all attributes templates
   const allAttributesValidationErrors = useMemo(() => {
-    const allErrors = getAttributesTemplatesValidationErrors(
-      attributesTemplates
-    );
+    const allErrors =
+      getAttributesTemplatesValidationErrors(attributesTemplates);
 
     // Flatten errors for the active template
     const activeTemplateErrors = allErrors.find(
@@ -159,9 +164,9 @@ const EditProductPage = () => {
     if (selectedImages.length === 0) return false;
 
     // Check if at least one selected image is a product image
-    const hasProductImage = selectedImagesData?.data?.list?.some(
-      (img) => img.product === true
-    ) || false;
+    const hasProductImage =
+      selectedImagesData?.data?.list?.some((img) => img.product === true) ||
+      false;
     if (!hasProductImage) return false;
 
     // Check if templates exist
@@ -173,7 +178,8 @@ const EditProductPage = () => {
     const hasDetailsErrors = Object.keys(allDetailsValidationErrors).length > 0;
 
     // Check attributes validation - check if there are any errors in allAttributesValidationErrors
-    const hasAttributesErrors = Object.keys(allAttributesValidationErrors).length > 0;
+    const hasAttributesErrors =
+      Object.keys(allAttributesValidationErrors).length > 0;
 
     return !hasDetailsErrors && !hasAttributesErrors;
   }, [
@@ -189,7 +195,9 @@ const EditProductPage = () => {
   // Get all attributes data for title builder
   const getAllAttributesData = useMemo(() => {
     return attributesTemplates
-      .filter((template) => template.data && Object.keys(template.data).length > 0)
+      .filter(
+        (template) => template.data && Object.keys(template.data).length > 0
+      )
       .map((template) => template.data)
       .filter((data): data is ICategoryAttr => {
         return "category_group_attributes" in data;
@@ -199,7 +207,9 @@ const EditProductPage = () => {
   // Get all details data for title builder
   const getAllDetailsData = useMemo(() => {
     return detailsTemplates
-      .filter((template) => template.data && Object.keys(template.data).length > 0)
+      .filter(
+        (template) => template.data && Object.keys(template.data).length > 0
+      )
       .map((template) => template.data)
       .filter((data): data is ICategoryDetails => {
         return "bind" in data;
@@ -672,7 +682,8 @@ const EditProductPage = () => {
       });
 
       const finalProductData = {
-        category_id: selectedCategory?.id || productData?.data?.category_id || 0,
+        category_id:
+          selectedCategory?.id || productData?.data?.category_id || 0,
         title: productTitle,
         description: productDescription,
         details: { list: detailsList },
@@ -778,7 +789,11 @@ const EditProductPage = () => {
                       placeholder="عنوان محصول را وارد کنید..."
                     />
                     {productInfoValidation.errors.title && (
-                      <Typography variant="caption" color="error" sx={{ mt: 0.5, display: "block" }}>
+                      <Typography
+                        variant="caption"
+                        color="error"
+                        sx={{ mt: 0.5, display: "block" }}
+                      >
                         {productInfoValidation.errors.title}
                       </Typography>
                     )}
@@ -956,8 +971,8 @@ const EditProductPage = () => {
           {/* Image Selection Section */}
           <Grid size={{ xs: 12 }}>
             <Card>
-              <CardHeader 
-                title="تصاویر محصول" 
+              <CardHeader
+                title="تصاویر محصول"
                 action={
                   <Button
                     variant="outlined"
@@ -969,7 +984,8 @@ const EditProductPage = () => {
                 }
               />
               <CardContent>
-                {selectedImagesData?.data?.list && selectedImagesData.data.list.length > 0 ? (
+                {selectedImagesData?.data?.list &&
+                selectedImagesData.data.list.length > 0 ? (
                   <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
                     {selectedImagesData.data.list.map((image) => (
                       <Box
@@ -1000,7 +1016,10 @@ const EditProductPage = () => {
                             top: 4,
                             right: 4,
                             bgcolor: "background.paper",
-                            "&:hover": { bgcolor: "error.main", color: "white" },
+                            "&:hover": {
+                              bgcolor: "error.main",
+                              color: "white",
+                            },
                           }}
                           onClick={() => {
                             setSelectedImages((prev) =>
@@ -1015,7 +1034,8 @@ const EditProductPage = () => {
                   </Box>
                 ) : (
                   <Alert severity="info">
-                    هیچ تصویری انتخاب نشده است. برای انتخاب تصویر از قالب‌ها، روی دکمه "انتخاب از قالب‌ها" کلیک کنید.
+                    هیچ تصویری انتخاب نشده است. برای انتخاب تصویر از قالب‌ها،
+                    روی دکمه "انتخاب از قالب‌ها" کلیک کنید.
                   </Alert>
                 )}
               </CardContent>
@@ -1033,7 +1053,9 @@ const EditProductPage = () => {
             <DialogContent>
               <ProductImageSelection
                 selectedImages={selectedImages}
-                onImageSelectionChange={(selectedIds) => setSelectedImages(selectedIds)}
+                onImageSelectionChange={(selectedIds) =>
+                  setSelectedImages(selectedIds)
+                }
                 onNext={() => setShowImageSelectionDialog(false)}
                 onBack={() => setShowImageSelectionDialog(false)}
               />
@@ -1052,10 +1074,17 @@ const EditProductPage = () => {
                   {selectedImages.length === 0 && (
                     <li>حداقل یک تصویر برای محصول انتخاب کنید</li>
                   )}
-                  {selectedImages.length > 0 && !selectedImagesData?.data?.list?.some((img) => img.product === true) && (
-                    <li>حداقل یکی از تصاویر انتخاب شده باید عکس محصول (product) باشد</li>
-                  )}
-                  {(detailsTemplates.length === 0 || attributesTemplates.length === 0) && (
+                  {selectedImages.length > 0 &&
+                    !selectedImagesData?.data?.list?.some(
+                      (img) => img.product === true
+                    ) && (
+                      <li>
+                        حداقل یکی از تصاویر انتخاب شده باید عکس محصول (product)
+                        باشد
+                      </li>
+                    )}
+                  {(detailsTemplates.length === 0 ||
+                    attributesTemplates.length === 0) && (
                     <li>حداقل یک قالب برای جزئیات و ویژگی‌ها انتخاب کنید</li>
                   )}
                   {Object.keys(allDetailsValidationErrors).length > 0 && (

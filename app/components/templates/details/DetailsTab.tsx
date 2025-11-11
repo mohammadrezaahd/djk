@@ -37,15 +37,8 @@ const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
     (state: RootState) => (state.details as any)?.images || []
   );
 
-  console.log("🔍 DetailsTab formData:", detailsFormData);
-  console.log("🔍 Title in formData:", detailsFormData.title);
-
   // Use validation hook only when form data is ready
   const form = useDetailsValidation(detailsData, detailsFormData);
-
-  console.log("🔍 Current id_type value:", form.watch("id_type"));
-  console.log("🔍 Current general_mefa_id value:", form.watch("general_mefa_id"));
-  console.log("🔍 Current custom_id value:", form.watch("custom_id"));
 
   // Notify parent component about validation state changes
   useEffect(() => {
@@ -88,10 +81,8 @@ const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
 
   useEffect(() => {
     const currentIdType = form.watch("id_type");
-    console.log("🔍 Current id_type:", currentIdType);
-    
+
     if (!currentIdType) {
-      console.log("🔧 Setting default id_type to general");
       handleDetailsChange("id_type", "general");
       // Clear both fields when setting default
       handleDetailsChange("general_mefa_id", "");
@@ -105,8 +96,9 @@ const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
   const validationErrors = useMemo(() => {
     const errors: { [key: string]: string } = {};
     Object.keys(form.formState.errors).forEach((key) => {
-      const error = form.formState.errors[key as keyof typeof form.formState.errors];
-      if (error && 'message' in error) {
+      const error =
+        form.formState.errors[key as keyof typeof form.formState.errors];
+      if (error && "message" in error) {
         errors[key] = error.message as string;
       }
     });

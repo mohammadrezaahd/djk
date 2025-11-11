@@ -18,16 +18,7 @@ export default function AttributesField({
   onChange,
   error,
 }: AttributesFieldProps) {
-  // برای فیلدهای خاص از code استفاده می‌کنیم، در غیر این صورت از id
   const fieldKey = attr.code || attr.id;
-  console.log("🔍 AttributesField rendering:", {
-    attrId: attr.id,
-    attrTitle: attr.title,
-    attrType: attr.type,
-    value,
-    error,
-    hasValues: attr.values ? Object.keys(attr.values).length : 0,
-  });
 
   const isMultiSelect = (attr: IAttr): boolean => {
     return attr.type === AttributeType.Checkbox;

@@ -37,8 +37,8 @@ import { TitleCard } from "~/components/common";
 
 export function meta() {
   return [
-    { title: "افزودن محصول جدید" },
-    { name: "description", content: "صفحه افزودن محصول جدید به فروشگاه" },
+    { title: "افزودن قالب جدید" },
+    { name: "description", content: "صفحه افزودن قالب جدید به فروشگاه" },
   ];
 }
 
