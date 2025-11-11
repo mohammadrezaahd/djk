@@ -53,7 +53,7 @@ const ProductImageSelection: React.FC<ProductImageSelectionProps> = ({
             لطفاً حداقل یک تصویر انتخاب کنید
           </Alert>
         )}
-        
+
         {selectedImages.length > 0 && !hasProductImage && (
           <Alert severity="error" sx={{ mb: 3 }}>
             حداقل یکی از تصاویر انتخاب شده باید عکس محصول (product) باشد
@@ -76,20 +76,14 @@ const ProductImageSelection: React.FC<ProductImageSelectionProps> = ({
           justifyContent: "space-between",
         }}
       >
-        <Button variant="outlined" onClick={onBack} startIcon={<ArrowForwardIcon />}>
+        <Button variant="outlined" onClick={onBack}>
           مرحله قبل
         </Button>
         <Stack direction="row" spacing={2} alignItems="center">
           <Typography variant="body2" color="text.secondary">
-            {selectedImages.length} تصویر انتخاب شده
             {selectedImages.length > 0 && hasProductImage && " ✓"}
           </Typography>
-          <Button 
-            variant="contained" 
-            onClick={handleNext} 
-            disabled={!isValid}
-            endIcon={<ArrowBackIcon />}
-          >
+          <Button variant="contained" onClick={handleNext} disabled={!isValid}>
             مرحله بعد
           </Button>
         </Stack>

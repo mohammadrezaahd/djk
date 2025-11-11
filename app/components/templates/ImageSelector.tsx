@@ -191,7 +191,7 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
         sx={{ mb: 2, py: 1.5 }}
       >
         {selectedImages.length > 0
-          ? `${selectedImages.length} تصویر انتخاب شده`
+          ? `انتخاب تصویر`
           : label}
       </Button>
 

@@ -160,7 +160,7 @@ const DetailsTab = ({ onValidationChange, isLoading }: DetailsTabProps) => {
 
       {/* Details Form Fields - Reusable Component */}
       <Grid size={{ xs: 12 }}>
-        <Grid container spacing={3}>
+        <Grid container spacing={2}>
           <DetailsFormFields
             detailsData={detailsData}
             formData={currentFormData}

@@ -51,6 +51,8 @@ import {
   useProductInfoValidation,
 } from "~/validation";
 import { useSelectedImages } from "~/api/gallery.api";
+import ImageSelector from "~/components/templates/ImageSelector";
+import { MediaType } from "~/components/MediaManager/FileUpload";
 
 interface TemplateData {
   id: number;
@@ -881,12 +883,14 @@ const EditProductPage = () => {
                     {activeDetailsTemplate &&
                       activeDetailsTemplate.data &&
                       Object.keys(activeDetailsTemplate.data).length > 0 && (
-                        <ProductDetailsForm
-                          data={activeDetailsTemplate.data as ICategoryDetails}
-                          formData={activeDetailsTemplate.formData}
-                          onFormDataChange={handleDetailsFormDataChange}
-                          validationErrors={allDetailsValidationErrors}
-                        />
+                        <Grid container spacing={2}>
+                          <ProductDetailsForm
+                            data={activeDetailsTemplate.data as ICategoryDetails}
+                            formData={activeDetailsTemplate.formData}
+                            onFormDataChange={handleDetailsFormDataChange}
+                            validationErrors={allDetailsValidationErrors}
+                          />
+                        </Grid>
                       )}
                   </>
                 )}
@@ -971,98 +975,18 @@ const EditProductPage = () => {
           {/* Image Selection Section */}
           <Grid size={{ xs: 12 }}>
             <Card>
-              <CardHeader
-                title="تصاویر محصول"
-                action={
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => setShowImageSelectionDialog(true)}
-                  >
-                    انتخاب از قالب‌ها
-                  </Button>
-                }
-              />
               <CardContent>
-                {selectedImagesData?.data?.list &&
-                selectedImagesData.data.list.length > 0 ? (
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-                    {selectedImagesData.data.list.map((image) => (
-                      <Box
-                        key={image.id}
-                        sx={{
-                          position: "relative",
-                          width: 150,
-                          height: 150,
-                          borderRadius: 1,
-                          overflow: "hidden",
-                          border: "2px solid",
-                          borderColor: "primary.main",
-                        }}
-                      >
-                        <img
-                          src={image.image_url}
-                          alt={image.title || "Product"}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                          }}
-                        />
-                        <IconButton
-                          size="small"
-                          sx={{
-                            position: "absolute",
-                            top: 4,
-                            right: 4,
-                            bgcolor: "background.paper",
-                            "&:hover": {
-                              bgcolor: "error.main",
-                              color: "white",
-                            },
-                          }}
-                          onClick={() => {
-                            setSelectedImages((prev) =>
-                              prev.filter((id) => id !== image.id)
-                            );
-                          }}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Box>
-                    ))}
-                  </Box>
-                ) : (
-                  <Alert severity="info">
-                    هیچ تصویری انتخاب نشده است. برای انتخاب تصویر از قالب‌ها،
-                    روی دکمه "انتخاب از قالب‌ها" کلیک کنید.
-                  </Alert>
-                )}
+                <ImageSelector
+                  selectedImages={selectedImages}
+                  onImagesChange={(selectedIds) =>
+                    setSelectedImages(selectedIds)
+                  }
+                  // defaultType={MediaType.PRODUCT}
+                />
               </CardContent>
             </Card>
           </Grid>
 
-          {/* Image Selection Dialog */}
-          <Dialog
-            open={showImageSelectionDialog}
-            onClose={() => setShowImageSelectionDialog(false)}
-            maxWidth="lg"
-            fullWidth
-          >
-            <DialogTitle>انتخاب تصویر</DialogTitle>
-            <DialogContent>
-              <ProductImageSelection
-                selectedImages={selectedImages}
-                onImageSelectionChange={(selectedIds) =>
-                  setSelectedImages(selectedIds)
-                }
-                onNext={() => setShowImageSelectionDialog(false)}
-                onBack={() => setShowImageSelectionDialog(false)}
-              />
-            </DialogContent>
-          </Dialog>
-
-          {/* Validation Summary */}
           {!isFormValid && (
             <Grid size={{ xs: 12 }}>
               <Alert severity="warning">

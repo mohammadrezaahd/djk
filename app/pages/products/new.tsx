@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Typography, Box, Paper, Alert, Backdrop } from "@mui/material";
+import { Typography, Box, Paper, Alert, Backdrop, Grid } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router";
@@ -790,20 +790,22 @@ const NewProductPage = () => {
               onBack={handleBackToDetailsSelection}
             >
               {activeDetailsTemplate && activeDetailsTemplateData?.data && (
-                <ProductDetailsForm
-                  data={activeDetailsTemplateData.data.data_json}
-                  formData={activeDetailsTemplate.formData}
-                  onFormDataChange={(fieldName: string, value: any) =>
-                    dispatch(
-                      updateDetailsTemplateFormData({
-                        templateIndex: productState.activeDetailsTemplateIndex,
-                        fieldName,
-                        value,
-                      })
-                    )
-                  }
-                  validationErrors={activeDetailsValidation.errors}
-                />
+                <Grid container spacing={2}>
+                  <ProductDetailsForm
+                    data={activeDetailsTemplateData.data.data_json}
+                    formData={activeDetailsTemplate.formData}
+                    onFormDataChange={(fieldName: string, value: any) =>
+                      dispatch(
+                        updateDetailsTemplateFormData({
+                          templateIndex: productState.activeDetailsTemplateIndex,
+                          fieldName,
+                          value,
+                        })
+                      )
+                    }
+                    validationErrors={activeDetailsValidation.errors}
+                  />
+                </Grid>
               )}
             </TemplateForms>
           );

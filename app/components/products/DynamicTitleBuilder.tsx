@@ -69,7 +69,7 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
 
   // Convert value to HTML and update the contentEditable div
   useEffect(() => {
-    if (!ref.current || !value) return;
+    if (!ref.current) return;
 
     // Only update if the current content doesn't match the value
     const currentText = ref.current.innerText || "";
@@ -82,7 +82,7 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
         const id = part.slice(1, -1);
         const badge = badges.find((b) => b.id.toString() === id);
         if (badge) {
-          return `<span style="display: inline-flex; align-items: center; background: #E3F2FD; border-radius: 8px; padding: 2px 6px; margin: 0 2px; cursor: pointer;" contenteditable="false" data-id="${id}">${badge.title}</span>`;
+          return `<span style="display: inline-flex; align-items: center; background: #E3F2FD; border-radius: 8px; padding: 2px 6px; margin: 0 2px; cursor: pointer;" contenteditable="false" data-id="${id}"><span style="margin-right: 4px;">${badge.title}</span><span style="font-size: 14px; font-weight: bold; cursor: pointer; padding: 0 2px; border-radius: 50%; line-height: 1;" class="badge-close" title="حذف">×</span></span>`;
         }
         return part;
       }
@@ -91,7 +91,36 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
 
     // Only update if content is different
     if (ref.current.innerHTML !== html) {
+      const currentSelection = window.getSelection();
+      const currentRange = currentSelection && currentSelection.rangeCount > 0 ? currentSelection.getRangeAt(0) : null;
+      
       ref.current.innerHTML = html;
+      
+      // Re-attach event listeners to close buttons
+      const closeButtons = ref.current.querySelectorAll('.badge-close');
+      closeButtons.forEach((btn) => {
+        const badgeContainer = btn.parentElement;
+        if (badgeContainer) {
+          // Add hover effect
+          btn.addEventListener('mouseenter', () => {
+            (btn as HTMLElement).style.backgroundColor = 'rgba(0,0,0,0.1)';
+          });
+          btn.addEventListener('mouseleave', () => {
+            (btn as HTMLElement).style.backgroundColor = 'transparent';
+          });
+          
+          // Add click to remove
+          const removeBadge = (e: Event) => {
+            e.preventDefault();
+            e.stopPropagation();
+            badgeContainer.remove();
+            handleInput();
+          };
+          
+          btn.addEventListener('click', removeBadge);
+          badgeContainer.addEventListener('click', removeBadge);
+        }
+      });
     }
   }, [value, badges]);
 
@@ -110,10 +139,32 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
   }, [value]);
 
   const insertBadge = (badge: TagItem) => {
+    if (!ref.current) return;
+
+    // Focus the contentEditable div first
+    ref.current.focus();
+
+    // Get selection
     const sel = window.getSelection();
-    if (!sel || !sel.rangeCount) return;
-    const range = sel.getRangeAt(0);
-    range.deleteContents();
+    if (!sel) return;
+
+    // Create a range at the end of the contentEditable div
+    const range = document.createRange();
+    
+    // Check if we have existing content
+    if (ref.current.childNodes.length > 0) {
+      // Move to the end of the content
+      const lastNode = ref.current.childNodes[ref.current.childNodes.length - 1];
+      range.setStartAfter(lastNode);
+      range.setEndAfter(lastNode);
+    } else {
+      // Empty content, select inside the div
+      range.selectNodeContents(ref.current);
+      range.collapse(false);
+    }
+
+    sel.removeAllRanges();
+    sel.addRange(range);
 
     // Create badge container
     const badgeContainer = document.createElement("span");
@@ -126,6 +177,7 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
     badgeContainer.style.cursor = "pointer";
     badgeContainer.contentEditable = "false";
     badgeContainer.setAttribute("data-id", badge.id.toString());
+    badgeContainer.className = "badge-item";
 
     // Create badge text
     const badgeText = document.createElement("span");
@@ -141,6 +193,7 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
     closeIcon.style.padding = "0 2px";
     closeIcon.style.borderRadius = "50%";
     closeIcon.style.lineHeight = "1";
+    closeIcon.className = "badge-close";
     closeIcon.title = "حذف";
 
     // Add hover effect to close icon
