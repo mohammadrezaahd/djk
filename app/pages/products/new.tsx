@@ -30,6 +30,7 @@ import {
 import { useCategoriesList } from "~/api/categories.api";
 import { useDetails, useDetail } from "~/api/details.api";
 import { useAttrs, useAttr } from "~/api/attributes.api";
+import { useSelectedImages } from "~/api/gallery.api";
 import {
   useProductDetailsValidation,
   useProductAttributesValidation,
@@ -65,7 +66,6 @@ const NewProductPage = () => {
 
   // Local state for category management
   const [categorySearch, setCategorySearch] = useState("");
-  const [imageOptions, setImageOptions] = useState<number[]>([]);
   const [selectedCategory, setSelectedCategoryLocal] =
     useState<ICategoryList | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -130,28 +130,14 @@ const NewProductPage = () => {
     productState.productDescription
   );
 
-  // Set image options
-  useEffect(() => {
-    if (
-      activeAttributesTemplateData?.data?.images ||
-      activeDetailsTemplateData?.data?.images
-    ) {
-      const allImages = [
-        ...(activeAttributesTemplateData?.data?.images || []),
-        ...(activeDetailsTemplateData?.data?.images || []),
-      ];
-      setImageOptions((prev) => {
-        const newImages = allImages.filter((image) => !prev.includes(image));
-        return [...prev, ...newImages];
-      });
-    }
-  }, [activeAttributesTemplateData, activeDetailsTemplateData]);
+  // Fetch selected images data to validate product images
+  const { data: selectedImagesData } = useSelectedImages(
+    productState.selectedImages
+  );
 
-  // Update validation errors in store when validation results change
   // Reset state on component mount
   useEffect(() => {
     dispatch(resetProduct());
-    setImageOptions([]); // Reset local image options
   }, [dispatch]);
 
   // Update validation errors in store when validation results change
@@ -230,16 +216,22 @@ const NewProductPage = () => {
     );
   }, [productInfoValidation.isValid, dispatch]);
 
-  // Image selection validation
+  // Image selection validation - at least one product image is required
   useEffect(() => {
-    // Image selection is optional, so no validation required
+    const hasImages = productState.selectedImages.length > 0;
+    const hasProductImage = selectedImagesData?.data?.list?.some(
+      (img) => img.product === true
+    ) || false;
+    
+    const hasError = !hasImages || !hasProductImage;
+    
     dispatch(
       setStepValidationError({
         step: FormStep.IMAGE_SELECTION,
-        hasError: false,
+        hasError,
       })
     );
-  }, [dispatch]);
+  }, [productState.selectedImages, selectedImagesData, dispatch]);
 
   // Load template data when activeDetailsTemplate changes
   useEffect(() => {
@@ -316,9 +308,6 @@ const NewProductPage = () => {
     setSelectedCategoryLocal(category);
 
     if (category) {
-      // Reset image options when category changes
-      setImageOptions([]);
-
       dispatch(setSelectedCategory(category.id));
       dispatch(setCurrentStep(FormStep.DETAILS_SELECTION));
 
@@ -856,7 +845,6 @@ const NewProductPage = () => {
         case FormStep.IMAGE_SELECTION:
           return (
             <ProductImageSelection
-              imageOptions={imageOptions}
               selectedImages={productState.selectedImages}
               onImageSelectionChange={handleImageSelectionChange}
               onNext={handleNextFromImageSelection}

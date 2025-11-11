@@ -70,7 +70,6 @@ const EditProductPage = () => {
   const [productTitle, setProductTitle] = useState("");
   const [productDescription, setProductDescription] = useState("");
   const [selectedImages, setSelectedImages] = useState<number[]>([]);
-  const [imageOptions, setImageOptions] = useState<number[]>([]);
   const [selectedCategory, setSelectedCategory] =
     useState<ICategoryList | null>(null);
 
@@ -148,6 +147,9 @@ const EditProductPage = () => {
     productDescription
   );
 
+  // Fetch selected images data (moved here before isFormValid)
+  const { data: selectedImagesData } = useSelectedImages(selectedImages);
+
   // Calculate if form is valid
   const isFormValid = useMemo(() => {
     // Check product info validation (title and description)
@@ -155,6 +157,12 @@ const EditProductPage = () => {
 
     // Check if at least one image is selected
     if (selectedImages.length === 0) return false;
+
+    // Check if at least one selected image is a product image
+    const hasProductImage = selectedImagesData?.data?.list?.some(
+      (img) => img.product === true
+    ) || false;
+    if (!hasProductImage) return false;
 
     // Check if templates exist
     if (detailsTemplates.length === 0 || attributesTemplates.length === 0) {
@@ -171,6 +179,7 @@ const EditProductPage = () => {
   }, [
     productInfoValidation.isValid,
     selectedImages.length,
+    selectedImagesData,
     detailsTemplates,
     attributesTemplates,
     allDetailsValidationErrors,
@@ -196,10 +205,6 @@ const EditProductPage = () => {
         return "bind" in data;
       });
   }, [detailsTemplates]);
-
-  // Fetch selected images data
-  const { data: selectedImagesData } = useSelectedImages(selectedImages);
-  const { data: availableImagesData } = useSelectedImages(imageOptions);
 
   // Load product data
   useEffect(() => {
@@ -385,31 +390,6 @@ const EditProductPage = () => {
       setAttributesTemplates(updatedTemplates);
     }
   }, [activeAttributesTemplateData?.data, activeAttributesTemplate?.id]);
-
-  // Populate imageOptions from all templates
-  useEffect(() => {
-    const allImages: number[] = [];
-    
-    // Collect images from details templates
-    detailsTemplates.forEach((template) => {
-      if (template.data && "images" in template.data) {
-        const templateImages = template.data.images as number[];
-        allImages.push(...templateImages);
-      }
-    });
-    
-    // Collect images from attributes templates
-    attributesTemplates.forEach((template) => {
-      if (template.data && "images" in template.data) {
-        const templateImages = template.data.images as number[];
-        allImages.push(...templateImages);
-      }
-    });
-    
-    // Remove duplicates
-    const uniqueImages = Array.from(new Set(allImages));
-    setImageOptions(uniqueImages);
-  }, [detailsTemplates, attributesTemplates]);
 
   // Handle form data changes
   const handleDetailsFormDataChange = (fieldName: string, value: any) => {
@@ -1049,10 +1029,9 @@ const EditProductPage = () => {
             maxWidth="lg"
             fullWidth
           >
-            <DialogTitle>انتخاب تصویر از قالب‌ها</DialogTitle>
+            <DialogTitle>انتخاب تصویر</DialogTitle>
             <DialogContent>
               <ProductImageSelection
-                imageOptions={imageOptions}
                 selectedImages={selectedImages}
                 onImageSelectionChange={(selectedIds) => setSelectedImages(selectedIds)}
                 onNext={() => setShowImageSelectionDialog(false)}
@@ -1072,6 +1051,9 @@ const EditProductPage = () => {
                   )}
                   {selectedImages.length === 0 && (
                     <li>حداقل یک تصویر برای محصول انتخاب کنید</li>
+                  )}
+                  {selectedImages.length > 0 && !selectedImagesData?.data?.list?.some((img) => img.product === true) && (
+                    <li>حداقل یکی از تصاویر انتخاب شده باید عکس محصول (product) باشد</li>
                   )}
                   {(detailsTemplates.length === 0 || attributesTemplates.length === 0) && (
                     <li>حداقل یک قالب برای جزئیات و ویژگی‌ها انتخاب کنید</li>
