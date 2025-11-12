@@ -6,3 +6,4 @@ export { default as ProductDetailsForm } from "./ProductDetailsForm";
 export { default as ProductAttributesForm } from "./ProductAttributesForm";
 export { default as DynamicTitleBuilder } from "./DynamicTitleBuilder";
 export { default as ProductImageSelection } from "./ProductImageSelection";
+export { default as SubProductsModal } from "./SubProductsModal";

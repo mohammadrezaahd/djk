@@ -27,6 +27,7 @@ import {
   Delete as DeleteIcon,
   Refresh as RefreshIcon,
   Publish as PublishIcon,
+  Inventory as InventoryIcon,
 } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router";
@@ -34,10 +35,12 @@ import {
   useProducts,
   useRemoveProduct,
   usePublishProduct,
+  useSubProducts,
 } from "~/api/product.api";
 import type {
   IProductList,
   ProductStatus,
+  ISubProducts,
 } from "~/types/interfaces/products.interface";
 import AppLayout from "~/components/layout/AppLayout";
 import {
@@ -46,6 +49,7 @@ import {
   SearchInput,
   TitleCard,
 } from "~/components/common";
+import { SubProductsModal } from "~/components/products";
 
 export function meta() {
   return [
@@ -79,6 +83,19 @@ const ProductsList = () => {
     title: "",
   });
 
+  // Sub products dialog state
+  const [subProductsDialog, setSubProductsDialog] = useState<{
+    open: boolean;
+    productId: number | null;
+    productTitle: string;
+  }>({
+    open: false,
+    productId: null,
+    productTitle: "",
+  });
+
+  const [subProducts, setSubProducts] = useState<ISubProducts[]>([]);
+
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
@@ -96,6 +113,10 @@ const ProductsList = () => {
   // Publish mutation
   const { mutateAsync: publishProduct, isPending: isPublishing } =
     usePublishProduct();
+
+  // Sub products mutation
+  const { mutateAsync: getSubProducts, isPending: isLoadingSubProducts } =
+    useSubProducts();
 
   // Calculate skip value based on current page
   const skip = (page - 1) * limit;
@@ -187,10 +208,18 @@ const ProductsList = () => {
   // Handle publish action
   const handlePublish = async (id: number) => {
     try {
-      await publishProduct(id);
-      enqueueSnackbar("محصول با موفقیت منتشر شد", { variant: "success" });
-      // Refresh the products list
-      await fetchProducts();
+      const response = await publishProduct(id);
+      
+      if (response.status === "true") {
+        enqueueSnackbar("محصول با موفقیت منتشر شد", { variant: "success" });
+        // Refresh the products list
+        await fetchProducts();
+      } else {
+        enqueueSnackbar(
+          response.message || "خطا در انتشار محصول",
+          { variant: "error" }
+        );
+      }
     } catch (error: any) {
       enqueueSnackbar(`خطا در انتشار محصول: ${error.message}`, {
         variant: "error",
@@ -201,6 +230,34 @@ const ProductsList = () => {
   // Handle refresh
   const handleRefresh = () => {
     fetchProducts();
+  };
+
+  // Handle view sub products
+  const handleViewSubProducts = async (id: number, title: string) => {
+    try {
+      const response = await getSubProducts(id);
+      if (response.status === "true" && response.data?.list) {
+        setSubProducts(response.data.list);
+        setSubProductsDialog({
+          open: true,
+          productId: id,
+          productTitle: title,
+        });
+      }
+    } catch (error: any) {
+      enqueueSnackbar(`خطا در دریافت محصولات ساخته شده: ${error.message}`, {
+        variant: "error",
+      });
+    }
+  };
+
+  const handleCloseSubProductsDialog = () => {
+    setSubProductsDialog({
+      open: false,
+      productId: null,
+      productTitle: "",
+    });
+    setSubProducts([]);
   };
 
   // Get product status text
@@ -270,6 +327,9 @@ const ProductsList = () => {
           </TableCell>
           <TableCell>
             <Skeleton variant="rectangular" width={60} height={24} />
+          </TableCell>
+          <TableCell>
+            <Skeleton variant="circular" width={32} height={32} />
           </TableCell>
           <TableCell>
             <Box display="flex" gap={1}>
@@ -368,6 +428,9 @@ const ProductsList = () => {
                     وضعیت
                   </TableCell>
                   <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>
+                    محصولات ساخته شده
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>
                     عملیات
                   </TableCell>
                 </TableRow>
@@ -404,6 +467,19 @@ const ProductsList = () => {
                           color={getStatusColor(item.user_status)}
                           variant="outlined"
                         />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Tooltip title="مشاهده محصولات ساخته شده">
+                          <IconButton
+                            size="small"
+                            color="info"
+                            onClick={() =>
+                              handleViewSubProducts(item.id, item.title)
+                            }
+                          >
+                            <InventoryIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
                       </TableCell>
                       <TableCell align="center">
                         <Box
@@ -449,7 +525,7 @@ const ProductsList = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                       <Typography variant="body2" color="text.secondary">
                         {searchValue
                           ? "نتیجه‌ای یافت نشد"
@@ -505,6 +581,15 @@ const ProductsList = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Sub Products Modal */}
+      <SubProductsModal
+        open={subProductsDialog.open}
+        onClose={handleCloseSubProductsDialog}
+        productTitle={subProductsDialog.productTitle}
+        subProducts={subProducts}
+        isLoading={isLoadingSubProducts}
+      />
     </AppLayout>
   );
 };

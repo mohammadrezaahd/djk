@@ -94,7 +94,7 @@ const editProduct = async ({
 const getSubProductsList = async (cp_id: number) => {
   return apiUtils<{ list: ISubProducts[] }>(async () => {
     const response = await authorizedPost(
-      `/v1/sub_products/list?main_product_id=${cp_id}`
+      `/v1/sub_product/list?main_product_id=${cp_id}`
     );
     return response.data;
   });
@@ -102,7 +102,9 @@ const getSubProductsList = async (cp_id: number) => {
 
 const publishProduct = async (id: number) => {
   return apiUtils(async () => {
-    const response = await authorizedPost(`/v1/cp_products/publish/${id}`);
+    const response = await authorizedPost(
+      `/v1/cp_products/publish/${id}?publish=true`
+    );
     return response.data;
   });
 };
