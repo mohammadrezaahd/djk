@@ -10,6 +10,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   IGetProduct,
   IProductList,
+  ISubProducts,
   ProductStatus,
 } from "~/types/interfaces/products.interface";
 
@@ -77,13 +78,6 @@ const removeProduct = async (id: number) => {
   });
 };
 
-const publishProduct = async (id: number) => {
-  return apiUtils(async () => {
-    const response = await authorizedPost(`/v1/cp_products/publish/${id}`);
-    return response.data;
-  });
-};
-
 const editProduct = async ({
   id,
   data,
@@ -93,6 +87,22 @@ const editProduct = async ({
 }) => {
   return apiUtils<{ status: string }>(async () => {
     const response = await authorizedPut(`/v1/cp_products/edit/${id}`, data);
+    return response.data;
+  });
+};
+
+const getSubProductsList = async (cp_id: number) => {
+  return apiUtils<{ list: ISubProducts[] }>(async () => {
+    const response = await authorizedPost(
+      `/v1/sub_products/list?main_product_id=${cp_id}`
+    );
+    return response.data;
+  });
+};
+
+const publishProduct = async (id: number) => {
+  return apiUtils(async () => {
+    const response = await authorizedPost(`/v1/cp_products/publish/${id}`);
     return response.data;
   });
 };
@@ -151,21 +161,6 @@ export const useRemoveProduct = () => {
   });
 };
 
-export const usePublishProduct = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: publishProduct,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products list"] });
-      console.log("✅ Product published successfully");
-    },
-    onError: (error) => {
-      console.error("❌ Error publishing product:", error);
-    },
-  });
-};
-
 export const useUpdateProduct = () => {
   const queryClient = useQueryClient();
 
@@ -195,6 +190,34 @@ export const useEditProduct = () => {
     },
     onError: (error) => {
       console.error("❌ Error modifying product:", error);
+    },
+  });
+};
+
+export const useSubProducts = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: getSubProductsList,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sub products list"] });
+    },
+    onError: (error) => {
+      console.error("❌ Error fetching sub products list:", error);
+    },
+  });
+};
+
+export const usePublishProduct = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: publishProduct,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products list"] });
+      console.log("✅ Product published successfully");
+    },
+    onError: (error) => {
+      console.error("❌ Error publishing product:", error);
     },
   });
 };
