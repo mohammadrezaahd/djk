@@ -23,10 +23,19 @@ export enum ProductStatus {
   PROCESSING = 3,
   COMPLETED = 4,
 }
-// export enum ProductStatusText {
-//   PENDING = "در انتظار انتشار",
-//   WAITING_FOR_APPROVAL = "در انتظار تایید",
-//   QUEUED = "در صف",
-//   PROCESSING = "در حال پردازش",
-//   COMPLETED = "تکمیل شده",
-// }
+
+export enum SubProductStatus {
+  PUBLISHED = "publish",
+  UNPUBLISHED = "not_publish",
+}
+
+export interface ISubProducts {
+  id: number;
+  category_id: number;
+  title: string;
+  brand: string;
+  images: number[];
+  source: TemplateSource;
+  status: SubProductStatus;
+  active: boolean;
+}
