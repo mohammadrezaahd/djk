@@ -29,13 +29,13 @@ export enum SubProductStatus {
   UNPUBLISHED = "not_publish",
 }
 
-export interface ISubProducts {
-  id: number;
-  category_id: number;
-  title: string;
-  brand: string;
-  images: number[];
-  source: TemplateSource;
-  status: SubProductStatus;
-  active: boolean;
-}
+// export interface ISubProducts {
+//   id: number;
+//   category_id: number;
+//   title: string;
+//   brand: string;
+//   images: number[];
+//   source: TemplateSource;
+//   status: SubProductStatus;
+//   active: boolean;
+// }
