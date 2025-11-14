@@ -74,6 +74,7 @@ export enum AttributeType {
   Select = "select",
   Checkbox = "checkbox",
   Text = "text",
+  MultiText = "multi_text",
 }
 
 export interface IGetAttrTemplate extends ITemplateBase {

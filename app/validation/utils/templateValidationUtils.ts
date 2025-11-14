@@ -236,6 +236,7 @@ const createProductAttributesValidationSchema = (attributesData: ICategoryAttr |
           
         case AttributeType.Input:
         case AttributeType.Text:
+        case AttributeType.MultiText:
           dynamicFields[fieldKey] = createInputValidation(attr);
           break;
           

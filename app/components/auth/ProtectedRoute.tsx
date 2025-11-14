@@ -1,52 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Navigate } from "react-router";
 import { Box, CircularProgress, Typography } from "@mui/material";
-import { useCurrentUser } from "~/api/auth.api";
+import { useAuthStatus } from "~/api/auth.api";
+import { safeLocalStorage, isClient } from "~/utils/storage";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const [isChecking, setIsChecking] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // اگر در server-side هستیم، فوراً redirect کن
+  if (!isClient()) {
+    return <Navigate to="/restricted" replace />;
+  }
 
-  const {
-    mutateAsync: getCurrentUser,
-    isPending,
-    error,
-  } = useCurrentUser();
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      // بررسی وجود توکن در localStorage
-      const token = localStorage.getItem("access_token");
-
-      if (!token) {
-        setIsAuthenticated(false);
-        setIsChecking(false);
-        return;
-      }
-
-      try {
-        // بررسی اعتبار توکن با API
-        await getCurrentUser();
-        setIsAuthenticated(true);
-      } catch (err) {
-        console.error("Authentication check failed:", err);
-        // پاک کردن توکن نامعتبر
-        localStorage.removeItem("access_token");
-        setIsAuthenticated(false);
-      } finally {
-        setIsChecking(false);
-      }
-    };
-
-    checkAuth();
-  }, []);
+  const { isAuthenticated, isLoading, isError } = useAuthStatus();
 
   // نمایش Loading در حین بررسی
-  if (isChecking || isPending) {
+  if (isLoading) {
     return (
       <Box
         sx={{
@@ -66,8 +37,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
-  // Redirect به صفحه Restricted اگر احراز هویت نشده
-  if (!isAuthenticated) {
+  // اگر احراز هویت نشده، redirect کن
+  if (!isAuthenticated || isError) {
+    // پاک کردن توکن در صورت خطا
+    if (isError) {
+      safeLocalStorage.removeItem("access_token");
+    }
     return <Navigate to="/restricted" replace />;
   }
 

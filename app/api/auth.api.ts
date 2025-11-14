@@ -1,7 +1,8 @@
 import axios from "axios";
 import { apiUtils } from "./apiUtils.api";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { authorizedGet } from "~/utils/authorizeReq";
+import { safeLocalStorage, isClient } from "~/utils/storage";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -41,7 +42,7 @@ const loginApi = async (credentials: LoginRequest) => {
 
     // ✅ ذخیره JWT در localStorage
     if (response.data.access_token) {
-      localStorage.setItem("access_token", response.data.access_token);
+      safeLocalStorage.setItem("access_token", response.data.access_token);
     }
 
     return {
@@ -73,7 +74,7 @@ const loginApiNumber = async (credentials: LoginNumberRequest) => {
 
     // ✅ ذخیره JWT در localStorage
     if (response.data.access_token) {
-      localStorage.setItem("access_token", response.data.access_token);
+      safeLocalStorage.setItem("access_token", response.data.access_token);
     }
 
     return {
@@ -87,7 +88,7 @@ const loginApiNumber = async (credentials: LoginNumberRequest) => {
 const logout = async () => {
   return apiUtils<{ status: string }>(async () => {
     // پاک کردن توکن از localStorage
-    localStorage.removeItem("access_token");
+    safeLocalStorage.removeItem("access_token");
 
     return {
       status: "true" as any,
@@ -100,7 +101,12 @@ const logout = async () => {
 const currentUser = async () => {
   return apiUtils<{ email: string }>(async () => {
     const response = await authorizedGet(`/v1/auth/me`);
-    return response.data;
+    
+    return {
+      status: "true" as any,
+      code: response.status as any,
+      data: response.data,
+    };
   });
 };
 
@@ -161,6 +167,34 @@ export const useCurrentUser = () => {
       console.error("❌ Error fetching current user:", error);
     },
   });
+};
+
+// useQuery version for auth checking
+export const useCurrentUserQuery = () => {
+  return useQuery({
+    queryKey: ["auth", "currentUser"],
+    queryFn: currentUser,
+    enabled: isClient() && !!safeLocalStorage.getItem("access_token"), // فقط اگر توکن موجود باشد
+    retry: false, // عدم تلاش مجدد در صورت خطا
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (previously cacheTime)
+  });
+};
+
+// Hook for checking authentication status
+export const useAuthStatus = () => {
+  const token = isClient() ? safeLocalStorage.getItem("access_token") : null;
+  const { data, isLoading, isError, error } = useCurrentUserQuery();
+
+  const isAuthenticated = !!(token && data?.data && !isError);
+  
+  return {
+    isAuthenticated,
+    isLoading: token ? isLoading : false,
+    isError,
+    error,
+    token
+  };
 };
 
 export const authApi = {

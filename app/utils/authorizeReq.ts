@@ -1,12 +1,47 @@
 import axios from "axios";
 import type { AxiosRequestConfig, AxiosResponse } from "axios";
+import { safeLocalStorage } from "./storage";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
 // دریافت توکن از localStorage
 const getToken = (): string | null => {
-  return localStorage.getItem("access_token");
+  return safeLocalStorage.getItem("access_token");
 };
+
+// Create axios instance
+const axiosInstance = axios.create({
+  baseURL: apiUrl,
+});
+
+// Request interceptor to add auth token
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor to handle auth errors
+axiosInstance.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response?.status === 401) {
+      // توکن منقضی شده یا نامعتبر است
+      safeLocalStorage.removeItem("access_token");
+      // می‌توانید اینجا redirect هم انجام دهید اگر نیاز باشد
+    }
+    return Promise.reject(error);
+  }
+);
 
 // ایجاد headers با Authorization
 const createAuthHeaders = (additionalHeaders?: Record<string, string>) => {
@@ -39,8 +74,7 @@ const authorizedPost = async <T = any>(
   data?: any,
   config?: AxiosRequestConfig
 ): Promise<AxiosResponse<T>> => {
-  const authConfig = createAuthConfig(config);
-  return axios.post(`${apiUrl}${endpoint}`, data, authConfig);
+  return axiosInstance.post(endpoint, data, config);
 };
 
 // تابع کمکی برای File Upload با Query Parameters
@@ -50,8 +84,6 @@ const authorizedPostFileWithQuery = async <T = any>(
   queryParams: Record<string, string | boolean>,
   config?: AxiosRequestConfig
 ): Promise<AxiosResponse<T>> => {
-  const token = getToken();
-  
   // Create FormData for file
   const formData = new FormData();
   formData.append('file', file);
@@ -61,18 +93,17 @@ const authorizedPostFileWithQuery = async <T = any>(
     .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
     .join('&');
   
-  const urlWithQuery = `${apiUrl}${endpoint}?${queryString}`;
+  const urlWithQuery = `${endpoint}?${queryString}`;
   
-  const authConfig: AxiosRequestConfig = {
+  const uploadConfig: AxiosRequestConfig = {
     ...config,
     headers: {
-      ...(token && { Authorization: `Bearer ${token}` }),
       // Don't set Content-Type for FormData - let browser set it with boundary
       ...config?.headers,
     },
   };
   
-  return axios.post(urlWithQuery, formData, authConfig);
+  return axiosInstance.post(urlWithQuery, formData, uploadConfig);
 };
 
 // تابع کمکی برای Multiple File Upload با Query Parameters
@@ -82,8 +113,6 @@ const authorizedPostMultipleFilesWithQuery = async <T = any>(
   queryParams: Record<string, string | boolean>,
   config?: AxiosRequestConfig
 ): Promise<AxiosResponse<T>> => {
-  const token = getToken();
-  
   // Create FormData for multiple files
   const formData = new FormData();
   files.forEach((file, index) => {
@@ -95,18 +124,17 @@ const authorizedPostMultipleFilesWithQuery = async <T = any>(
     .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
     .join('&');
   
-  const urlWithQuery = `${apiUrl}${endpoint}?${queryString}`;
+  const urlWithQuery = `${endpoint}?${queryString}`;
   
-  const authConfig: AxiosRequestConfig = {
+  const uploadConfig: AxiosRequestConfig = {
     ...config,
     headers: {
-      ...(token && { Authorization: `Bearer ${token}` }),
       // Don't set Content-Type for FormData - let browser set it with boundary
       ...config?.headers,
     },
   };
   
-  return axios.post(urlWithQuery, formData, authConfig);
+  return axiosInstance.post(urlWithQuery, formData, uploadConfig);
 };
 
 // تابع کمکی برای GET request با Authorization
@@ -114,8 +142,7 @@ const authorizedGet = async <T = any>(
   endpoint: string,
   config?: AxiosRequestConfig
 ): Promise<AxiosResponse<T>> => {
-  const authConfig = createAuthConfig(config);
-  return axios.get(`${apiUrl}${endpoint}`, authConfig);
+  return axiosInstance.get(endpoint, config);
 };
 
 // تابع کمکی برای PUT request با Authorization
@@ -124,8 +151,7 @@ const authorizedPut = async <T = any>(
   data?: any,
   config?: AxiosRequestConfig
 ): Promise<AxiosResponse<T>> => {
-  const authConfig = createAuthConfig(config);
-  return axios.put(`${apiUrl}${endpoint}`, data, authConfig);
+  return axiosInstance.put(endpoint, data, config);
 };
 
 // تابع کمکی برای DELETE request با Authorization
@@ -133,8 +159,7 @@ const authorizedDelete = async <T = any>(
   endpoint: string,
   config?: AxiosRequestConfig
 ): Promise<AxiosResponse<T>> => {
-  const authConfig = createAuthConfig(config);
-  return axios.delete(`${apiUrl}${endpoint}`, authConfig);
+  return axiosInstance.delete(endpoint, config);
 };
 
 // تابع کمکی برای PATCH request با Authorization
@@ -143,8 +168,7 @@ const authorizedPatch = async <T = any>(
   data?: any,
   config?: AxiosRequestConfig
 ): Promise<AxiosResponse<T>> => {
-  const authConfig = createAuthConfig(config);
-  return axios.patch(`${apiUrl}${endpoint}`, data, authConfig);
+  return axiosInstance.patch(endpoint, data, config);
 };
 
 export {
@@ -158,4 +182,5 @@ export {
   authorizedPut,
   authorizedDelete,
   authorizedPatch,
+  axiosInstance,
 };

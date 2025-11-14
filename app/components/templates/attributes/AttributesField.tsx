@@ -181,6 +181,19 @@ export default function AttributesField({
       return (
         <TextField
           fullWidth
+          label={attr.title + (attr.required ? " *" : "")}
+          helperText={error || attr.hint}
+          value={value || ""}
+          onChange={(e) => onChange(fieldKey, e.target.value)}
+          required={attr.required}
+          error={!!error}
+        />
+      );
+
+    case AttributeType.MultiText:
+      return (
+        <TextField
+          fullWidth
           multiline
           rows={3}
           label={attr.title + (attr.required ? " *" : "")}

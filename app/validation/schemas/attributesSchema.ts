@@ -150,6 +150,7 @@ export const createAttributesFormSchema = (
           
         case AttributeType.Input:
         case AttributeType.Text:
+        case AttributeType.MultiText:
           dynamicFields[fieldKey] = createInputValidation(attr);
           break;
           
@@ -215,6 +216,9 @@ export const getAttributesDefaultValues = (
             defaultValues[fieldKey] = '';
             break;
           case AttributeType.Text:
+            defaultValues[fieldKey] = '';
+            break;
+          case AttributeType.MultiText:
             defaultValues[fieldKey] = '';
             break;
           default:
