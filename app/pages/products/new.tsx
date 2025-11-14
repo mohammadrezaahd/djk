@@ -23,7 +23,6 @@ import {
   setProductDescription,
   setSelectedImages,
   updateSelectedTemplateData,
-  generateFinalProductData,
   resetProduct,
   setStepValidationError,
 } from "~/store/slices/productSlice";
@@ -107,6 +106,52 @@ const NewProductPage = () => {
   const { data: activeAttributesTemplateData } = useAttr(
     activeAttributesTemplate?.id || 0
   );
+
+  // Auto-select template images when active template data is loaded
+  useEffect(() => {
+    const newImages: number[] = [];
+
+    // Check if active details template has images
+    if (activeDetailsTemplateData?.data?.images && activeDetailsTemplateData.data.images.length > 0) {
+      newImages.push(...activeDetailsTemplateData.data.images);
+    }
+
+    // Check if active attributes template has images
+    if (activeAttributesTemplateData?.data?.images && activeAttributesTemplateData.data.images.length > 0) {
+      newImages.push(...activeAttributesTemplateData.data.images);
+    }
+
+    // Auto-select images that aren't already selected
+    if (newImages.length > 0) {
+      const currentImages = new Set(productState.selectedImages);
+      const imagesToAdd = newImages.filter(imgId => !currentImages.has(imgId));
+      
+      if (imagesToAdd.length > 0) {
+        console.log(`🖼️ Auto-selecting ${imagesToAdd.length} images from templates:`, imagesToAdd);
+        dispatch(setSelectedImages([...productState.selectedImages, ...imagesToAdd]));
+      }
+    }
+  }, [
+    activeDetailsTemplateData?.data?.images,
+    activeAttributesTemplateData?.data?.images,
+    // Removed productState.selectedImages from deps to avoid infinite loop
+    // We check it inside the effect instead
+    dispatch
+  ]);
+
+  // Log when templates change for debugging
+  useEffect(() => {
+    if (activeDetailsTemplate) {
+      console.log(`📋 Active details template changed to: ${activeDetailsTemplate.title} (ID: ${activeDetailsTemplate.id})`);
+    }
+  }, [activeDetailsTemplate?.id, activeDetailsTemplate?.title]);
+
+  useEffect(() => {
+    if (activeAttributesTemplate) {
+      console.log(`🏷️ Active attributes template changed to: ${activeAttributesTemplate.title} (ID: ${activeAttributesTemplate.id})`);
+    }
+  }, [activeAttributesTemplate?.id, activeAttributesTemplate?.title]);
+
   // Validation hooks for product creation
   const activeDetailsValidation = useProductDetailsValidation(
     activeDetailsTemplateData?.data?.data_json as any,
@@ -797,7 +842,8 @@ const NewProductPage = () => {
                     onFormDataChange={(fieldName: string, value: any) =>
                       dispatch(
                         updateDetailsTemplateFormData({
-                          templateIndex: productState.activeDetailsTemplateIndex,
+                          templateIndex:
+                            productState.activeDetailsTemplateIndex,
                           fieldName,
                           value,
                         })
