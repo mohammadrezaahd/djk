@@ -31,6 +31,7 @@ export interface IAttr {
   };
   postfix?: string;
   required: boolean;
+  in_title: boolean;
 }
 
 interface ICategoryAttributesMap {

@@ -43,14 +43,15 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
   const badges = useMemo((): TagItem[] => {
     const allBadges: TagItem[] = [];
 
-    // Extract attributes
+    // Extract attributes where in_title is true
     const uniqueAttributes = new Map<number, AttributeTag>();
     attributesData.forEach((templateData) => {
       if (templateData?.category_group_attributes) {
         Object.values(templateData.category_group_attributes).forEach(
           (categoryData) => {
             Object.values(categoryData.attributes).forEach((attr: IAttr) => {
-              if (!uniqueAttributes.has(attr.id)) {
+              // Only include attributes where in_title is true
+              if (attr.in_title && !uniqueAttributes.has(attr.id)) {
                 uniqueAttributes.set(attr.id, {
                   id: attr.id,
                   title: attr.title,
@@ -63,6 +64,29 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
       }
     });
     allBadges.push(...Array.from(uniqueAttributes.values()));
+
+    // Extract details: brands and brand_model
+    detailsData.forEach((detailTemplate) => {
+      if (detailTemplate?.bind) {
+        // Add single brand chip if brands exist
+        if (detailTemplate.bind.brands && detailTemplate.bind.brands.length > 0) {
+          allBadges.push({
+            id: "brand",
+            title: "brand",
+            type: "detail",
+          });
+        }
+
+        // Add brand_model chip if it exists
+        if (detailTemplate.bind.brand_model) {
+          allBadges.push({
+            id: "brand_model",
+            title: "brand_model",
+            type: "detail",
+          });
+        }
+      }
+    });
 
     return allBadges;
   }, [attributesData, detailsData]);
