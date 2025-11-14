@@ -92,10 +92,10 @@ const createInputValidation = (attr: IAttr) => {
     
     if (attr.required) {
       validation = validation.required(messages.required);
+      validation = validation.min(3, messages.min);
     }
     
     // Add length validations if needed
-    validation = validation.min(1, messages.min);
     validation = validation.max(5000, messages.max);
   }
   
