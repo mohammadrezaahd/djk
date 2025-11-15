@@ -47,15 +47,38 @@ const attributesSlice = createSlice({
           Object.values(data.category_group_attributes).forEach(
             (categoryData) => {
               Object.values(categoryData.attributes).forEach((attr) => {
-                const selectedValues = Object.entries(attr.values)
-                  .filter(([_, valueData]) => valueData.selected)
-                  .map(([valueId, _]) => valueId);
+                // Handle text and multi_text fields
+                if (attr.type === "text" || attr.type === "multi_text") {
+                  if (attr.value !== undefined && attr.value !== null) {
+                    if (typeof attr.value === 'object' && 'text_lines' in attr.value && attr.value.text_lines && Array.isArray(attr.value.text_lines)) {
+                      initialFormData[attr.id] = attr.value.text_lines.join('\n');
+                    } else if (typeof attr.value === 'object' && 'original_text' in attr.value && attr.value.original_text) {
+                      initialFormData[attr.id] = attr.value.original_text;
+                    } else if (typeof attr.value === 'string' || typeof attr.value === 'number') {
+                      initialFormData[attr.id] = String(attr.value);
+                    } else {
+                      initialFormData[attr.id] = "";
+                    }
+                  } else {
+                    initialFormData[attr.id] = "";
+                  }
+                }
+                // Handle input fields
+                else if (attr.type === "input") {
+                  initialFormData[attr.id] = attr.value !== undefined && attr.value !== null ? attr.value : "";
+                }
+                // Handle select and checkbox fields
+                else {
+                  const selectedValues = Object.entries(attr.values)
+                    .filter(([_, valueData]) => valueData.selected)
+                    .map(([valueId, _]) => valueId);
 
-                if (selectedValues.length > 0) {
-                  if (attr.type === "select") {
-                    initialFormData[attr.id] = selectedValues[0];
-                  } else if (attr.type === "checkbox") {
-                    initialFormData[attr.id] = selectedValues;
+                  if (selectedValues.length > 0) {
+                    if (attr.type === "select") {
+                      initialFormData[attr.id] = selectedValues[0];
+                    } else if (attr.type === "checkbox") {
+                      initialFormData[attr.id] = selectedValues;
+                    }
                   }
                 }
               });
@@ -119,8 +142,8 @@ const attributesSlice = createSlice({
         Object.values(templateData.category_group_attributes).forEach(
           (categoryData: any) => {
             Object.values(categoryData.attributes).forEach((attr: any) => {
-              // برای text fields
-              if (attr.type === 'text') {
+              // برای text و multi_text fields
+              if (attr.type === 'text' || attr.type === 'multi_text') {
                 if (attr.value !== undefined && attr.value !== null && attr.value !== "") {
                   if (typeof attr.value === 'object' && attr.value.text_lines) {
                     // اگر به صورت آرایه ذخیره شده
@@ -205,6 +228,7 @@ export const getFinalAttributesObject = (state: {
               break;
 
             case "text":
+            case "multi_text":
               // Set value even if empty string
               if (formValue !== null && formValue !== undefined && formValue !== "") {
                 // ذخیره متن به صورت ساختاریافته برای نمایش بهتر

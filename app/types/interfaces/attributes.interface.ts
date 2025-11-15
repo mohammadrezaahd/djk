@@ -25,7 +25,7 @@ export interface IAttr {
   type: AttributeType;
   unit?: string;
   title: string;
-  value?: { [valueId: string]: IAttributeValue };
+  value?: string | number | { text_lines?: string[]; original_text?: string } | { [valueId: string]: IAttributeValue };
   values: {
     [valueId: string]: IAttributeValue;
   };

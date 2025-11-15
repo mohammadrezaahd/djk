@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useEffect } from "react";
+import React, { useRef, useMemo, useEffect, useCallback } from "react";
 import { Box, Typography, Chip, Paper } from "@mui/material";
 import type {
   ICategoryAttr,
@@ -38,6 +38,8 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
   label = "عنوان محصول",
 }) => {
   const ref = useRef<HTMLDivElement | null>(null);
+  const isInternalUpdate = useRef(false);
+  const lastValue = useRef(value);
 
   // Extract unique attributes from all selected templates
   const badges = useMemo((): TagItem[] => {
@@ -95,37 +97,17 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
   useEffect(() => {
     if (!ref.current) return;
 
-    // Only update if the current content doesn't match the value
-    const currentText = ref.current.innerText || "";
-    const valueText = value.replace(/\{[^}]+\}/g, ""); // Remove tags for comparison
-    
-    // Parse the value and create HTML
-    const parts = value.split(/(\{[^}]+\})/g);
-    const html = parts.map((part) => {
-      if (part.startsWith("{") && part.endsWith("}")) {
-        const id = part.slice(1, -1);
-        const badge = badges.find((b) => b.id.toString() === id);
-        if (badge) {
-          return `<span style="display: inline-flex; align-items: center; background: #E3F2FD; border-radius: 8px; padding: 2px 6px; margin: 0 2px; cursor: pointer;" contenteditable="false" data-id="${id}"><span style="margin-right: 4px;">${badge.title}</span><span style="font-size: 14px; font-weight: bold; cursor: pointer; padding: 0 2px; border-radius: 50%; line-height: 1;" class="badge-close" title="حذف">×</span></span>`;
-        }
-        return part;
-      }
-      return part;
-    }).join("");
-
-    // Only update if content is different
-    if (ref.current.innerHTML !== html) {
-      const currentSelection = window.getSelection();
-      const currentRange = currentSelection && currentSelection.rangeCount > 0 ? currentSelection.getRangeAt(0) : null;
+    // Skip update if this is from internal typing
+    if (isInternalUpdate.current) {
+      isInternalUpdate.current = false;
       
-      ref.current.innerHTML = html;
-      
-      // Re-attach event listeners to close buttons
+      // Just ensure event listeners are attached
       const closeButtons = ref.current.querySelectorAll('.badge-close');
       closeButtons.forEach((btn) => {
         const badgeContainer = btn.parentElement;
-        if (badgeContainer) {
-          // Add hover effect
+        if (badgeContainer && !badgeContainer.hasAttribute('data-listeners-attached')) {
+          badgeContainer.setAttribute('data-listeners-attached', 'true');
+          
           btn.addEventListener('mouseenter', () => {
             (btn as HTMLElement).style.backgroundColor = 'rgba(0,0,0,0.1)';
           });
@@ -133,7 +115,6 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
             (btn as HTMLElement).style.backgroundColor = 'transparent';
           });
           
-          // Add click to remove
           const removeBadge = (e: Event) => {
             e.preventDefault();
             e.stopPropagation();
@@ -145,7 +126,77 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
           badgeContainer.addEventListener('click', removeBadge);
         }
       });
+      
+      lastValue.current = value;
+      return;
     }
+
+    // Skip if value hasn't actually changed
+    if (lastValue.current === value) {
+      return;
+    }
+
+    lastValue.current = value;
+
+    // Extract current value from the div to compare
+    let currentValue = "";
+    const children = Array.from(ref.current.childNodes);
+    children.forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        currentValue += node.textContent || "";
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        const element = node as HTMLElement;
+        const dataId = element.getAttribute("data-id");
+        if (dataId) {
+          currentValue += `{${dataId}}`;
+        }
+      }
+    });
+
+    // Only update if values don't match
+    if (currentValue === value) {
+      return;
+    }
+    
+    // Parse the value and create HTML
+    const parts = value.split(/(\{[^}]+\})/g);
+    const html = parts.map((part) => {
+      if (part.startsWith("{") && part.endsWith("}")) {
+        const id = part.slice(1, -1);
+        const badge = badges.find((b) => b.id.toString() === id);
+        if (badge) {
+          return `<span style="display: inline-flex; align-items: center; background: #E3F2FD; border-radius: 8px; padding: 2px 6px; margin: 0 2px; cursor: pointer;" contenteditable="false" data-id="${id}" data-listeners-attached="true"><span style="margin-right: 4px;">${badge.title}</span><span style="font-size: 14px; font-weight: bold; cursor: pointer; padding: 0 2px; border-radius: 50%; line-height: 1;" class="badge-close" title="حذف">×</span></span>`;
+        }
+        return part;
+      }
+      return part;
+    }).join("");
+
+    ref.current.innerHTML = html;
+    
+    // Re-attach event listeners to close buttons
+    const closeButtons = ref.current.querySelectorAll('.badge-close');
+    closeButtons.forEach((btn) => {
+      const badgeContainer = btn.parentElement;
+      if (badgeContainer) {
+        btn.addEventListener('mouseenter', () => {
+          (btn as HTMLElement).style.backgroundColor = 'rgba(0,0,0,0.1)';
+        });
+        btn.addEventListener('mouseleave', () => {
+          (btn as HTMLElement).style.backgroundColor = 'transparent';
+        });
+        
+        const removeBadge = (e: Event) => {
+          e.preventDefault();
+          e.stopPropagation();
+          badgeContainer.remove();
+          handleInput();
+        };
+        
+        btn.addEventListener('click', removeBadge);
+        badgeContainer.addEventListener('click', removeBadge);
+      }
+    });
   }, [value, badges]);
 
   // Get currently used tags
@@ -245,20 +296,29 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
 
     range.insertNode(badgeContainer);
 
-    // move caret after the badge
+    // Add a space after the badge for easier typing
+    const space = document.createTextNode(" ");
     range.setStartAfter(badgeContainer);
-    range.setEndAfter(badgeContainer);
+    range.insertNode(space);
+
+    // move caret after the space
+    range.setStartAfter(space);
+    range.setEndAfter(space);
     sel.removeAllRanges();
     sel.addRange(range);
+
+    // Mark as internal update before calling handleInput
+    isInternalUpdate.current = true;
 
     // Update value immediately after adding badge
     handleInput();
   };
 
   const handleInput = () => {
-    console.log("content:", ref.current?.innerText);
-
     if (!ref.current) return;
+
+    // Mark as internal update to prevent re-render loop
+    isInternalUpdate.current = true;
 
     // Extract value from content
     let newValue = "";
@@ -276,7 +336,7 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
       }
     });
 
-    console.log("extracted value:", newValue);
+    lastValue.current = newValue;
     onChange(newValue);
   };
   return (
@@ -290,12 +350,22 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
         contentEditable
         suppressContentEditableWarning
         onInput={handleInput}
+        onKeyDown={(e) => {
+          // Prevent any issues with special keys
+          if (e.key === "Enter") {
+            e.preventDefault();
+          }
+        }}
         sx={{
           border: "1px solid #ccc",
           borderRadius: "8px",
           padding: "8px",
           minHeight: "80px",
           cursor: "text",
+          direction: "rtl",
+          textAlign: "right",
+          whiteSpace: "pre-wrap",
+          wordBreak: "break-word",
           "&:focus": { outline: "2px solid #1976d2" },
           "&:empty:before": {
             content: `"${placeholder}"`,
