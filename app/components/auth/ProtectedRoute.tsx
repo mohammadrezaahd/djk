@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuthStatus } from "../../api/auth.api";
-import { safeLocalStorage, isClient } from "../../utils/storage";
+import { CircularProgress, Box } from "@mui/material";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -9,23 +9,21 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const location = useLocation();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      if (isClient()) {
-        const token = safeLocalStorage.getItem("token");
-        setIsAuthenticated(!!token);
-      }
-      setIsLoading(false);
-    };
-
-    checkAuth();
-  }, []);
+  const { data: isAuthenticated, isLoading } = useAuthStatus();
 
   if (isLoading) {
-    return <div>Loading...</div>; // Or a spinner
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
   }
 
   if (!isAuthenticated) {

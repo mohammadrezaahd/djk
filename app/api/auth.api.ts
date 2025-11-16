@@ -1,7 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { login as loginService, logout as logoutService } from "../services/auth.service";
 import type { LoginCredentials, LoginResponse } from "../types/interfaces/auth.interface";
 import { ApiStatus } from "../types";
+import { isClient, safeLocalStorage } from "../utils/storage";
 
 export function useLogin() {
   const queryClient = useQueryClient();
@@ -9,7 +10,6 @@ export function useLogin() {
     mutationFn: (credentials: LoginCredentials) => loginService(credentials),
     onSuccess: (data) => {
       if (data.status === "true") {
-        // You might want to invalidate queries that depend on authentication status
         queryClient.invalidateQueries({ queryKey: ["user"] });
       }
     },
@@ -30,4 +30,17 @@ export function useLogout() {
       //
     },
   });
+}
+
+export function useAuthStatus() {
+    return useQuery({
+        queryKey: ['authStatus'],
+        queryFn: async () => {
+            if (isClient()) {
+                const token = safeLocalStorage.getItem("token");
+                return !!token;
+            }
+            return false;
+        }
+    });
 }

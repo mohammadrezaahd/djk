@@ -7,16 +7,13 @@ import {
   Chip,
   Grid,
 } from "@mui/material";
-import {
-  IAttr,
-  ISelectOption,
-} from "../../types/interfaces/attributes.interface";
+import type { ICategoryAttr, IAttributeValue } from "../../types/interfaces/attributes.interface";
 import type { ICategoryDetails } from "../../types/interfaces/details.interface";
 
 interface DynamicTitleBuilderProps {
   value: string;
   onChange: (value: string) => void;
-  attributesData: IAttr[];
+  attributesData: ICategoryAttr[];
   detailsData: ICategoryDetails[];
   label?: string;
   placeholder?: string;
@@ -37,13 +34,17 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
   const getAttributeChips = () => {
     const chips: string[] = [];
     attributesData.forEach((attr) => {
-      if (attr.values) {
-        Object.values(attr.values).forEach((option: ISelectOption) => {
-          if (option.selected) {
-            chips.push(option.value);
-          }
-        });
-      }
+        Object.values(attr.category_group_attributes).forEach((group) => {
+            Object.values(group.attributes).forEach((attribute) => {
+                if(attribute.values){
+                    Object.values(attribute.values).forEach((option: IAttributeValue) => {
+                        if (option.selected) {
+                            chips.push(option.text);
+                        }
+                    });
+                }
+            })
+        })
     });
     return chips;
   };

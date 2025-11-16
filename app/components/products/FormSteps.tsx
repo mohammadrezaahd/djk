@@ -1,5 +1,5 @@
 import React from "react";
-import { Stepper, Step, StepLabel, StepButton } from "@mui/material";
+import { Stepper, Step, StepLabel } from "@mui/material";
 import { FormStep } from "../../store/slices/productSlice";
 
 interface FormStepsProps {

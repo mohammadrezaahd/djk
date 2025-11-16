@@ -1,7 +1,7 @@
 import { authorizedGet, authorizedPost, authorizedPut, authorizedDelete } from '../utils/authorizeReq';
 import type { AddProductData, Product, ProductListResponse, GetProductsOptions } from '../types/interfaces/product.interface';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
 export const getProducts = (options: GetProductsOptions): Promise<ProductListResponse> => {
   const queryParams = new URLSearchParams({

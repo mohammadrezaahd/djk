@@ -1,7 +1,7 @@
 import { authorizedGet, authorizedPost, authorizedPut, authorizedDelete } from '../utils/authorizeReq';
 import type { GalleryResponse, UpdateFileData, GetGalleryOptions } from '../types/interfaces/gallery.interface';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
 export const getGallery = (options: GetGalleryOptions): Promise<GalleryResponse> => {
   const queryParams = new URLSearchParams({

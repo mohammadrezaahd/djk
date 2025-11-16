@@ -6,7 +6,7 @@ import type {
   GetCategoriesOptions,
 } from "../types/interfaces/categories.interface";
 
-const API_URL = "http://localhost:8000/api";
+const API_URL = import.meta.env.VITE_API_URL;
 
 // Fetch a list of categories
 export const getCategories = async (

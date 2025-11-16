@@ -1,7 +1,7 @@
 import { authorizedGet, authorizedPost, authorizedPut, authorizedDelete } from '../utils/authorizeReq';
 import type { AddDetailData, Detail, DetailListResponse, GetDetailsOptions } from '../types/interfaces/details.interface';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
 export const getDetails = (options: GetDetailsOptions): Promise<DetailListResponse> => {
   const queryParams = new URLSearchParams({
