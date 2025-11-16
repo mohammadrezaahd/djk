@@ -1,172 +1,123 @@
-import type { IPostImage } from "~/types/dtos/gallery.dto";
-import { apiUtils } from "./apiUtils.api";
 import {
-  authorizedDelete,
-  authorizedGet,
-  authorizedPost,
-  authorizedPostFileWithQuery,
-  authorizedPostMultipleFilesWithQuery,
-  authorizedPut,
-} from "~/utils/authorizeReq";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { IGallery } from "~/types/interfaces/gallery.interface";
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import {
+  getGallery,
+  uploadFile,
+  updateFile,
+  deleteFile,
+  getImagesByIds,
+  getImage,
+} from "../services/gallery.service";
+import type {
+  GalleryResponse,
+  UpdateFileData,
+  GetGalleryOptions,
+} from "../types/interfaces/gallery.interface";
 
-const addImage = (data: IPostImage) => {
-  return apiUtils<{ id: number } | { ids: number[] }>(async () => {
-    const { file, multipleUpload, ...queryParams } = data;
-
-    if (multipleUpload && Array.isArray(file)) {
-      // Multiple file upload
-      const response = await authorizedPostMultipleFilesWithQuery(
-        "/v1/images/save-multiple",
-        file as File[],
-        queryParams
-      );
-      return response.data;
-    } else {
-      // Single file upload (existing logic)
-      const response = await authorizedPostFileWithQuery(
-        "/v1/images/save",
-        file as File,
-        queryParams
-      );
-      return response.data;
-    }
+// Hook to fetch gallery with pagination and search
+export const useGallery = (options: GetGalleryOptions) => {
+  return useQuery<GalleryResponse, Error>({
+    queryKey: ["gallery", options],
+    queryFn: () => getGallery(options),
   });
 };
 
-const getImages = async ({
-  skip = 0,
-  limit = 100,
-  search_title = "",
-  source = "app",
-  packaging = true,
-  product = true,
-}: {
-  skip?: number;
-  limit?: number;
-  search_title?: string;
-  source?: string;
-  packaging?: boolean;
-  product?: boolean;
-}) => {
-  return apiUtils<{ list: IGallery[] }>(async () => {
-    const response = await authorizedPost(
-      `/v1/images/list?skip=${skip}&limit=${limit}&search_title=${search_title}&source=${source}&packaging=${packaging}&product=${product}`
-    );
-    return response.data;
+export const useImages = (options: GetGalleryOptions) => {
+  return useQuery<GalleryResponse, Error>({
+    queryKey: ["gallery", options],
+    queryFn: () => getGallery(options),
   });
 };
 
-const removeImage = async (id: number) => {
-  return apiUtils<{ status: string }>(async () => {
-    const response = await authorizedDelete(`/v1/images/remove/${id}`);
-    return response.data;
+// Hook to fetch a single image by ID
+export const useImage = (id: number) => {
+    return useQuery({
+        queryKey: ["image", id],
+        queryFn: () => getImage(id),
+        enabled: !!id,
+    });
+};
+
+
+// Hook to fetch selected images by their IDs
+export const useSelectedImages = (imageIds: number[]) => {
+  return useQuery({
+    queryKey: ["selectedImages", imageIds],
+    queryFn: () => getImagesByIds(imageIds),
+    enabled: imageIds.length > 0, // Only run the query if there are image IDs
   });
 };
 
-const getImage = async (id: number) => {
-  return apiUtils<IGallery>(async () => {
-    const response = await authorizedGet(`/v1/images/get/${id}`);
-    return response.data;
-  });
-};
-
-const editImage = async ({ id, data }: { id: number; data: IPostImage }) => {
-  return apiUtils<{ status: string }>(async () => {
-    const response = await authorizedPut(`/v1/images/edit/${id}`, data);
-    return response.data;
-  });
-};
-
-const getSelectedImages = async (data: number[]) => {
-  return apiUtils<{ list: IGallery[] }>(async () => {
-    const response = await authorizedPost(`/v1/images/get/multi`, data);
-    return response.data;
+// Hook for file uploads
+export const useUploadFile = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (file: File) => uploadFile(file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["gallery"] });
+    },
   });
 };
 
 export const useAddImage = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (vars: { data: UpdateFileData, file: File }) => uploadFile(vars.file, vars.data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["gallery"] });
+        },
+    });
+};
+
+// Hook for updating file data
+export const useUpdateFile = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: addImage,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["images"] });
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: number;
+      data: UpdateFileData;
+    }) => updateFile(id, data),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["gallery"] });
+      queryClient.invalidateQueries({ queryKey: ["image", variables.id] }); // If you have a query for a single image
     },
-    onError: (error) => {
-      console.error("❌ Error adding image:", error);
-    },
-  });
-};
-
-export const useImages = ({
-  skip = 0,
-  limit = 100,
-  search_title = "",
-  source = "",
-  packaging = true,
-  product = true,
-}: {
-  skip?: number;
-  limit?: number;
-  search_title?: string;
-  source?: string;
-  packaging?: boolean;
-  product?: boolean;
-} = {}) => {
-  return useQuery({
-    queryKey: ["images", { skip, limit, search_title, source, packaging, product }],
-    queryFn: () => getImages({ skip, limit, search_title, source, packaging, product }),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-  });
-};
-
-export const useRemoveImage = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: removeImage,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["images remove"] });
-    },
-    onError: (error) => {
-      console.error("❌ Error removing image:", error);
-    },
-  });
-};
-
-export const useImage = (id: number) => {
-  return useQuery({
-    queryKey: ["detailes", id],
-    queryFn: () => getImage(id),
-    enabled: !!id,
-    staleTime: 30 * 60 * 1000, // 30 minutes
-    refetchOnWindowFocus: false,
   });
 };
 
 export const useEditImage = () => {
-  const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (vars: { id: number, data: UpdateFileData }) => updateFile(vars.id, vars.data),
+        onSuccess: (data, vars) => {
+            queryClient.invalidateQueries({ queryKey: ["gallery"] });
+            queryClient.invalidateQueries({ queryKey: ["image", vars.id] });
+        },
+    });
+};
 
+// Hook for deleting a file
+export const useDeleteFile = () => {
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: editImage,
+    mutationFn: (id: number) => deleteFile(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["image modify"] });
-      // console.log("✅ Attribute added successfully:", data);
-    },
-    onError: (error) => {
-      console.error("❌ Error modifying image:", error);
+      queryClient.invalidateQueries({ queryKey: ["gallery"] });
     },
   });
 };
 
-export const useSelectedImages = (data: number[]) => {
-  return useQuery({
-    queryKey: ["images", data],
-    queryFn: () => getSelectedImages(data),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-  });
+export const useRemoveImage = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id: number) => deleteFile(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["gallery"] });
+        },
+    });
 };

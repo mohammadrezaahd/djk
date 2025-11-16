@@ -3,8 +3,8 @@ import { Typography, Box, Paper, Alert, Backdrop, Grid } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router";
-import type { RootState } from "~/store";
-import { TemplateSource } from "~/types/dtos/templates.dto";
+import type { RootState } from "../../store";
+import { TemplateSource } from "../../types/dtos/templates.dto";
 import {
   FormStep,
   setCurrentStep,
@@ -25,11 +25,11 @@ import {
   updateSelectedTemplateData,
   resetProduct,
   setStepValidationError,
-} from "~/store/slices/productSlice";
-import { useCategoriesList } from "~/api/categories.api";
-import { useDetails, useDetail } from "~/api/details.api";
-import { useAttrs, useAttr } from "~/api/attributes.api";
-import { useSelectedImages } from "~/api/gallery.api";
+} from "../../store/slices/productSlice";
+import { useCategoriesList } from "../../api/categories.api";
+import { useDetails, useDetail } from "../../api/details.api";
+import { useAttrs, useAttr } from "../../api/attributes.api";
+import { useSelectedImages } from "../../api/gallery.api";
 import {
   useProductDetailsValidation,
   useProductAttributesValidation,
@@ -37,25 +37,25 @@ import {
   validateAllDetailsTemplates,
   validateAllAttributesTemplates,
   getAttributesTemplatesValidationErrors,
-} from "~/validation";
-import Layout from "~/components/layout/Layout";
-import CategorySelector from "~/components/templates/CategorySelector";
+} from "../../validation";
+import Layout from "../../components/layout/Layout";
+import CategorySelector from "../../components/templates/CategorySelector";
 import {
   FormSteps,
   TemplateSelection,
   TemplateForms,
   ProductInfoForm,
-  ProductDetailsForm,
-  ProductAttributesForm,
   ProductImageSelection,
-} from "~/components/products";
-import type { ICategoryList } from "~/types/interfaces/categories.interface";
-import type { ITemplateList } from "~/types/interfaces/templates.interface";
-import type { ICategoryAttr } from "~/types/interfaces/attributes.interface";
-import type { ICategoryDetails } from "~/types/interfaces/details.interface";
-import { TitleCard } from "~/components/common";
-import { useAddProduct } from "~/api/product.api";
-import ResultPage from "~/components/products/ResultPage";
+} from "../../components/products";
+import type { ICategoryList } from "../../types/interfaces/categories.interface";
+import type { ITemplateList } from "../../types/interfaces/templates.interface";
+import type { ICategoryAttr } from "../../types/interfaces/attributes.interface";
+import type { ICategoryDetails } from "../../types/interfaces/details.interface";
+import { TitleCard } from "../../components/common";
+import { useAddProduct } from "../../api/product.api";
+import ResultPage from "../../components/products/ResultPage";
+import ProductDetailsForm from "../../components/products/ProductDetailsForm";
+import ProductAttributesForm from "../../components/products/ProductAttributesForm";
 
 export function meta() {
   return [
@@ -127,30 +127,14 @@ const NewProductPage = () => {
       const imagesToAdd = newImages.filter(imgId => !currentImages.has(imgId));
       
       if (imagesToAdd.length > 0) {
-        console.log(`🖼️ Auto-selecting ${imagesToAdd.length} images from templates:`, imagesToAdd);
         dispatch(setSelectedImages([...productState.selectedImages, ...imagesToAdd]));
       }
     }
   }, [
     activeDetailsTemplateData?.data?.images,
     activeAttributesTemplateData?.data?.images,
-    // Removed productState.selectedImages from deps to avoid infinite loop
-    // We check it inside the effect instead
     dispatch
   ]);
-
-  // Log when templates change for debugging
-  useEffect(() => {
-    if (activeDetailsTemplate) {
-      console.log(`📋 Active details template changed to: ${activeDetailsTemplate.title} (ID: ${activeDetailsTemplate.id})`);
-    }
-  }, [activeDetailsTemplate?.id, activeDetailsTemplate?.title]);
-
-  useEffect(() => {
-    if (activeAttributesTemplate) {
-      console.log(`🏷️ Active attributes template changed to: ${activeAttributesTemplate.title} (ID: ${activeAttributesTemplate.id})`);
-    }
-  }, [activeAttributesTemplate?.id, activeAttributesTemplate?.title]);
 
   // Validation hooks for product creation
   const activeDetailsValidation = useProductDetailsValidation(
@@ -189,12 +173,9 @@ const NewProductPage = () => {
 
   // Update validation errors in store when validation results change
   useEffect(() => {
-    // Only show validation error if user has visited the step but hasn't selected any templates
-    // or if templates are selected but not properly filled
     let hasDetailsErrors = false;
 
     if (productState.selectedDetailsTemplates.length === 0) {
-      // Only consider it an error if user has passed through details selection step
       const currentStepIndex = Object.values(FormStep).indexOf(
         productState.currentStep
       );
@@ -203,7 +184,6 @@ const NewProductPage = () => {
       );
       hasDetailsErrors = currentStepIndex > detailsFormStepIndex;
     } else {
-      // If templates are selected, validate them
       hasDetailsErrors = !validateAllDetailsTemplates(
         productState.selectedDetailsTemplates
       );
@@ -222,12 +202,9 @@ const NewProductPage = () => {
   ]);
 
   useEffect(() => {
-    // Only show validation error if user has visited the step but hasn't selected any templates
-    // or if templates are selected but not properly filled
     let hasAttributesErrors = false;
 
     if (productState.selectedAttributesTemplates.length === 0) {
-      // Only consider it an error if user has passed through attributes selection step
       const currentStepIndex = Object.values(FormStep).indexOf(
         productState.currentStep
       );
@@ -236,7 +213,6 @@ const NewProductPage = () => {
       );
       hasAttributesErrors = currentStepIndex > attributesFormStepIndex;
     } else {
-      // If templates are selected, validate them
       hasAttributesErrors = !validateAllAttributesTemplates(
         productState.selectedAttributesTemplates
       );
@@ -279,36 +255,6 @@ const NewProductPage = () => {
       })
     );
   }, [productState.selectedImages, selectedImagesData, dispatch]);
-
-  // Load template data when activeDetailsTemplate changes
-  useEffect(() => {
-    if (
-      activeDetailsTemplate &&
-      (!activeDetailsTemplate.data ||
-        Object.keys(activeDetailsTemplate.data).length === 0)
-    ) {
-      // Load the template data if it's not already loaded
-      console.log(
-        "Loading details template data for:",
-        activeDetailsTemplate.id
-      );
-    }
-  }, [activeDetailsTemplate]);
-
-  // Load template data when activeAttributesTemplate changes
-  useEffect(() => {
-    if (
-      activeAttributesTemplate &&
-      (!activeAttributesTemplate.data ||
-        Object.keys(activeAttributesTemplate.data).length === 0)
-    ) {
-      // Load the template data if it's not already loaded
-      console.log(
-        "Loading attributes template data for:",
-        activeAttributesTemplate.id
-      );
-    }
-  }, [activeAttributesTemplate]);
 
   // Update template data when query data is available
   useEffect(() => {
@@ -358,7 +304,6 @@ const NewProductPage = () => {
       dispatch(setSelectedCategory(category.id));
       dispatch(setCurrentStep(FormStep.DETAILS_SELECTION));
 
-      // Load details templates for this category
       try {
         const detailsResult = await detailsMutation.mutateAsync({
           categoryId: category.id,
@@ -384,19 +329,12 @@ const NewProductPage = () => {
     if (isSelected) {
       dispatch(removeDetailsTemplate(template.id));
     } else {
-      // Load template data using the existing hook
-      try {
-        // We'll use a simpler approach and fetch template data when needed
-        // For now, add template with empty data and load it when the form is displayed
-        dispatch(
-          addDetailsTemplate({
-            template,
-            data: {} as any, // This will be populated when the template is selected in the form
-          })
-        );
-      } catch (error) {
-        console.error("Error loading template data:", error);
-      }
+      dispatch(
+        addDetailsTemplate({
+          template,
+          data: {} as any,
+        })
+      );
     }
   };
 
@@ -409,30 +347,20 @@ const NewProductPage = () => {
     if (isSelected) {
       dispatch(removeAttributesTemplate(template.id));
     } else {
-      // Load template data using the existing hook
-      try {
-        // We'll use a simpler approach and fetch template data when needed
-        // For now, add template with empty data and load it when the form is displayed
-        dispatch(
-          addAttributesTemplate({
-            template,
-            data: {} as any, // This will be populated when the template is selected in the form
-          })
-        );
-      } catch (error) {
-        console.error("Error loading template data:", error);
-      }
+      dispatch(
+        addAttributesTemplate({
+          template,
+          data: {} as any,
+        })
+      );
     }
   };
 
   // Handle step navigation
   const handleNextFromDetailsSelection = async () => {
-    // Always allow going to next step, regardless of selection
     if (productState.selectedDetailsTemplates.length > 0) {
       dispatch(setCurrentStep(FormStep.DETAILS_FORM));
     } else {
-      // Skip to attributes selection if no details templates selected
-      // Load attributes templates for the category first
       if (productState.selectedCategoryId) {
         try {
           const attributesResult = await attributesMutation.mutateAsync({
@@ -458,7 +386,6 @@ const NewProductPage = () => {
   };
 
   const handleNextFromDetailsForm = async () => {
-    // Load attributes templates for the category
     if (productState.selectedCategoryId) {
       try {
         const attributesResult = await attributesMutation.mutateAsync({
@@ -478,12 +405,9 @@ const NewProductPage = () => {
   };
 
   const handleNextFromAttributesSelection = () => {
-    // Always allow going to next step, regardless of selection
-    // If no templates selected, the form step will be skipped to image selection
     if (productState.selectedAttributesTemplates.length > 0) {
       dispatch(setCurrentStep(FormStep.ATTRIBUTES_FORM));
     } else {
-      // Skip to image selection if no attributes templates selected
       dispatch(setCurrentStep(FormStep.IMAGE_SELECTION));
     }
   };
@@ -522,12 +446,9 @@ const NewProductPage = () => {
   };
 
   const handleBackFromImageSelection = () => {
-    // Go back to the appropriate step
     if (productState.selectedAttributesTemplates.length > 0) {
-      // If attributes templates are selected, go back to attributes form
       dispatch(setCurrentStep(FormStep.ATTRIBUTES_FORM));
     } else {
-      // If no attributes templates, go back to attributes selection
       dispatch(setCurrentStep(FormStep.ATTRIBUTES_SELECTION));
     }
   };
@@ -545,14 +466,11 @@ const NewProductPage = () => {
     try {
       setIsSubmitting(true);
 
-      // Build the final product data with form values (not just template data)
-      // This mirrors the logic in generateFinalProductData
       const detailsList = productState.selectedDetailsTemplates.map(
         (template) => {
           const finalData = JSON.parse(JSON.stringify(template.data));
           const formData = template.formData;
 
-          // Apply form data to details structure
           const staticFields = [
             "is_fake_product",
             "brand",
@@ -577,7 +495,6 @@ const NewProductPage = () => {
             }
           });
 
-          // Update bind selections - this is critical
           const bind = finalData.bind;
           if (bind) {
             if (bind.brands && formData.brand) {
@@ -618,7 +535,6 @@ const NewProductPage = () => {
               });
             }
 
-            // Update text field values (IStringField type fields like brand_model, color_pattern, warranty, etc.)
             const textFields = [
               "brand_model",
               "color_pattern",
@@ -646,7 +562,6 @@ const NewProductPage = () => {
         }
       );
 
-      // Process attributes
       const attributesList = productState.selectedAttributesTemplates.map(
         (template) => {
           const finalData = JSON.parse(JSON.stringify(template.data));
@@ -661,21 +576,17 @@ const NewProductPage = () => {
                 Object.keys(categoryData.attributes).forEach((attributeId) => {
                   const attr = categoryData.attributes[attributeId];
                   const formValue = formData[attr.id];
-
-                  // Check if field exists in formData (even if empty string)
                   const hasFormValue = attr.id in formData;
 
                   if (hasFormValue) {
                     switch (attr.type) {
                       case "input":
-                        // Set value even if empty string
                         attr.value =
                           formValue !== null && formValue !== undefined
                             ? formValue.toString()
                             : "";
                         break;
                       case "text":
-                        // Set value even if empty string
                         if (
                           formValue !== null &&
                           formValue !== undefined &&
@@ -715,7 +626,6 @@ const NewProductPage = () => {
                         break;
                     }
                   }
-                  // If field not in formData, preserve original template value
                 });
               }
             );
@@ -737,15 +647,12 @@ const NewProductPage = () => {
         variant_data: {},
       };
 
-      // Save product to server
       const response = await saveProduct(finalProductData as any);
 
-      // Check both status and ApiStatus.SUCCEEDED
       if (response?.status === "true") {
         enqueueSnackbar("محصول با موفقیت ذخیره شد", {
           variant: "success",
         });
-        // Show result page after a short delay
         setTimeout(() => {
           setShowResultPage(true);
           setIsSubmitting(false);
@@ -765,7 +672,6 @@ const NewProductPage = () => {
     }
   };
 
-  // Get all attributes data from selected templates for title builder
   const getAllAttributesData = useMemo(() => {
     return productState.selectedAttributesTemplates
       .filter(
@@ -773,12 +679,10 @@ const NewProductPage = () => {
       )
       .map((template) => template.data)
       .filter((data): data is ICategoryAttr => {
-        // Type guard to ensure we only get ICategoryAttr types
         return "category_group_attributes" in data;
       });
   }, [productState.selectedAttributesTemplates]);
 
-  // Get all details data from selected templates for title builder
   const getAllDetailsData = useMemo(() => {
     return productState.selectedDetailsTemplates
       .filter(
@@ -786,12 +690,10 @@ const NewProductPage = () => {
       )
       .map((template) => template.data)
       .filter((data): data is ICategoryDetails => {
-        // Type guard to ensure we only get ICategoryDetails types
         return "bind" in data;
       });
   }, [productState.selectedDetailsTemplates]);
 
-  // Render current step
   const renderCurrentStep = () => {
     const stepContent = (() => {
       switch (productState.currentStep) {
@@ -942,7 +844,6 @@ const NewProductPage = () => {
       }
     })();
 
-    // Wrap content with a disabled overlay if submitting
     return (
       <Box
         sx={{
@@ -983,7 +884,6 @@ const NewProductPage = () => {
               </Alert>
             )}
 
-            {/* Backdrop overlay when submitting */}
             <Backdrop
               sx={{
                 color: "#fff",

@@ -1,218 +1,229 @@
-import * as yup from "yup";
-import type {
-  ICategoryDetails,
-  IBindBrand,
-  IBindStatus,
-  IBindPlatforms,
-  IBindProductClass,
-  IBindCPT,
-  IBindFakeReason,
-  ICDThemes,
-} from "~/types/interfaces/details.interface";
-import { FieldType } from "~/types/interfaces/details.interface";
+import { z } from "zod";
+import type { ICategoryDetails } from "../../types/interfaces/details.interface";
+import type { IStringField } from "../../types/interfaces/components.interface";
 
-/**
- * Validation messages in Persian
- */
-const messages = {
-  required: "این فیلد الزامی است",
-  string: "مقدار وارد شده باید متن باشد",
-  boolean: "مقدار وارد شده باید true یا false باشد",
-  invalidOption: "گزینه انتخاب شده معتبر نیست",
-  min: "حداقل ${min} کاراکتر وارد کنید",
-  max: "حداکثر ${max} کاراکتر مجاز است",
-  number: "مقدار وارد شده باید عدد باشد",
-  minNumber: "عدد باید صفر یا بزرگتر باشد",
-};
-
-/**
- * Create validation for dropdown fields with options
- */
-const createOptionValidation = (
-  options: any[],
-  required: boolean = false,
-  valueKey: string = "value"
+// Utility function to get default values for Zod schema
+export const getDetailsDefaultValues = (
+  schemaData?: ICategoryDetails | null,
+  currentFormData?: Record<string, any>
 ) => {
-  const validValues = options
-    .map((option) => {
-      if (valueKey === "id") return option.id;
-      if (valueKey === "text") return option.text?.toString();
-      return option.value || option.id;
-    })
-    .filter((val) => val !== undefined);
-
-  let validation = yup.string();
-
-  if (required) {
-    validation = validation.required(messages.required);
+  if (!schemaData) {
+    return {};
   }
 
-  // Validate that selected value exists in the valid options
-  validation = validation.test(
-    "valid-option",
-    messages.invalidOption,
-    function (value) {
-      if (!value && !required) return true; // Optional field can be empty
-      if (!value && required) return false; // Required field cannot be empty
-      return value ? validValues.includes(value) : false;
-    }
-  );
+  const defaultValues: Record<string, any> = {};
 
-  return validation;
-};
-
-/**
- * Base details form schema (title and description)
- */
-export const baseDetailsSchema = yup.object({
-  title: yup
-    .string()
-    .required(messages.required)
-    .min(3, "عنوان قالب باید حداقل 3 کاراکتر باشد")
-    .max(20, "عنوان قالب باید حداکثر 20 کاراکتر باشد"),
-  description: yup.string().max(1000, "توضیحات باید حداکثر 1000 کاراکتر باشد"),
-});
-
-/**
- * Generate dynamic validation schema based on details data
- * @param detailsData - The details data to create validation for
- * @param isProductCreation - If true, includes all field validations. If false, only title/description
- */
-export const createDetailsFormSchema = (
-  detailsData: ICategoryDetails | null,
-  isProductCreation: boolean = false
-) => {
-  if (!detailsData?.bind || !isProductCreation) {
-    return baseDetailsSchema;
+  // Set default for title if not in current form data
+  if (currentFormData?.title === undefined) {
+    defaultValues.title = schemaData.title || "";
   }
 
-  const dynamicFields: { [key: string]: any } = {};
-  const bind = detailsData.bind;
+  // Set defaults for various fields
+  const fields: (keyof ICategoryDetails)[] = [
+    "brand",
+    "status",
+    "platform",
+    "product_class",
+    "category_product_type",
+    "theme",
+    "id_type",
+    "general_mefa_id",
+    "custom_id",
+    "is_fake_product",
+    "fake_reason",
+  ];
 
-  // Fake product validation
-  if (bind.allow_fake) {
-    dynamicFields.is_fake_product = yup.boolean();
-  }
-
-  // Generic: if detailsData contains numeric fields, ensure they are numbers >= 0
-  Object.keys(detailsData || {}).forEach((key) => {
-    const val: any = (detailsData as any)[key];
-    if (val && typeof val === "object" && (val.type === FieldType.Number || val.type === "number")) {
-      dynamicFields[key] = yup
-        .number()
-        .typeError(messages.number)
-        .min(0, messages.minNumber || "عدد باید مثبت باشد");
-      if (val.require) dynamicFields[key] = dynamicFields[key].required(messages.required);
+  fields.forEach((field) => {
+    if (
+      schemaData[field] !== undefined &&
+      currentFormData?.[field] === undefined
+    ) {
+      const fieldData = schemaData[field] as any;
+      if (
+        typeof fieldData === "object" &&
+        fieldData !== null &&
+        "selected" in fieldData &&
+        fieldData.selected
+      ) {
+        defaultValues[field] = fieldData.value;
+      }
     }
   });
 
-  // Brand validation
-  if (bind.brands && bind.brands.length > 0) {
-    dynamicFields.brand = createOptionValidation(bind.brands, true, "id");
-  }
+  // Handle text fields (IStringField)
+  if (schemaData.bind) {
+    const bind = schemaData.bind as any;
+    const textFields: (keyof typeof bind)[] = [
+      "brand_model",
+      "color_pattern",
+      "warranty",
+      "size",
+      "weight",
+      "material",
+      "origin_country",
+      "manufacturer",
+      "model_number",
+      "barcode",
+      "package_dimensions",
+      "special_features",
+      "care_instructions",
+    ];
 
-  // Category product types validation
-  if (bind.category_product_types && bind.category_product_types.length > 0) {
-    dynamicFields.category_product_type = createOptionValidation(
-      bind.category_product_types,
-      true,
-      "value"
-    );
-  }
-
-  // ID type validation
-  if (bind.general_mefa && Object.keys(bind.general_mefa).length > 0) {
-    dynamicFields.id_type = yup
-      .string()
-      .required(messages.required)
-      .oneOf(["general", "custom"], messages.invalidOption);
-
-    // General MEFA ID validation
-    const generalMefaOptions = Object.keys(bind.general_mefa);
-    dynamicFields.general_mefa_id = yup.string().when("id_type", {
-      is: "general",
-      then: (schema) =>
-        schema.required(messages.required).test(
-          "valid-general-mefa",
-          messages.invalidOption,
-          function (value) {
-            if (!value) return false; // Required when id_type is general
-            return generalMefaOptions.includes(value);
-          }
-        ),
-      otherwise: (schema) => schema,
-    });
-
-    // Custom ID validation
-    dynamicFields.custom_id = yup.string().when("id_type", {
-      is: "custom",
-      then: (schema) => schema.required(messages.required).min(1, "شناسه خصوصی نمی‌تواند خالی باشد"),
-      otherwise: (schema) => schema,
+    textFields.forEach((fieldName) => {
+      const fieldData = bind[fieldName] as IStringField;
+      if (fieldData?.value && currentFormData?.[fieldName] === undefined) {
+        defaultValues[fieldName] = fieldData.value;
+      }
     });
   }
 
-  // Brand model validation
-  if (bind.brand_model) {
-    dynamicFields.brand_model = bind.brand_model.require
-      ? yup.string().required(messages.required)
-      : yup.string();
-  }
-
-  return baseDetailsSchema.shape(dynamicFields);
-};
-
-/**
- * Type for details form data
- */
-export type DetailsFormData = {
-  title: string;
-  description?: string;
-  tag?: string;
-  is_fake_product?: boolean;
-  brand?: string;
-  category_product_type?: string;
-  id_type?: "general" | "custom";
-  general_mefa_id?: string;
-  custom_id?: string;
-  brand_model?: string;
-};
-
-/**
- * Get default values for details form
- */
-export const getDetailsDefaultValues = (
-  detailsData: ICategoryDetails | null,
-  currentFormData: { [key: string]: any } = {}
-): DetailsFormData => {
-  console.log("🔍 getDetailsDefaultValues - currentFormData:", currentFormData);
-  
-  const defaultValues: DetailsFormData = {
-    title: currentFormData.title ?? "",
-    description: currentFormData.description ?? "",
-    tag: currentFormData.tag ?? "",
-  };
-
-  console.log("🔍 getDetailsDefaultValues - defaultValues.title:", defaultValues.title);
-
-  if (!detailsData?.bind) {
-    return defaultValues;
-  }
-
-  const bind = detailsData.bind;
-
-  // Set defaults from current form data or defaults
-  // Use ?? instead of || to allow empty strings
-  defaultValues.is_fake_product = currentFormData.is_fake_product ?? false;
-  defaultValues.brand = currentFormData.brand ?? "";
-  defaultValues.category_product_type =
-    currentFormData.category_product_type ?? "";
-  defaultValues.id_type =
-    currentFormData.id_type ?? "general";
-  defaultValues.general_mefa_id = currentFormData.general_mefa_id ?? "";
-  defaultValues.custom_id = currentFormData.custom_id ?? "";
-  defaultValues.brand_model = currentFormData.brand_model ?? (bind.brand_model?.value || "");
-
-  console.log("🔍 getDetailsDefaultValues - final defaultValues:", defaultValues);
-  
   return defaultValues;
+};
+
+// Main function to create the Zod schema
+export const getDetailsSchema = (
+  schemaData?: ICategoryDetails | null,
+  isProduct = false
+) => {
+  if (!schemaData) {
+    return z.object({});
+  }
+
+  const schemaObject: Record<string, z.ZodType<any, any>> = {};
+
+  // Always require title
+  schemaObject.title = z
+    .string()
+    .min(1, "عنوان قالب اطلاعات نمی‌تواند خالی باشد");
+
+  // Add description, tag, etc. - not required
+  schemaObject.description = z.string().optional();
+  schemaObject.tag = z.string().optional();
+
+  // Handle dynamic fields based on schemaData
+  if (schemaData.is_fake_product?.required && isProduct) {
+    schemaObject.is_fake_product = z.boolean({
+      required_error: "انتخاب وضعیت اصالت کالا الزامی است",
+    });
+  } else {
+    schemaObject.is_fake_product = z.boolean().optional();
+  }
+
+  // Handle fake_reason - it's required only if is_fake_product is true
+  if (schemaData.fake_reason?.required && isProduct) {
+    schemaObject.fake_reason = z.string().optional();
+  } else {
+    schemaObject.fake_reason = z.string().optional();
+  }
+
+  // Handle other required fields for products
+  const requiredFields: (keyof ICategoryDetails)[] = [
+    "brand",
+    "status",
+    "platform",
+    "product_class",
+    "category_product_type",
+    "theme",
+    "id_type",
+  ];
+
+  requiredFields.forEach((field) => {
+    const fieldData = schemaData[field] as any;
+    if (fieldData?.required && isProduct) {
+      if (Array.isArray(fieldData.options) && fieldData.options.length > 0) {
+        // Create a Zod enum from the option values
+        const optionValues = fieldData.options.map((opt: any) => opt.value);
+        if (optionValues.length > 0) {
+          schemaObject[field] = z.enum([
+            optionValues[0],
+            ...optionValues.slice(1),
+          ]);
+        }
+      } else {
+        // Default to string with min(1) if no options
+        schemaObject[field] = z
+          .string()
+          .min(1, `فیلد ${fieldData.label || field} الزامی است`);
+      }
+    } else {
+      schemaObject[field] = z.any().optional();
+    }
+  });
+
+  // Handle text fields (IStringField) from bind property
+  if (schemaData.bind) {
+    const bind = schemaData.bind as any;
+    const textFields: (keyof typeof bind)[] = [
+      "brand_model",
+      "color_pattern",
+      "warranty",
+      "size",
+      "weight",
+      "material",
+      "origin_country",
+      "manufacturer",
+      "model_number",
+      "barcode",
+      "package_dimensions",
+      "special_features",
+      "care_instructions",
+    ];
+
+    textFields.forEach((fieldName) => {
+      const fieldData = bind[fieldName] as IStringField;
+      if (fieldData) {
+        if (fieldData.required && isProduct) {
+          schemaObject[fieldName] = z
+            .string()
+            .min(1, `فیلد ${fieldData.label} الزامی است`);
+        } else {
+          schemaObject[fieldName] = z.string().optional();
+        }
+      }
+    });
+  }
+
+  return z.object(schemaObject).superRefine((data, ctx) => {
+    // Conditional validation for fake_reason
+    if (
+      data.is_fake_product === true &&
+      schemaData.fake_reason?.required &&
+      isProduct &&
+      !data.fake_reason
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "انتخاب دلیل تقلبی بودن کالا الزامی است",
+        path: ["fake_reason"],
+      });
+    }
+
+    // Conditional validation for custom_id based on id_type
+    if (
+      data.id_type === "custom" &&
+      schemaData.custom_id?.required &&
+      isProduct &&
+      !data.custom_id
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "شناسه اختصاصی الزامی است",
+        path: ["custom_id"],
+      });
+    }
+
+    // Conditional validation for general_mefa_id based on id_type
+    if (
+      data.id_type === "general" &&
+      schemaData.general_mefa_id?.required &&
+      isProduct &&
+      !data.general_mefa_id
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "شناسه عمومی الزامی است",
+        path: ["general_mefa_id"],
+      });
+    }
+  });
 };

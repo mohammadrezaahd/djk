@@ -1,124 +1,85 @@
-import React from "react";
-import { Box } from "@mui/material";
-import type { SelectChangeEvent } from "@mui/material";
+import React, { useState } from "react";
+import {
+  Box,
+  Typography,
+  Grid,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
+import FileUpload from "./FileUpload";
 import MediaGrid from "./MediaGrid";
-import { FileUpload } from "./";
-import { SearchInput } from "~/components/common";
-import type { MediaType } from "./FileUpload";
-
-// Media file interface
-interface IMediaFile {
-  _id: string;
-  filename: string;
-  filepath: string;
-  size: number;
-  mimetype: string;
-  createdAt: string;
-  packaging?: boolean;
-  product?: boolean;
-}
+import { SearchInput } from "../../components/common";
+import { useGallery, useDeleteFile, useUpdateFile } from "../../api/gallery.api";
 
 interface MediaManagerProps {
-  media: IMediaFile[];
-  onDelete?: (id: string) => void;
-  onEdit?: (id: string) => void;
-  loading?: boolean;
-  currentPage: number;
-  totalItems: number;
-  pageSize: number;
-  onPageChange: (event: React.ChangeEvent<unknown>, value: number) => void;
-  onPageSizeChange: (event: SelectChangeEvent<number>) => void;
-  pageSizeOptions?: number[];
-  showUpload?: boolean;
-  title?: string;
-  // Selection props
-  selectionMode?: boolean;
-  selectedItems?: string[];
-  onSelectionChange?: (selectedIds: string[]) => void;
-  // FileUpload props
-  allowedType?: "packaging" | "product" | "none";
-  onUploadSuccess?: () => void;
-  onUploadError?: (error: string) => void;
-  editImageId?: number | null;
-  onEditComplete?: () => void;
-  allowMultiple?: boolean;
-  // SearchInput props
-  onSearchChange?: (searchValue: string) => void;
-  searchPlaceholder?: string;
-  searchLabel?: string;
-  showSearch?: boolean;
-  defaultType?: MediaType;
+  selectedImages?: number[];
+  onSelectionChange?: (selectedIds: number[]) => void;
+  isSelectorMode?: boolean;
 }
 
 const MediaManager: React.FC<MediaManagerProps> = ({
-  media,
-  onDelete,
-  onEdit,
-  loading = false,
-  currentPage,
-  totalItems,
-  pageSize,
-  onPageChange,
-  onPageSizeChange,
-  pageSizeOptions = [12, 24, 48],
-  showUpload = true,
-  title = "مدیریت رسانه",
-  selectionMode = false,
-  selectedItems = [],
-  onSelectionChange,
-  // FileUpload props
-  allowedType = "none",
-  onUploadSuccess,
-  onUploadError,
-  editImageId = null,
-  onEditComplete,
-  allowMultiple = false,
-  // SearchInput props
-  onSearchChange,
-  searchPlaceholder = "جستجو در عناوین...",
-  searchLabel = "جستجو",
-  showSearch = true,
-  defaultType,
+  selectedImages = [],
+  onSelectionChange = () => {},
+  isSelectorMode = false,
 }) => {
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [search, setSearch] = useState("");
+  const [editImageId, setEditImageId] = useState<number | null>(null);
+
+  const {
+    data: galleryData,
+    isLoading,
+    error,
+  } = useGallery({
+    skip: (page - 1) * limit,
+    limit,
+    search,
+  });
+
+  const deleteFileMutation = useDeleteFile();
+  const updateFileMutation = useUpdateFile();
+
+  const handleUploadSuccess = () => {
+    //
+  };
+
+  const handleEdit = (id: number) => {
+    setEditImageId(id);
+  };
+
+  const handleDelete = (id: number) => {
+    deleteFileMutation.mutate(id);
+  };
+
+  if (isLoading) return <CircularProgress />;
+  if (error) return <Alert severity="error">{error.message}</Alert>;
+
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      {/* File Upload */}
-      {showUpload && (
-        <FileUpload
-          allowedType={allowedType}
-          onUploadSuccess={onUploadSuccess}
-          onUploadError={onUploadError}
-          editImageId={editImageId}
-          onEditComplete={onEditComplete}
-          allowMultiple={allowMultiple}
-          defaultType={defaultType}
-        />
+    <Box>
+      {!isSelectorMode && (
+        <>
+          <Typography variant="h5" gutterBottom>
+            آپلود رسانه جدید
+          </Typography>
+          <FileUpload
+            onUploadSuccess={handleUploadSuccess}
+            editImageId={editImageId}
+            onCancelEdit={() => setEditImageId(null)}
+          />
+        </>
       )}
-
-      {/* Search Filter */}
-      {showSearch && onSearchChange && (
-        <SearchInput
-          onSearchChange={onSearchChange}
-          label={searchLabel}
-          placeholder={searchPlaceholder}
-          sx={{ mb: 2, maxWidth: 300 }}
-        />
-      )}
-
+      <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
+        کتابخانه رسانه
+      </Typography>
+      <SearchInput onSearch={setSearch} />
       <MediaGrid
-        media={media}
-        onDelete={onDelete}
-        onEdit={onEdit}
-        loading={loading}
-        currentPage={currentPage}
-        totalItems={totalItems}
-        pageSize={pageSize}
-        onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
-        pageSizeOptions={pageSizeOptions}
-        selectionMode={selectionMode}
-        selectedItems={selectedItems}
-        onSelectionChange={onSelectionChange}
+        images={galleryData?.data.list ?? []}
+        selectedImages={selectedImages}
+        onSelect={onSelectionChange}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        isSelectorMode={isSelectorMode}
       />
     </Box>
   );

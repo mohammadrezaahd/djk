@@ -2,11 +2,10 @@ import { useForm } from 'react-hook-form';
 import type { UseFormReturn } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useMemo } from 'react';
-import type { ICategoryDetails } from '~/types/interfaces/details.interface';
+import type { ICategoryDetails } from '../../types/interfaces/details.interface';
 import { 
-  createDetailsFormSchema, 
+  getDetailsSchema,
   getDetailsDefaultValues, 
-  type DetailsFormData 
 } from '../schemas/detailsSchema';
 
 /**
@@ -27,11 +26,11 @@ export const useDetailsValidation = (
 
   // Validation schema
   const validationSchema = useMemo(() => {
-    return createDetailsFormSchema(detailsData, isProductCreation);
+    return getDetailsSchema(detailsData, isProductCreation);
   }, [detailsData, isProductCreation]);
 
   // Initialize react-hook-form
-  const form = useForm<DetailsFormData>({
+  const form = useForm({
     resolver: yupResolver(validationSchema) as any,
     defaultValues,
     mode: 'onChange', // Validate on change for immediate feedback
@@ -61,18 +60,18 @@ export const useDetailsValidation = (
  * Hook to get field validation info for a specific field
  */
 export const useDetailsFieldValidation = (
-  form: UseFormReturn<DetailsFormData>,
+  form: UseFormReturn<any>,
   fieldName: string
 ) => {
-  const fieldError = form.formState.errors[fieldName as keyof DetailsFormData];
-  const fieldValue = form.watch(fieldName as keyof DetailsFormData);
+  const fieldError = form.formState.errors[fieldName];
+  const fieldValue = form.watch(fieldName);
   
   return {
     error: fieldError,
     hasError: !!fieldError,
     errorMessage: fieldError?.message,
     value: fieldValue,
-    isDirty: form.formState.dirtyFields[fieldName as keyof DetailsFormData] || false,
-    isTouched: form.formState.touchedFields[fieldName as keyof DetailsFormData] || false,
+    isDirty: form.formState.dirtyFields[fieldName] || false,
+    isTouched: form.formState.touchedFields[fieldName] || false,
   };
 };

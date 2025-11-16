@@ -1,205 +1,33 @@
-import axios from "axios";
-import { apiUtils } from "./apiUtils.api";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { authorizedGet } from "~/utils/authorizeReq";
-import { safeLocalStorage, isClient } from "~/utils/storage";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { login as loginService, logout as logoutService } from "../services/auth.service";
+import type { LoginCredentials, LoginResponse } from "../types/interfaces/auth.interface";
+import { ApiStatus } from "../types";
 
-const apiUrl = import.meta.env.VITE_API_URL;
-
-export interface LoginRequest {
-  username: string;
-  password: string;
-}
-
-export interface LoginNumberRequest {
-  username: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  access_token?: string;
-  token_type?: string;
-}
-
-const loginApi = async (credentials: LoginRequest) => {
-  return apiUtils<LoginResponse>(async () => {
-    const formData = new URLSearchParams();
-    formData.append("grant_type", "password");
-    formData.append("username", credentials.username);
-    formData.append("password", credentials.password);
-    formData.append("scope", "");
-    formData.append("client_id", "string");
-
-    const response = await axios.post<LoginResponse>(
-      `${apiUrl}/v1/auth/login`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      }
-    );
-
-    // ✅ ذخیره JWT در localStorage
-    if (response.data.access_token) {
-      safeLocalStorage.setItem("access_token", response.data.access_token);
-    }
-
-    return {
-      status: "true" as any,
-      code: response.status as any,
-      data: response.data,
-    };
-  });
-};
-
-const loginApiNumber = async (credentials: LoginNumberRequest) => {
-  return apiUtils<LoginResponse>(async () => {
-    const formData = new URLSearchParams();
-    formData.append("grant_type", "password");
-    formData.append("username", credentials.username);
-    formData.append("password", credentials.password);
-    formData.append("scope", "");
-    formData.append("client_id", "string");
-
-    const response = await axios.post<LoginResponse>(
-      `${apiUrl}/v1/auth/verify_password`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      }
-    );
-
-    // ✅ ذخیره JWT در localStorage
-    if (response.data.access_token) {
-      safeLocalStorage.setItem("access_token", response.data.access_token);
-    }
-
-    return {
-      status: "true" as any,
-      code: response.status as any,
-      data: response.data,
-    };
-  });
-};
-
-const logout = async () => {
-  return apiUtils<{ status: string }>(async () => {
-    // پاک کردن توکن از localStorage
-    safeLocalStorage.removeItem("access_token");
-
-    return {
-      status: "true" as any,
-      code: 200 as any,
-      data: { status: "success" },
-    };
-  });
-};
-
-const currentUser = async () => {
-  return apiUtils<{ email: string }>(async () => {
-    const response = await authorizedGet(`/v1/auth/me`);
-    
-    return {
-      status: "true" as any,
-      code: response.status as any,
-      data: response.data,
-    };
-  });
-};
-
-// React Query Hooks
-export const useLogin = () => {
+export function useLogin() {
   const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: loginApi,
+  return useMutation<LoginResponse, Error, LoginCredentials>({
+    mutationFn: (credentials: LoginCredentials) => loginService(credentials),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
-      console.log("✅ Login successful:", data);
+      if (data.status === "true") {
+        // You might want to invalidate queries that depend on authentication status
+        queryClient.invalidateQueries({ queryKey: ["user"] });
+      }
     },
-    onError: (error) => {
-      console.error("❌ Login error:", error);
-    },
-  });
-};
-
-export const useLoginNumber = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: loginApiNumber,
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["auth", "user"] });
-      console.log("✅ Login successful:", data);
-    },
-    onError: (error) => {
-      console.error("❌ Login error:", error);
+    onError: (error: Error) => {
+      //
     },
   });
-};
+}
 
-export const useLogout = () => {
+export function useLogout() {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: logout,
+    mutationFn: () => logoutService(),
     onSuccess: () => {
-      queryClient.clear(); // پاک کردن تمام cache ها
-      console.log("✅ Logout successful");
+      queryClient.invalidateQueries({ queryKey: ["user"] });
     },
-    onError: (error) => {
-      console.error("❌ Logout error:", error);
-    },
-  });
-};
-
-export const useCurrentUser = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: currentUser,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["current user  "] });
-    },
-    onError: (error) => {
-      console.error("❌ Error fetching current user:", error);
+    onError: (error: Error) => {
+      //
     },
   });
-};
-
-// useQuery version for auth checking
-export const useCurrentUserQuery = () => {
-  return useQuery({
-    queryKey: ["auth", "currentUser"],
-    queryFn: currentUser,
-    enabled: isClient() && !!safeLocalStorage.getItem("access_token"), // فقط اگر توکن موجود باشد
-    retry: false, // عدم تلاش مجدد در صورت خطا
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (previously cacheTime)
-  });
-};
-
-// Hook for checking authentication status
-export const useAuthStatus = () => {
-  const token = isClient() ? safeLocalStorage.getItem("access_token") : null;
-  const { data, isLoading, isError, error } = useCurrentUserQuery();
-
-  const isAuthenticated = !!(token && data?.data && !isError);
-  
-  return {
-    isAuthenticated,
-    isLoading: token ? isLoading : false,
-    isError,
-    error,
-    token
-  };
-};
-
-export const authApi = {
-  loginApi,
-  loginApiNumber,
-  logout,
-  currentUser,
-};
+}
