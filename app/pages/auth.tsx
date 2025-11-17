@@ -17,7 +17,7 @@ import {
   useRegister,
   useLoginWithPassword,
 } from "~/api/auth.api";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import {
   PhoneInput,
   OtpInput,
@@ -43,6 +43,7 @@ type AuthStep =
 const Auth = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const { enqueueSnackbar } = useSnackbar();
 
   // State
@@ -57,35 +58,28 @@ const Auth = () => {
   const register = useRegister();
   const loginWithPassword = useLoginWithPassword();
 
-  // بررسی اینکه آیا کاربر قبلاً لاگین کرده یا نه
+  // بررسی location.state برای هدایت مستقیم به register
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.needsRegistration && state?.step === "register") {
+      console.log("📝 هدایت مستقیم به فرم ثبت‌نام (422 error)");
+      setStep("register");
+      enqueueSnackbar("لطفاً اطلاعات خود را تکمیل کنید", { variant: "info" });
+      // پاک کردن state بعد از استفاده
+      window.history.replaceState({}, document.title);
+    }
+  }, [location, enqueueSnackbar]);
+
+  // بررسی اینکه آیا کاربر قبلاً لاگین کرده و register شده یا نه
   useEffect(() => {
     const token = localStorage.getItem("access_token");
-    if (token) {
+    const state = location.state as any;
+    
+    // فقط redirect کن اگر needsRegistration نباشد
+    if (token && !state?.needsRegistration) {
       navigate("/", { replace: true });
     }
-  }, [navigate]);
-
-  // اگر کاربر در مرحله register از صفحه خارج شد (unmount شد)، توکن را حذف کن
-  // این فقط یک بار در cleanup کامپوننت اجرا می‌شود (نه در هر تغییر step)
-  useEffect(() => {
-    const currentStep = step;
-    
-    return () => {
-      // فقط اگر از کل صفحه خارج شد و هنوز در مراحل ثبت‌نام بود
-      const wasInRegistrationFlow = 
-        currentStep === "register" || 
-        currentStep === "otp-new-user";
-      
-      if (wasInRegistrationFlow) {
-        const token = localStorage.getItem("access_token");
-        if (token) {
-          console.log("🗑️ پاک کردن توکن موقت به دلیل خروج از صفحه در حین ثبت‌نام");
-          localStorage.removeItem("access_token");
-        }
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // فقط یک بار mount/unmount
+  }, [navigate, location]);
 
   // Handlers
   const handlePhoneSubmit = async (phoneValue: string) => {

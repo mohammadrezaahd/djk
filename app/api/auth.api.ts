@@ -50,13 +50,16 @@ const verifyOtp = async (data: IVerifyOtp): Promise<IVerifyOtpResponse> => {
 const register = async (data: IRegister): Promise<IRegisterResponse> => {
   // بررسی وجود توکن OTP قبل از ارسال
   const otpToken = localStorage.getItem("access_token");
-  console.log("🔐 Register - OTP Token:", otpToken ? "موجود است" : "موجود نیست");
-  
+  console.log(
+    "🔐 Register - OTP Token:",
+    otpToken ? "موجود است" : "موجود نیست"
+  );
+
   // اگر API شما از query string استفاده می‌کند:
   // const response = await authorizedPost(
   //   `/v1/auth/register?first_name=${data.first_name}&last_name=${data.last_name}&email=${data.email}&password=${data.password}`
   // );
-  
+
   // اگر API شما از body استفاده می‌کند (معمول‌تر است):
   const response = await authorizedPost("/v1/auth/register", {
     first_name: data.first_name,
@@ -78,7 +81,7 @@ const register = async (data: IRegister): Promise<IRegisterResponse> => {
 const loginWithPassword = async (
   data: ILoginWithPassword
 ): Promise<ILoginWithPasswordResponse> => {
-  const response = await authorizedPost("/v1/auth/login", {
+  const response = await authorizedPost("/v1/auth/verify_password", {
     phone: data.phone,
     password: data.password,
   });
@@ -86,6 +89,19 @@ const loginWithPassword = async (
   // ذخیره توکن در localStorage
   if (response.data.access_token) {
     localStorage.setItem("access_token", response.data.access_token);
+  }
+
+  return response.data;
+};
+
+const logOut = async (phonNumber: string): Promise<any> => {
+  const response = await authorizedPost("/v1/auth/verify_password", {
+    phone: phonNumber,
+  });
+
+  // ذخیره توکن در localStorage
+  if (response.data.access_token) {
+    localStorage.removeItem("access_token");
   }
 
   return response.data;
@@ -213,4 +229,20 @@ export const useAuthStatus = () => {
     error,
     token,
   };
+};
+
+export const useLogout = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: logOut,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["logout"] });
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      console.log("✅ Logged out successfully:", data);
+    },
+    onError: (error) => {
+      console.error("❌ Error logging out:", error);
+    },
+  });
 };
