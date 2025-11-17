@@ -36,9 +36,12 @@ export interface IAttr {
   postfix?: string;
   required: boolean;
   in_title: boolean;
-  suggest_values: {
-    [valueId: string]: IAttributeValue;
-  } | string;
+  suggest_values:
+    | {
+        [valueId: string]: IAttributeValue;
+      }
+    | string;
+  Ai: boolean;
 }
 
 interface ICategoryAttributesMap {

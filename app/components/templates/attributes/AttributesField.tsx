@@ -1,10 +1,53 @@
-import { TextField, Box, Autocomplete, Chip } from "@mui/material";
+import { TextField, Box, Autocomplete, Chip, IconButton, Tooltip } from "@mui/material";
 import React from "react";
 import {
   AttributeType,
   type IAttr,
 } from "~/types/interfaces/attributes.interface";
 import SuggestedValues from "./SuggestedValues";
+
+// کامپوننت آیکون AI
+const AIIcon: React.FC<{ attr: IAttr }> = ({ attr }) => {
+  const handleAIClick = () => {
+    console.log(`AI clicked for field: ${attr.title} (ID: ${attr.id})`);
+    console.log('Field details:', {
+      title: attr.title,
+      type: attr.type,
+      required: attr.required,
+      hint: attr.hint
+    });
+  };
+
+  return (
+    <Tooltip title="کمک هوش مصنوعی" placement="top">
+      <IconButton
+        onClick={handleAIClick}
+        size="small"
+        sx={{
+          padding: '4px',
+          marginLeft: '4px',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          color: 'white',
+          '&:hover': {
+            background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+            transform: 'scale(1.05)',
+          },
+          '&:active': {
+            transform: 'scale(0.95)',
+          },
+          transition: 'all 0.2s ease-in-out',
+          width: '24px',
+          height: '24px',
+          fontSize: '12px',
+          fontWeight: 'bold',
+          fontFamily: 'monospace',
+        }}
+      >
+        AI
+      </IconButton>
+    </Tooltip>
+  );
+};
 
 interface AttributesFieldProps {
   attr: IAttr;
@@ -38,37 +81,40 @@ export default function AttributesField({
     case AttributeType.Input:
       return (
         <Box>
-          <TextField
-            fullWidth
-            type="number"
-            label={attr.title + (attr.required ? " *" : "")}
-            helperText={error || attr.hint}
-            value={value || ""}
-            onChange={(e) => {
-              // Accept only non-negative numbers (>= 0). Keep empty string as empty.
-              const inputVal = e.target.value;
-              if (inputVal === "") {
-                onChange(fieldKey, "");
-                return;
-              }
+          <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+            <TextField
+              fullWidth
+              type="number"
+              label={attr.title + (attr.required ? " *" : "")}
+              helperText={error || attr.hint}
+              value={value || ""}
+              onChange={(e) => {
+                // Accept only non-negative numbers (>= 0). Keep empty string as empty.
+                const inputVal = e.target.value;
+                if (inputVal === "") {
+                  onChange(fieldKey, "");
+                  return;
+                }
 
-              // Parse as float and enforce min 0
-              const parsed = parseFloat(inputVal);
-              if (isNaN(parsed)) {
-                onChange(fieldKey, inputVal);
-                return;
-              }
+                // Parse as float and enforce min 0
+                const parsed = parseFloat(inputVal);
+                if (isNaN(parsed)) {
+                  onChange(fieldKey, inputVal);
+                  return;
+                }
 
-              const safe = parsed < 0 ? 0 : parsed;
-              onChange(fieldKey, safe);
-            }}
-            required={attr.required}
-            error={!!error}
-            InputProps={{
-              endAdornment: attr.postfix || attr.unit,
-              inputProps: { min: 0 },
-            }}
-          />
+                const safe = parsed < 0 ? 0 : parsed;
+                onChange(fieldKey, safe);
+              }}
+              required={attr.required}
+              error={!!error}
+              InputProps={{
+                endAdornment: attr.postfix || attr.unit,
+                inputProps: { min: 0 },
+              }}
+            />
+            {attr.Ai && <AIIcon attr={attr} />}
+          </Box>
           <SuggestedValues 
             attr={attr} 
             currentValue={value}
@@ -96,28 +142,31 @@ export default function AttributesField({
 
           return (
             <Box>
-              <Autocomplete
-                fullWidth
-                openOnFocus
-                options={options}
-                getOptionLabel={(option) => option.label}
-                value={selectedOption}
-                onChange={(_, newValue) => {
-                  onChange(fieldKey, newValue?.id || "");
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label={attr.title + (attr.required ? " *" : "")}
-                    required={attr.required}
-                    helperText={error || attr.hint}
-                    placeholder="انتخاب کنید..."
-                    error={!!error}
-                  />
-                )}
-                noOptionsText="گزینه‌ای یافت نشد"
-                isOptionEqualToValue={(option, value) => option.id === value.id}
-              />
+              <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+                <Autocomplete
+                  fullWidth
+                  openOnFocus
+                  options={options}
+                  getOptionLabel={(option) => option.label}
+                  value={selectedOption}
+                  onChange={(_, newValue) => {
+                    onChange(fieldKey, newValue?.id || "");
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={attr.title + (attr.required ? " *" : "")}
+                      required={attr.required}
+                      helperText={error || attr.hint}
+                      placeholder="انتخاب کنید..."
+                      error={!!error}
+                    />
+                  )}
+                  noOptionsText="گزینه‌ای یافت نشد"
+                  isOptionEqualToValue={(option, value) => option.id === value.id}
+                />
+                {attr.Ai && <AIIcon attr={attr} />}
+              </Box>
               <SuggestedValues 
                 attr={attr} 
                 currentValue={value}
@@ -132,46 +181,49 @@ export default function AttributesField({
 
           return (
             <Box>
-              <Autocomplete
-                multiple
-                fullWidth
-                openOnFocus
-                options={options}
-                getOptionLabel={(option) => option.label}
-                value={selectedOptions}
-                onChange={(_, newValues) => {
-                  const selectedIds = newValues.map((item) => item.id);
-                  onChange(fieldKey, selectedIds);
-                }}
-                disableCloseOnSelect
-                renderTags={(value, getTagProps) =>
-                  value.map((option, index) => (
-                    <Chip
-                      variant="outlined"
-                      label={option.label}
-                      {...getTagProps({ index })}
-                      key={option.id}
-                      size="small"
-                      sx={{ zIndex: "9" }}
+              <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+                <Autocomplete
+                  multiple
+                  fullWidth
+                  openOnFocus
+                  options={options}
+                  getOptionLabel={(option) => option.label}
+                  value={selectedOptions}
+                  onChange={(_, newValues) => {
+                    const selectedIds = newValues.map((item) => item.id);
+                    onChange(fieldKey, selectedIds);
+                  }}
+                  disableCloseOnSelect
+                  renderTags={(value, getTagProps) =>
+                    value.map((option, index) => (
+                      <Chip
+                        variant="outlined"
+                        label={option.label}
+                        {...getTagProps({ index })}
+                        key={option.id}
+                        size="small"
+                        sx={{ zIndex: "9" }}
+                      />
+                    ))
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={attr.title + (attr.required ? " *" : "")}
+                      required={attr.required}
+                      helperText={error || attr.hint}
+                      placeholder="انتخاب کنید..."
+                      error={!!error}
                     />
-                  ))
-                }
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label={attr.title + (attr.required ? " *" : "")}
-                    required={attr.required}
-                    helperText={error || attr.hint}
-                    placeholder="انتخاب کنید..."
-                    error={!!error}
-                  />
-                )}
-                noOptionsText="گزینه‌ای یافت نشد"
-                isOptionEqualToValue={(option, value) => option.id === value.id}
-                filterSelectedOptions
-                limitTags={3}
-                getLimitTagsText={(more) => `+${more} بیشتر`}
-              />
+                  )}
+                  noOptionsText="گزینه‌ای یافت نشد"
+                  isOptionEqualToValue={(option, value) => option.id === value.id}
+                  filterSelectedOptions
+                  limitTags={3}
+                  getLimitTagsText={(more) => `+${more} بیشتر`}
+                />
+                {attr.Ai && <AIIcon attr={attr} />}
+              </Box>
               <SuggestedValues 
                 attr={attr} 
                 currentValue={value}
@@ -205,15 +257,18 @@ export default function AttributesField({
     case AttributeType.Text:
       return (
         <Box>
-          <TextField
-            fullWidth
-            label={attr.title + (attr.required ? " *" : "")}
-            helperText={error || attr.hint}
-            value={value || ""}
-            onChange={(e) => onChange(fieldKey, e.target.value)}
-            required={attr.required}
-            error={!!error}
-          />
+          <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+            <TextField
+              fullWidth
+              label={attr.title + (attr.required ? " *" : "")}
+              helperText={error || attr.hint}
+              value={value || ""}
+              onChange={(e) => onChange(fieldKey, e.target.value)}
+              required={attr.required}
+              error={!!error}
+            />
+            {attr.Ai && <AIIcon attr={attr} />}
+          </Box>
           <SuggestedValues 
             attr={attr} 
             currentValue={value}
@@ -225,17 +280,20 @@ export default function AttributesField({
     case AttributeType.MultiText:
       return (
         <Box>
-          <TextField
-            fullWidth
-            multiline
-            rows={3}
-            label={attr.title + (attr.required ? " *" : "")}
-            helperText={error || attr.hint}
-            value={value || ""}
-            onChange={(e) => onChange(fieldKey, e.target.value)}
-            required={attr.required}
-            error={!!error}
-          />
+          <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              label={attr.title + (attr.required ? " *" : "")}
+              helperText={error || attr.hint}
+              value={value || ""}
+              onChange={(e) => onChange(fieldKey, e.target.value)}
+              required={attr.required}
+              error={!!error}
+            />
+            {attr.Ai && <AIIcon attr={attr} />}
+          </Box>
           <SuggestedValues 
             attr={attr} 
             currentValue={value}
