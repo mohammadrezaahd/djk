@@ -25,13 +25,20 @@ export interface IAttr {
   type: AttributeType;
   unit?: string;
   title: string;
-  value?: string | number | { text_lines?: string[]; original_text?: string } | { [valueId: string]: IAttributeValue };
+  value?:
+    | string
+    | number
+    | { text_lines?: string[]; original_text?: string }
+    | { [valueId: string]: IAttributeValue };
   values: {
     [valueId: string]: IAttributeValue;
   };
   postfix?: string;
   required: boolean;
   in_title: boolean;
+  suggest_values: {
+    [valueId: string]: IAttributeValue;
+  } | string;
 }
 
 interface ICategoryAttributesMap {

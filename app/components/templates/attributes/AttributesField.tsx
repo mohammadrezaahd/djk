@@ -4,6 +4,7 @@ import {
   AttributeType,
   type IAttr,
 } from "~/types/interfaces/attributes.interface";
+import SuggestedValues from "./SuggestedValues";
 
 interface AttributesFieldProps {
   attr: IAttr;
@@ -36,37 +37,44 @@ export default function AttributesField({
   switch (attr.type) {
     case AttributeType.Input:
       return (
-        <TextField
-          fullWidth
-          type="number"
-          label={attr.title + (attr.required ? " *" : "")}
-          helperText={error || attr.hint}
-          value={value || ""}
-          onChange={(e) => {
-            // Accept only non-negative numbers (>= 0). Keep empty string as empty.
-            const inputVal = e.target.value;
-            if (inputVal === "") {
-              onChange(fieldKey, "");
-              return;
-            }
+        <Box>
+          <TextField
+            fullWidth
+            type="number"
+            label={attr.title + (attr.required ? " *" : "")}
+            helperText={error || attr.hint}
+            value={value || ""}
+            onChange={(e) => {
+              // Accept only non-negative numbers (>= 0). Keep empty string as empty.
+              const inputVal = e.target.value;
+              if (inputVal === "") {
+                onChange(fieldKey, "");
+                return;
+              }
 
-            // Parse as float and enforce min 0
-            const parsed = parseFloat(inputVal);
-            if (isNaN(parsed)) {
-              onChange(fieldKey, inputVal);
-              return;
-            }
+              // Parse as float and enforce min 0
+              const parsed = parseFloat(inputVal);
+              if (isNaN(parsed)) {
+                onChange(fieldKey, inputVal);
+                return;
+              }
 
-            const safe = parsed < 0 ? 0 : parsed;
-            onChange(fieldKey, safe);
-          }}
-          required={attr.required}
-          error={!!error}
-          InputProps={{
-            endAdornment: attr.postfix || attr.unit,
-            inputProps: { min: 0 },
-          }}
-        />
+              const safe = parsed < 0 ? 0 : parsed;
+              onChange(fieldKey, safe);
+            }}
+            required={attr.required}
+            error={!!error}
+            InputProps={{
+              endAdornment: attr.postfix || attr.unit,
+              inputProps: { min: 0 },
+            }}
+          />
+          <SuggestedValues 
+            attr={attr} 
+            currentValue={value}
+            onSuggestionClick={(suggestion) => onChange(fieldKey, suggestion)} 
+          />
+        </Box>
       );
 
     case AttributeType.Select:
@@ -109,6 +117,11 @@ export default function AttributesField({
                 )}
                 noOptionsText="گزینه‌ای یافت نشد"
                 isOptionEqualToValue={(option, value) => option.id === value.id}
+              />
+              <SuggestedValues 
+                attr={attr} 
+                currentValue={value}
+                onSuggestionClick={(suggestion) => onChange(fieldKey, suggestion)} 
               />
             </Box>
           );
@@ -159,6 +172,18 @@ export default function AttributesField({
                 limitTags={3}
                 getLimitTagsText={(more) => `+${more} بیشتر`}
               />
+              <SuggestedValues 
+                attr={attr} 
+                currentValue={value}
+                onSuggestionClick={(suggestion) => {
+                  if (typeof suggestion === 'function') {
+                    const newValue = suggestion(value);
+                    onChange(fieldKey, newValue);
+                  } else {
+                    onChange(fieldKey, suggestion);
+                  }
+                }} 
+              />
             </Box>
           );
         }
@@ -179,30 +204,44 @@ export default function AttributesField({
 
     case AttributeType.Text:
       return (
-        <TextField
-          fullWidth
-          label={attr.title + (attr.required ? " *" : "")}
-          helperText={error || attr.hint}
-          value={value || ""}
-          onChange={(e) => onChange(fieldKey, e.target.value)}
-          required={attr.required}
-          error={!!error}
-        />
+        <Box>
+          <TextField
+            fullWidth
+            label={attr.title + (attr.required ? " *" : "")}
+            helperText={error || attr.hint}
+            value={value || ""}
+            onChange={(e) => onChange(fieldKey, e.target.value)}
+            required={attr.required}
+            error={!!error}
+          />
+          <SuggestedValues 
+            attr={attr} 
+            currentValue={value}
+            onSuggestionClick={(suggestion) => onChange(fieldKey, suggestion)} 
+          />
+        </Box>
       );
 
     case AttributeType.MultiText:
       return (
-        <TextField
-          fullWidth
-          multiline
-          rows={3}
-          label={attr.title + (attr.required ? " *" : "")}
-          helperText={error || attr.hint}
-          value={value || ""}
-          onChange={(e) => onChange(fieldKey, e.target.value)}
-          required={attr.required}
-          error={!!error}
-        />
+        <Box>
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            label={attr.title + (attr.required ? " *" : "")}
+            helperText={error || attr.hint}
+            value={value || ""}
+            onChange={(e) => onChange(fieldKey, e.target.value)}
+            required={attr.required}
+            error={!!error}
+          />
+          <SuggestedValues 
+            attr={attr} 
+            currentValue={value}
+            onSuggestionClick={(suggestion) => onChange(fieldKey, suggestion)} 
+          />
+        </Box>
       );
 
     default:

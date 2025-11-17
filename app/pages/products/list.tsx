@@ -170,7 +170,7 @@ const ProductsList = () => {
 
   // Handle edit action
   const handleEdit = (id: number) => {
-    navigate(`/products/edit/${id}`);
+    navigate(`/dashboard/products/edit/${id}`);
   };
 
   // Handle delete action
@@ -209,16 +209,15 @@ const ProductsList = () => {
   const handlePublish = async (id: number) => {
     try {
       const response = await publishProduct(id);
-      
+
       if (response.status === "true") {
         enqueueSnackbar("محصول با موفقیت منتشر شد", { variant: "success" });
         // Refresh the products list
         await fetchProducts();
       } else {
-        enqueueSnackbar(
-          response.message || "خطا در انتشار محصول",
-          { variant: "error" }
-        );
+        enqueueSnackbar(response.message || "خطا در انتشار محصول", {
+          variant: "error",
+        });
       }
     } catch (error: any) {
       enqueueSnackbar(`خطا در انتشار محصول: ${error.message}`, {
