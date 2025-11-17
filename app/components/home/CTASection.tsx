@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Box,
   Typography,
@@ -6,20 +6,20 @@ import {
   Container,
   Grid,
   alpha,
-  useTheme
-} from '@mui/material';
-import { Link } from 'react-router';
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+  useTheme,
+} from "@mui/material";
+import { Link } from "react-router";
+import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 
 const CTASection: React.FC = () => {
   const theme = useTheme();
 
   const benefits = [
-    'رایگان شروع کن',
-    'بدون نیاز به کارت اعتباری',
-    'پشتیبانی ۲۴/۷'
+    "رایگان شروع کن",
+    "بدون نیاز به کارت اعتباری",
+    "پشتیبانی ۲۴/۷",
   ];
 
   return (
@@ -31,46 +31,46 @@ const CTASection: React.FC = () => {
           ${alpha(theme.palette.primary.dark, 0.9)} 50%,
           ${theme.palette.secondary.main} 100%
         )`,
-        color: 'white',
-        position: 'relative',
-        overflow: 'hidden'
+        color: "white",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
       {/* پترن‌های پس‌زمینه */}
       <Box
         sx={{
-          position: 'absolute',
+          position: "absolute",
           top: -100,
           right: -100,
           width: 400,
           height: 400,
-          borderRadius: '50%',
-          background: alpha('#ffffff', 0.1),
-          animation: 'float 6s ease-in-out infinite'
+          borderRadius: "50%",
+          background: alpha("#ffffff", 0.1),
+          animation: "float 6s ease-in-out infinite",
         }}
       />
       <Box
         sx={{
-          position: 'absolute',
+          position: "absolute",
           bottom: -150,
           left: -150,
           width: 500,
           height: 500,
-          borderRadius: '50%',
-          background: alpha('#ffffff', 0.05),
-          animation: 'float 8s ease-in-out infinite reverse'
+          borderRadius: "50%",
+          background: alpha("#ffffff", 0.05),
+          animation: "float 8s ease-in-out infinite reverse",
         }}
       />
       <Box
         sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '20%',
+          position: "absolute",
+          top: "50%",
+          left: "20%",
           width: 100,
           height: 100,
-          borderRadius: '50%',
-          background: alpha('#ffffff', 0.1),
-          animation: 'pulse 4s ease-in-out infinite'
+          borderRadius: "50%",
+          background: alpha("#ffffff", 0.1),
+          animation: "pulse 4s ease-in-out infinite",
         }}
       />
 
@@ -88,26 +88,26 @@ const CTASection: React.FC = () => {
         `}
       </style>
 
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
         <Grid container spacing={6} alignItems="center">
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             {/* محتوای اصلی */}
             <Box>
               {/* بج */}
               <Box
                 sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
+                  display: "inline-flex",
+                  alignItems: "center",
                   gap: 1,
-                  bgcolor: alpha('#ffffff', 0.2),
-                  color: 'white',
+                  bgcolor: alpha("#ffffff", 0.2),
+                  color: "white",
                   px: 3,
                   py: 1,
                   borderRadius: 10,
                   mb: 4,
-                  fontSize: '0.875rem',
+                  fontSize: "0.875rem",
                   fontWeight: 500,
-                  backdropFilter: 'blur(10px)'
+                  backdropFilter: "blur(10px)",
                 }}
               >
                 <AutoAwesomeIcon sx={{ fontSize: 16 }} />
@@ -120,8 +120,8 @@ const CTASection: React.FC = () => {
                 sx={{
                   fontWeight: 800,
                   mb: 3,
-                  fontSize: { xs: '2.5rem', md: '3rem' },
-                  lineHeight: 1.2
+                  fontSize: { xs: "2.5rem", md: "3rem" },
+                  lineHeight: 1.2,
                 }}
               >
                 ساخت محصول در دیجی‌کالا هیچ‌وقت این‌قدر ساده نبوده
@@ -132,9 +132,9 @@ const CTASection: React.FC = () => {
                 variant="h6"
                 sx={{
                   mb: 4,
-                  fontSize: '1.25rem',
+                  fontSize: "1.25rem",
                   lineHeight: 1.6,
-                  opacity: 0.9
+                  opacity: 0.9,
                 }}
               >
                 همین الان شروع کن و اولین محصولاتت رو با کمک هوش مصنوعی بساز
@@ -146,21 +146,21 @@ const CTASection: React.FC = () => {
                   <Box
                     key={index}
                     sx={{
-                      display: 'flex',
-                      alignItems: 'center',
+                      display: "flex",
+                      alignItems: "center",
                       gap: 2,
-                      mb: 2
+                      mb: 2,
                     }}
                   >
                     <Box
                       sx={{
                         width: 24,
                         height: 24,
-                        borderRadius: '50%',
-                        backgroundColor: alpha('#ffffff', 0.2),
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
+                        borderRadius: "50%",
+                        backgroundColor: alpha("#ffffff", 0.2),
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
                       ✓
@@ -168,8 +168,8 @@ const CTASection: React.FC = () => {
                     <Typography
                       variant="body1"
                       sx={{
-                        fontSize: '1.1rem',
-                        fontWeight: 500
+                        fontSize: "1.1rem",
+                        fontWeight: 500,
                       }}
                     >
                       {benefit}
@@ -180,14 +180,14 @@ const CTASection: React.FC = () => {
             </Box>
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             {/* دکمه‌های عمل */}
-            <Box 
-              sx={{ 
-                display: 'flex',
-                flexDirection: 'column',
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
                 gap: 3,
-                alignItems: { xs: 'stretch', md: 'center' }
+                alignItems: { xs: "stretch", md: "center" },
               }}
             >
               <Button
@@ -197,21 +197,23 @@ const CTASection: React.FC = () => {
                 size="large"
                 startIcon={<RocketLaunchIcon />}
                 sx={{
-                  background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                  background:
+                    "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
                   color: theme.palette.primary.main,
                   borderRadius: 3,
                   px: 6,
                   py: 3,
-                  fontSize: '1.2rem',
+                  fontSize: "1.2rem",
                   fontWeight: 700,
-                  boxShadow: `0 12px 40px ${alpha('#ffffff', 0.3)}`,
-                  border: `2px solid ${alpha('#ffffff', 0.2)}`,
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
-                    boxShadow: `0 20px 60px ${alpha('#ffffff', 0.4)}`,
-                    transform: 'translateY(-3px) scale(1.02)'
-                  }
+                  boxShadow: `0 12px 40px ${alpha("#ffffff", 0.3)}`,
+                  border: `2px solid ${alpha("#ffffff", 0.2)}`,
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  "&:hover": {
+                    background:
+                      "linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)",
+                    boxShadow: `0 20px 60px ${alpha("#ffffff", 0.4)}`,
+                    transform: "translateY(-3px) scale(1.02)",
+                  },
                 }}
               >
                 شروع رایگان
@@ -227,17 +229,17 @@ const CTASection: React.FC = () => {
                   borderRadius: 3,
                   px: 6,
                   py: 3,
-                  fontSize: '1.1rem',
+                  fontSize: "1.1rem",
                   fontWeight: 600,
-                  borderColor: alpha('#ffffff', 0.3),
-                  color: 'white',
-                  backdropFilter: 'blur(10px)',
-                  '&:hover': {
-                    backgroundColor: alpha('#ffffff', 0.1),
-                    borderColor: alpha('#ffffff', 0.5),
-                    transform: 'translateY(-2px)',
-                    boxShadow: `0 8px 30px ${alpha('#ffffff', 0.2)}`
-                  }
+                  borderColor: alpha("#ffffff", 0.3),
+                  color: "white",
+                  backdropFilter: "blur(10px)",
+                  "&:hover": {
+                    backgroundColor: alpha("#ffffff", 0.1),
+                    borderColor: alpha("#ffffff", 0.5),
+                    transform: "translateY(-2px)",
+                    boxShadow: `0 8px 30px ${alpha("#ffffff", 0.2)}`,
+                  },
                 }}
               >
                 مشاهده دمو
@@ -247,10 +249,10 @@ const CTASection: React.FC = () => {
               <Typography
                 variant="body2"
                 sx={{
-                  textAlign: 'center',
+                  textAlign: "center",
                   opacity: 0.8,
-                  fontSize: '0.875rem',
-                  mt: 2
+                  fontSize: "0.875rem",
+                  mt: 2,
                 }}
               >
                 🚀 بیش از ۱۰ هزار کاربر راضی
@@ -265,19 +267,19 @@ const CTASection: React.FC = () => {
             mt: 10,
             p: 6,
             borderRadius: 4,
-            background: alpha('#ffffff', 0.1),
-            backdropFilter: 'blur(20px)',
-            border: `1px solid ${alpha('#ffffff', 0.2)}`
+            background: alpha("#ffffff", 0.1),
+            backdropFilter: "blur(20px)",
+            border: `1px solid ${alpha("#ffffff", 0.2)}`,
           }}
         >
           <Grid container spacing={4} textAlign="center">
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <Typography
                 variant="h3"
                 sx={{
                   fontWeight: 800,
                   mb: 1,
-                  fontSize: { xs: '2rem', md: '2.5rem' }
+                  fontSize: { xs: "2rem", md: "2.5rem" },
                 }}
               >
                 ۵ دقیقه
@@ -286,19 +288,19 @@ const CTASection: React.FC = () => {
                 variant="body1"
                 sx={{
                   opacity: 0.9,
-                  fontWeight: 500
+                  fontWeight: 500,
                 }}
               >
                 زمان راه‌اندازی
               </Typography>
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <Typography
                 variant="h3"
                 sx={{
                   fontWeight: 800,
                   mb: 1,
-                  fontSize: { xs: '2rem', md: '2.5rem' }
+                  fontSize: { xs: "2rem", md: "2.5rem" },
                 }}
               >
                 ۱۰۰۰+
@@ -307,19 +309,19 @@ const CTASection: React.FC = () => {
                 variant="body1"
                 sx={{
                   opacity: 0.9,
-                  fontWeight: 500
+                  fontWeight: 500,
                 }}
               >
                 محصول در ساعت
               </Typography>
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Typography
                 variant="h3"
                 sx={{
                   fontWeight: 800,
                   mb: 1,
-                  fontSize: { xs: '2rem', md: '2.5rem' }
+                  fontSize: { xs: "2rem", md: "2.5rem" },
                 }}
               >
                 ۹۸٪
@@ -328,7 +330,7 @@ const CTASection: React.FC = () => {
                 variant="body1"
                 sx={{
                   opacity: 0.9,
-                  fontWeight: 500
+                  fontWeight: 500,
                 }}
               >
                 دقت هوش مصنوعی
