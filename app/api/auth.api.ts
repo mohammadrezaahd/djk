@@ -94,17 +94,13 @@ const loginWithPassword = async (
   return response.data;
 };
 
-const logOut = async (phonNumber: string): Promise<any> => {
-  const response = await authorizedPost("/v1/auth/verify_password", {
-    phone: phonNumber,
-  });
-
-  // ذخیره توکن در localStorage
-  if (response.data.access_token) {
-    localStorage.removeItem("access_token");
-  }
-
-  return response.data;
+const logOut = async (): Promise<void> => {
+  // پاک کردن توکن از localStorage
+  localStorage.removeItem("access_token");
+  
+  // می‌توانید در صورت نیاز درخواست logout به سرور هم بفرستید
+  // const response = await authorizedPost("/v1/auth/logout");
+  // return response.data;
 };
 
 const currentUser = async (): Promise<ICurrentUserResponse> => {
@@ -236,10 +232,10 @@ export const useLogout = () => {
 
   return useMutation({
     mutationFn: logOut,
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["logout"] });
-      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
-      console.log("✅ Logged out successfully:", data);
+    onSuccess: () => {
+      // پاک کردن تمام cache ها
+      queryClient.clear();
+      console.log("✅ Logged out successfully");
     },
     onError: (error) => {
       console.error("❌ Error logging out:", error);

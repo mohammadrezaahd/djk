@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   IconButton,
@@ -24,15 +24,33 @@ import {
   Shield as ShieldIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router";
-// import { useLogout } from "~/api/auth.api";
+import { useLogout, useCurrentUserQuery } from "~/api/auth.api";
+import { useAppDispatch, useAppSelector } from "~/store/hooks";
+import { setUser, clearUser } from "~/store/slices/userSlice";
+import { useSnackbar } from "notistack";
 
 const Navbar: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { enqueueSnackbar } = useSnackbar();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null);
 
-  // const { mutateAsync: logout } = useLogout();
+  // دریافت اطلاعات کاربر از store
+  const currentUser = useAppSelector((state) => state.user.currentUser);
+  
+  // دریافت اطلاعات کاربر از API
+  const { data: userData, isSuccess } = useCurrentUserQuery();
+  
+  // ذخیره اطلاعات کاربر در store
+  useEffect(() => {
+    if (isSuccess && userData) {
+      dispatch(setUser(userData));
+    }
+  }, [isSuccess, userData, dispatch]);
+
+  const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -52,8 +70,24 @@ const Navbar: React.FC = () => {
 
   const handleLogout = async () => {
     handleMenuClose();
-    // await logout();
-    navigate("/auth");
+    
+    try {
+      enqueueSnackbar("در حال خروج از حساب کاربری...", { variant: "info" });
+      await logout();
+      
+      // پاک کردن اطلاعات کاربر از store
+      dispatch(clearUser());
+      
+      enqueueSnackbar("با موفقیت از حساب خارج شدید", { variant: "success" });
+      
+      // هدایت به صفحه ورود
+      setTimeout(() => {
+        navigate("/auth", { replace: true });
+      }, 500);
+    } catch (error: any) {
+      console.error("Logout error:", error);
+      enqueueSnackbar("خطا در خروج از حساب کاربری", { variant: "error" });
+    }
   };
 
   const handleNavigation = (path: string) => {
@@ -121,7 +155,9 @@ const Navbar: React.FC = () => {
               fontWeight: "bold",
             }}
           >
-            م
+            {currentUser?.first_name?.[0]?.toUpperCase() || 
+             currentUser?.email?.[0]?.toUpperCase() || 
+             "U"}
           </Avatar>
         </IconButton>
       </Tooltip>
@@ -171,14 +207,18 @@ const Navbar: React.FC = () => {
                 background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
               }}
             >
-              م
+              {currentUser?.first_name?.[0]?.toUpperCase() || 
+               currentUser?.email?.[0]?.toUpperCase() || 
+               "U"}
             </Avatar>
             <Box>
               <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                کاربر محترم
+                {currentUser?.first_name && currentUser?.last_name
+                  ? `${currentUser.first_name} ${currentUser.last_name}`
+                  : "کاربر محترم"}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                admin@example.com
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+                {currentUser?.email || currentUser?.phone || "بدون اطلاعات"}
               </Typography>
             </Box>
           </Box>
@@ -245,6 +285,7 @@ const Navbar: React.FC = () => {
 
         <MenuItem
           onClick={handleLogout}
+          disabled={isLoggingOut}
           sx={{
             py: 1.5,
             color: theme.palette.error.main,
@@ -256,7 +297,7 @@ const Navbar: React.FC = () => {
           <ListItemIcon>
             <LogoutIcon fontSize="small" color="error" />
           </ListItemIcon>
-          <Typography>خروج از حساب</Typography>
+          <Typography>{isLoggingOut ? "در حال خروج..." : "خروج از حساب"}</Typography>
         </MenuItem>
       </Menu>
 
