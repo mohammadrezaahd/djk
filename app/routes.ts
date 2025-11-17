@@ -21,7 +21,6 @@ export default [
     route("dashboard/products/list", "pages/products/list.tsx"),
     route("dashboard/products/edit/:id", "pages/products/edit.tsx"),
     route("/test", "pages/test.tsx"),
-    route("/test-suggested-values", "pages/test-suggested-values.tsx"),
     // Coming Soon Pages
     route("dashboard/profile", "pages/profile.tsx"),
     route("dashboard/settings", "pages/settings.tsx"),
