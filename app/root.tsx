@@ -18,6 +18,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { NotFoundPage, ErrorPage } from "./components/common";
 
 export const links = () => [
+  { rel: "icon", href: "/Hoshmarket.ico", type: "image/x-icon" },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",

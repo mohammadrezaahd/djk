@@ -53,16 +53,12 @@ const Header: React.FC = () => {
           <Box display="flex" alignItems="center" gap={2}>
             <Box
               component="img"
-              src="/logo.png"
+              src="/Hoshmarket.png"
               alt="هوش مارکت"
               sx={{
                 width: 40,
                 height: 40,
                 borderRadius: 1
-              }}
-              onError={(e) => {
-                // در صورت نبود لوگو، یک جایگزین نمایش دهیم
-                e.currentTarget.style.display = 'none';
               }}
             />
             <Typography

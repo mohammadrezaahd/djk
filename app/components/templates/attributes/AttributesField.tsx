@@ -5,7 +5,7 @@ import {
   type IAttr,
 } from "~/types/interfaces/attributes.interface";
 import SuggestedValues from "./SuggestedValues";
-
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 // کامپوننت آیکون AI
 const AIIcon: React.FC<{ attr: IAttr }> = ({ attr }) => {
   const handleAIClick = () => {
@@ -38,12 +38,9 @@ const AIIcon: React.FC<{ attr: IAttr }> = ({ attr }) => {
           transition: 'all 0.2s ease-in-out',
           width: '24px',
           height: '24px',
-          fontSize: '12px',
-          fontWeight: 'bold',
-          fontFamily: 'monospace',
         }}
       >
-        AI
+        <AutoAwesomeIcon sx={{ fontSize: '16px' }} />
       </IconButton>
     </Tooltip>
   );

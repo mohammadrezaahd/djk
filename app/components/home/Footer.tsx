@@ -132,19 +132,20 @@ const Footer: React.FC = () => {
               {/* لوگو و نام */}
               <Box display="flex" alignItems="center" gap={2} mb={3}>
                 <Box
+                  component="img"
+                  src="/Hoshmarket.png"
+                  alt="هوش مارکت"
                   sx={{
                     width: 50,
                     height: 50,
                     borderRadius: 2,
-                    background: "linear-gradient(135deg, #6C5CE7, #A29BFE)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
+                    objectFit: 'contain'
                   }}
-                >
-                  <AutoAwesomeIcon />
-                </Box>
+                  onError={(e: any) => {
+                    console.error('Logo failed to load:', e.target.src);
+                    e.target.style.display = 'none';
+                  }}
+                />
                 <Typography
                   variant="h5"
                   sx={{
@@ -152,7 +153,7 @@ const Footer: React.FC = () => {
                     color: theme.palette.primary.main,
                   }}
                 >
-                  هوش مارکت
+                  هوش مارکتیبیب
                 </Typography>
               </Box>
 
@@ -324,63 +325,95 @@ const Footer: React.FC = () => {
 
         <Divider sx={{ mb: 4 }} />
 
-        {/* کپی‌رایت */}
+        {/* کپی‌رایت و نماد اعتماد */}
         <Box
           sx={{
             display: "flex",
             flexDirection: { xs: "column", md: "row" },
             justifyContent: "space-between",
             alignItems: "center",
-            gap: 2,
+            gap: 3,
             textAlign: { xs: "center", md: "left" },
           }}
         >
-          <Typography
-            variant="body2"
+          <Box>
+            <Typography
+              variant="body2"
+              sx={{
+                color: theme.palette.text.secondary,
+                mb: 1,
+              }}
+            >
+              © ۲۰۲۵ هوش مارکت. تمامی حقوق محفوظ است.
+            </Typography>
+
+            <Box display="flex" gap={3} flexWrap="wrap" justifyContent={{ xs: "center", md: "flex-start" }}>
+              <Button
+                component={Link}
+                to="/terms"
+                variant="text"
+                size="small"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  fontSize: "0.75rem",
+                }}
+              >
+                شرایط استفاده
+              </Button>
+              <Button
+                component={Link}
+                to="/privacy"
+                variant="text"
+                size="small"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  fontSize: "0.75rem",
+                }}
+              >
+                حریم خصوصی
+              </Button>
+              <Button
+                component={Link}
+                to="/sitemap"
+                variant="text"
+                size="small"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  fontSize: "0.75rem",
+                }}
+              >
+                نقشه سایت
+              </Button>
+            </Box>
+          </Box>
+
+          {/* نماد اعتماد الکترونیکی */}
+          <Box
+            component="a"
+            href="https://trustseal.enamad.ir/?id=672181&Code=C5Et3mGPXHHW2i0QzIN0IQjBPBZl6ls9"
+            target="_blank"
+            rel="noopener noreferrer"
+            referrerPolicy="origin"
             sx={{
-              color: theme.palette.text.secondary,
+              display: "inline-block",
+              cursor: "pointer",
+              transition: "transform 0.3s ease",
+              "&:hover": {
+                transform: "scale(1.05)",
+              },
             }}
           >
-            © ۲۰۲۵ هوش مارکت. تمامی حقوق محفوظ است.
-          </Typography>
-
-          <Box display="flex" gap={3} flexWrap="wrap" justifyContent="center">
-            <Button
-              component={Link}
-              to="/terms"
-              variant="text"
-              size="small"
+            <Box
+              component="img"
+              src="https://trustseal.enamad.ir/logo.aspx?id=672181&Code=C5Et3mGPXHHW2i0QzIN0IQjBPBZl6ls9"
+              alt="نماد اعتماد الکترونیکی"
+              referrerPolicy="origin"
               sx={{
-                color: theme.palette.text.secondary,
-                fontSize: "0.75rem",
+                width: { xs: 80, sm: 100 },
+                height: "auto",
+                display: "block",
               }}
-            >
-              شرایط استفاده
-            </Button>
-            <Button
-              component={Link}
-              to="/privacy"
-              variant="text"
-              size="small"
-              sx={{
-                color: theme.palette.text.secondary,
-                fontSize: "0.75rem",
-              }}
-            >
-              حریم خصوصی
-            </Button>
-            <Button
-              component={Link}
-              to="/sitemap"
-              variant="text"
-              size="small"
-              sx={{
-                color: theme.palette.text.secondary,
-                fontSize: "0.75rem",
-              }}
-            >
-              نقشه سایت
-            </Button>
+            />
           </Box>
         </Box>
       </Container>
