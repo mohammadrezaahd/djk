@@ -24,10 +24,10 @@ const Layout = ({ children, title }: LayoutProps) => {
 
   // Keep templates menu open if any child path is active
   React.useEffect(() => {
-    if (isChildPathActive("/templates")) {
+    if (isChildPathActive("/dashboard/templates")) {
       setProductTemplatesOpen(true);
     }
-    if (isChildPathActive("/products")) {
+    if (isChildPathActive("/dashboard/products")) {
       setProductsOpen(true);
     }
   }, [location.pathname]);

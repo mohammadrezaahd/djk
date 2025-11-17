@@ -46,7 +46,7 @@ const menuItems: MenuItem[] = [
   {
     id: "dashboard",
     title: "داشبورد",
-    path: "/",
+    path: "/dashboard",
     icon: DashboardIcon,
   },
   {
@@ -58,25 +58,25 @@ const menuItems: MenuItem[] = [
       {
         id: "templates-list",
         title: "تمام قالب ها",
-        path: "/templates/list",
+        path: "/dashboard/templates/list",
       },
       {
         id: "templates-new",
         title: "افزودن قالب جدید",
-        path: "/templates/new",
+        path: "/dashboard/templates/new",
       },
     ],
   },
   {
     id: "gallery",
     title: "گالری",
-    path: "/gallery",
+    path: "/dashboard/gallery",
     icon: PhotoLibraryIcon,
   },
   {
     id: "transportation",
     title: "انتقال محصول",
-    path: "/transportation",
+    path: "/dashboard/transportation",
     icon: LocalShippingIcon,
   },
   {
@@ -88,12 +88,12 @@ const menuItems: MenuItem[] = [
       {
         id: "products-list",
         title: "تمام محصولات",
-        path: "/products/list",
+        path: "/dashboard/products/list",
       },
       {
         id: "products-new",
         title: "افزودن محصول جدید",
-        path: "/products/new",
+        path: "/dashboard/products/new",
       },
     ],
   },

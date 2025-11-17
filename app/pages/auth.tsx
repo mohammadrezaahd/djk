@@ -77,7 +77,7 @@ const Auth = () => {
     
     // فقط redirect کن اگر needsRegistration نباشد
     if (token && !state?.needsRegistration) {
-      navigate("/", { replace: true });
+      navigate("/dashboard", { replace: true });
     }
   }, [navigate, location]);
 
@@ -126,7 +126,7 @@ const Auth = () => {
         // کاربر موجود - لاگین شد
         enqueueSnackbar("ورود موفقیت‌آمیز! در حال انتقال...", { variant: "success" });
         setTimeout(() => {
-          navigate("/");
+          navigate("/dashboard");
         }, 1500);
       }
     } catch (err: any) {
@@ -148,7 +148,7 @@ const Auth = () => {
       await register.mutateAsync(data);
       enqueueSnackbar("ثبت نام موفقیت‌آمیز! در حال ورود به سیستم...", { variant: "success" });
       setTimeout(() => {
-        navigate("/");
+        navigate("/dashboard");
       }, 1500);
     } catch (err: any) {
       enqueueSnackbar(
@@ -167,7 +167,7 @@ const Auth = () => {
       });
       enqueueSnackbar("ورود موفقیت‌آمیز! در حال انتقال...", { variant: "success" });
       setTimeout(() => {
-        navigate("/");
+        navigate("/dashboard");
       }, 1500);
     } catch (err: any) {
       enqueueSnackbar(

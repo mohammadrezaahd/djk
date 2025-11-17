@@ -23,19 +23,19 @@ const QuickActions: React.FC = () => {
       label: "محصول جدید",
       icon: ProductIcon,
       color: "#6C5CE7",
-      path: "/products/new",
+      path: "/dashboard/products/new",
     },
     {
       label: "آپلود تصویر",
       icon: ImageIcon,
       color: "#00CEC9",
-      path: "/gallery",
+      path: "/dashboard/gallery",
     },
     {
       label: "قالب جدید",
       icon: TemplateIcon,
       color: "#FDA7DC",
-      path: "/templates/new",
+      path: "/dashboard/templates/new",
     },
   ];
 

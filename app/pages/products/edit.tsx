@@ -705,7 +705,7 @@ const EditProductPage = () => {
         enqueueSnackbar("محصول با موفقیت به‌روزرسانی شد", {
           variant: "success",
         });
-        navigate("/products/list");
+        navigate("/dashboard/products/list");
       } else {
         enqueueSnackbar("خطا در به‌روزرسانی محصول", { variant: "error" });
       }
@@ -1026,7 +1026,7 @@ const EditProductPage = () => {
           <Grid size={{ xs: 12 }}>
             <Stack direction="row" spacing={2} justifyContent="flex-end">
               <Button
-                onClick={() => navigate("/products/list")}
+                onClick={() => navigate("/dashboard/products/list")}
                 variant="outlined"
               >
                 بازگشت

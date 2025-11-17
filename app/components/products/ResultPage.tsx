@@ -8,11 +8,11 @@ const ResultPage = () => {
   const theme = useTheme();
 
   const handleViewProductsList = () => {
-    navigate("/products/list");
+    navigate("/dashboard/products/list");
   };
 
   const handleCreateAnother = () => {
-    navigate("/products/new");
+    navigate("/dashboard/products/new");
   };
 
   return (

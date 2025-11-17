@@ -161,7 +161,7 @@ const RestrictedPage = () => {
               variant="outlined"
               size="large"
               startIcon={<HomeIcon />}
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/dashboard")}
               sx={{
                 py: 1.5,
                 px: 4,

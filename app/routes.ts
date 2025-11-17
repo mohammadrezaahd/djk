@@ -9,23 +9,23 @@ export default [
   // Public routes (غیر محافظت شده)
   route("/auth", "pages/auth.tsx"),
   route("/restricted", "pages/restricted.tsx"),
-
+  index("pages/home.tsx"),
   // Protected routes (محافظت شده)
   layout("pages/protected-layout.tsx", [
-    index("pages/home.tsx"),
-    route("/templates/new", "pages/templates/new.tsx"),
-    route("/templates/list", "pages/templates/list.tsx"),
-    route("/templates/edit", "pages/templates/edit.tsx"),
-    route("/gallery", "pages/gallery.tsx"),
-    route("/products/new", "pages/products/new.tsx"),
-    route("/products/list", "pages/products/list.tsx"),
-    route("/products/edit/:id", "pages/products/edit.tsx"),
+    route("/dashboard", "pages/dashboard.tsx"),
+    route("dashboard/templates/new", "pages/templates/new.tsx"),
+    route("dashboard/templates/list", "pages/templates/list.tsx"),
+    route("dashboard/templates/edit", "pages/templates/edit.tsx"),
+    route("dashboard/gallery", "pages/gallery.tsx"),
+    route("dashboard/products/new", "pages/products/new.tsx"),
+    route("dashboard/products/list", "pages/products/list.tsx"),
+    route("dashboard/products/edit/:id", "pages/products/edit.tsx"),
     route("/test", "pages/test.tsx"),
     // Coming Soon Pages
-    route("/profile", "pages/profile.tsx"),
-    route("/settings", "pages/settings.tsx"),
-    route("/security", "pages/security.tsx"),
-    route("/help", "pages/help.tsx"),
-    route("/transportation", "pages/transportation.tsx"),
+    route("dashboard/profile", "pages/profile.tsx"),
+    route("dashboard/settings", "pages/settings.tsx"),
+    route("dashboard/security", "pages/security.tsx"),
+    route("dashboard/help", "pages/help.tsx"),
+    route("dashboard/transportation", "pages/transportation.tsx"),
   ]),
 ] satisfies RouteConfig;

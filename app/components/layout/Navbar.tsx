@@ -124,7 +124,7 @@ const Navbar: React.FC = () => {
       {/* Help */}
       <Tooltip title="راهنما" arrow>
         <IconButton
-          onClick={() => navigate("/help")}
+          onClick={() => navigate("/dashboard/help")}
           sx={{
             color: "inherit",
             "&:hover": {
