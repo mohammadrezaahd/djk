@@ -42,6 +42,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
           },
           replace: true 
         });
+        return; // جلوگیری از ادامه execution
       } else {
         // سایر خطاها - پاک کردن توکن و برو auth
         console.log("❌ خطای احراز هویت - هدایت به صفحه ورود");

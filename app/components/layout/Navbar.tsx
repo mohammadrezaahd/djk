@@ -24,7 +24,8 @@ import {
   Shield as ShieldIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router";
-import { useLogout, useCurrentUserQuery } from "~/api/auth.api";
+import { useLogout } from "~/api/auth.api";
+import { useProfile } from "~/api/profile.api";
 import { useAppDispatch, useAppSelector } from "~/store/hooks";
 import { setUser, clearUser } from "~/store/slices/userSlice";
 import { useSnackbar } from "notistack";
@@ -41,12 +42,12 @@ const Navbar: React.FC = () => {
   const currentUser = useAppSelector((state) => state.user.currentUser);
   
   // دریافت اطلاعات کاربر از API
-  const { data: userData, isSuccess } = useCurrentUserQuery();
+  const { data: userData, isSuccess } = useProfile();
   
   // ذخیره اطلاعات کاربر در store
   useEffect(() => {
-    if (isSuccess && userData) {
-      dispatch(setUser(userData));
+    if (isSuccess && userData?.data) {
+      dispatch(setUser(userData.data));
     }
   }, [isSuccess, userData, dispatch]);
 

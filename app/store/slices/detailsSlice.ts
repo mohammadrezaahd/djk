@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
+import type { PayloadAction } from "../types";
 import type { ICategoryDetails } from "~/types/interfaces/details.interface";
 import type { IPostDetail } from "~/types/dtos/details.dto";
 import { TemplateSource } from "~/types/dtos/templates.dto";

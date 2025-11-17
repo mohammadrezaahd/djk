@@ -13,9 +13,9 @@ import type {
   IVerifyOtpResponse,
   IRegisterResponse,
   ILoginWithPasswordResponse,
-  ICurrentUserResponse,
 } from "~/types/interfaces/auth.interface";
 import { isClient, safeLocalStorage } from "~/utils/storage";
+import { useProfile } from "./profile.api";
 
 // API Functions
 const checkNumber = async (
@@ -81,10 +81,12 @@ const register = async (data: IRegister): Promise<IRegisterResponse> => {
 const loginWithPassword = async (
   data: ILoginWithPassword
 ): Promise<ILoginWithPasswordResponse> => {
-  const response = await authorizedPost("/v1/auth/verify_password", {
-    phone: data.phone,
-    password: data.password,
-  });
+  // ایجاد FormData برای ارسال به صورت form fields
+  const formData = new FormData();
+  formData.append("username", data.phone);
+  formData.append("password", data.password);
+
+  const response = await authorizedPost("/v1/auth/verify_password", formData);
 
   // ذخیره توکن در localStorage
   if (response.data.access_token) {
@@ -94,30 +96,17 @@ const loginWithPassword = async (
   return response.data;
 };
 
-const logOut = async (): Promise<void> => {
-  // پاک کردن توکن از localStorage
-  localStorage.removeItem("access_token");
-  
-  // می‌توانید در صورت نیاز درخواست logout به سرور هم بفرستید
-  // const response = await authorizedPost("/v1/auth/logout");
-  // return response.data;
-};
+const logOut = async (phoneNumber: string): Promise<void> => {
+  const response = await authorizedPost("/v1/auth/logout", {
+    phone: phoneNumber,
+  });
 
-const currentUser = async (): Promise<ICurrentUserResponse> => {
-  const response = await authorizedGet(`/v1/auth/me`);
+  // پاک کردن توکن از localStorage فقط پس از موفقیت آمیز بودن API
+  localStorage.removeItem("access_token");
+
   return response.data;
 };
 
-export const useCurrentUserQuery = () => {
-  return useQuery({
-    queryKey: ["auth", "currentUser"],
-    queryFn: currentUser,
-    enabled: isClient() && !!safeLocalStorage.getItem("access_token"), // فقط اگر توکن موجود باشد
-    retry: false, // عدم تلاش مجدد در صورت خطا
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (previously cacheTime)
-  });
-};
 // Custom Hooks
 export const useCheckNumber = () => {
   const queryClient = useQueryClient();
@@ -156,7 +145,7 @@ export const useVerifyOtp = () => {
     mutationFn: verifyOtp,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["verifyOtp"] });
-      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
       console.log("✅ OTP verified successfully:", data);
     },
     onError: (error) => {
@@ -172,7 +161,7 @@ export const useRegister = () => {
     mutationFn: register,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["register"] });
-      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
       console.log("✅ Registered successfully:", data);
     },
     onError: (error) => {
@@ -188,7 +177,7 @@ export const useLoginWithPassword = () => {
     mutationFn: loginWithPassword,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["loginWithPassword"] });
-      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
       console.log("✅ Logged in successfully:", data);
     },
     onError: (error) => {
@@ -197,24 +186,11 @@ export const useLoginWithPassword = () => {
   });
 };
 
-export const useCurrentUser = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: currentUser,
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
-      console.log("✅ Current user fetched:", data);
-    },
-    onError: (error) => {
-      console.error("❌ Error fetching current user:", error);
-    },
-  });
-};
+// حذف شد - از useProfile استفاده می‌کنیم
 
 export const useAuthStatus = () => {
   const token = isClient() ? safeLocalStorage.getItem("access_token") : null;
-  const { data, isLoading, isError, error } = useCurrentUserQuery();
+  const { data, isLoading, isError, error } = useProfile();
 
   const isAuthenticated = !!(token && data && !isError);
 
@@ -229,9 +205,13 @@ export const useAuthStatus = () => {
 
 export const useLogout = () => {
   const queryClient = useQueryClient();
+  const { data: profileData } = useProfile();
 
   return useMutation({
-    mutationFn: logOut,
+    mutationFn: () => {
+      const phoneNumber = profileData?.data?.phone || "";
+      return logOut(phoneNumber);
+    },
     onSuccess: () => {
       // پاک کردن تمام cache ها
       queryClient.clear();

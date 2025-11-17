@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import AppLayout from "~/components/layout/AppLayout";
 import {
   Box,
@@ -13,16 +13,23 @@ import {
   CircularProgress,
   Alert,
   Stack,
+  TextField,
+  Button,
+  IconButton,
 } from "@mui/material";
 import {
   Person as PersonIcon,
   Email as EmailIcon,
   Phone as PhoneIcon,
   CheckCircle as CheckCircleIcon,
+  Edit as EditIcon,
+  Save as SaveIcon,
+  Cancel as CancelIcon,
 } from "@mui/icons-material";
-import { useCurrentUserQuery } from "~/api/auth.api";
+import { useProfile, useUpdateProfile } from "~/api/profile.api";
 import { useAppDispatch, useAppSelector } from "~/store/hooks";
 import { setUser } from "~/store/slices/userSlice";
+import { useSnackbar } from "notistack";
 
 export function meta() {
   return [
@@ -34,21 +41,96 @@ export function meta() {
 const ProfilePage = () => {
   const theme = useTheme();
   const dispatch = useAppDispatch();
+  const { enqueueSnackbar } = useSnackbar();
+  
+  // State for edit mode
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    email: "",
+    first_name: "",
+    last_name: ""
+  });
   
   // دریافت اطلاعات از store
   const currentUser = useAppSelector((state) => state.user.currentUser);
   
   // دریافت اطلاعات از API
-  const { data: userData, isLoading, isError, error } = useCurrentUserQuery();
+  const { data: userData, isLoading, isError, error } = useProfile();
+  
+  // Update profile mutation
+  const updateProfileMutation = useUpdateProfile();
 
   // ذخیره در store
   useEffect(() => {
-    if (userData) {
-      dispatch(setUser(userData));
+    if (userData?.data) {
+      dispatch(setUser(userData.data));
     }
   }, [userData, dispatch]);
 
-  const userInfo = currentUser || userData;
+  const userInfo = currentUser || userData?.data;
+
+  // Initialize edit form when user data is available
+  useEffect(() => {
+    if (userInfo) {
+      setEditForm({
+        email: userInfo.email || "",
+        first_name: userInfo.first_name || "",
+        last_name: userInfo.last_name || ""
+      });
+    }
+  }, [userInfo]);
+
+  const handleEditToggle = () => {
+    if (isEditing) {
+      // Cancel edit - reset form
+      if (userInfo) {
+        setEditForm({
+          email: userInfo.email || "",
+          first_name: userInfo.first_name || "",
+          last_name: userInfo.last_name || ""
+        });
+      }
+    }
+    setIsEditing(!isEditing);
+  };
+
+  const handleSave = async () => {
+    try {
+      // Only send fields that have changed
+      const updatedFields: any = {};
+      
+      if (editForm.email !== userInfo?.email) {
+        updatedFields.email = editForm.email;
+      }
+      if (editForm.first_name !== userInfo?.first_name) {
+        updatedFields.first_name = editForm.first_name;
+      }
+      if (editForm.last_name !== userInfo?.last_name) {
+        updatedFields.last_name = editForm.last_name;
+      }
+
+      // If no changes, just exit edit mode
+      if (Object.keys(updatedFields).length === 0) {
+        setIsEditing(false);
+        enqueueSnackbar("هیچ تغییری انجام نشد", { variant: "info" });
+        return;
+      }
+
+      await updateProfileMutation.mutateAsync(updatedFields);
+      setIsEditing(false);
+      enqueueSnackbar("پروفایل با موفقیت به‌روزرسانی شد", { variant: "success" });
+    } catch (error) {
+      console.error("Profile update error:", error);
+      enqueueSnackbar("خطا در به‌روزرسانی پروفایل", { variant: "error" });
+    }
+  };
+
+  const handleInputChange = (field: keyof typeof editForm) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    setEditForm(prev => ({
+      ...prev,
+      [field]: event.target.value
+    }));
+  };
 
   if (isLoading) {
     return (
@@ -72,7 +154,7 @@ const ProfilePage = () => {
       <AppLayout title="پروفایل من">
         <Alert severity="error" sx={{ mt: 2 }}>
           خطا در دریافت اطلاعات پروفایل:{" "}
-          {(error as any)?.message || "خطای نامشخص"}
+          {userData?.error || (error as any)?.message || "خطای نامشخص"}
         </Alert>
       </AppLayout>
     );
@@ -128,11 +210,53 @@ const ProfilePage = () => {
                   "U"}
               </Avatar>
               <Box sx={{ flex: 1 }}>
-                <Typography variant="h4" sx={{ fontWeight: "bold", mb: 1 }}>
-                  {userInfo?.first_name && userInfo?.last_name
-                    ? `${userInfo.first_name} ${userInfo.last_name}`
-                    : "کاربر محترم"}
-                </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
+                  <Typography variant="h4" sx={{ fontWeight: "bold" }}>
+                    {userInfo?.first_name && userInfo?.last_name
+                      ? `${userInfo.first_name} ${userInfo.last_name}`
+                      : "کاربر محترم"}
+                  </Typography>
+                  <Box>
+                    {isEditing ? (
+                      <>
+                        <IconButton
+                          onClick={handleSave}
+                          disabled={updateProfileMutation.isPending}
+                          sx={{ 
+                            color: "white", 
+                            bgcolor: alpha(theme.palette.common.white, 0.2),
+                            mr: 1,
+                            "&:hover": { bgcolor: alpha(theme.palette.common.white, 0.3) }
+                          }}
+                        >
+                          {updateProfileMutation.isPending ? <CircularProgress size={20} sx={{ color: "white" }} /> : <SaveIcon />}
+                        </IconButton>
+                        <IconButton
+                          onClick={handleEditToggle}
+                          disabled={updateProfileMutation.isPending}
+                          sx={{ 
+                            color: "white",
+                            bgcolor: alpha(theme.palette.error.main, 0.3),
+                            "&:hover": { bgcolor: alpha(theme.palette.error.main, 0.5) }
+                          }}
+                        >
+                          <CancelIcon />
+                        </IconButton>
+                      </>
+                    ) : (
+                      <IconButton
+                        onClick={handleEditToggle}
+                        sx={{ 
+                          color: "white",
+                          bgcolor: alpha(theme.palette.common.white, 0.2),
+                          "&:hover": { bgcolor: alpha(theme.palette.common.white, 0.3) }
+                        }}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                    )}
+                  </Box>
+                </Box>
                 <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", justifyContent: { xs: "center", sm: "flex-start" } }}>
                   <Chip
                     icon={<CheckCircleIcon />}
@@ -184,9 +308,20 @@ const ProfilePage = () => {
                   >
                     نام
                   </Typography>
-                  <Typography variant="body1" sx={{ fontSize: "1.1rem" }}>
-                    {userInfo?.first_name || "—"}
-                  </Typography>
+                  {isEditing ? (
+                    <TextField
+                      value={editForm.first_name}
+                      onChange={handleInputChange('first_name')}
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      sx={{ mt: 1 }}
+                    />
+                  ) : (
+                    <Typography variant="body1" sx={{ fontSize: "1.1rem" }}>
+                      {userInfo?.first_name || "—"}
+                    </Typography>
+                  )}
                 </Box>
 
                 <Box>
@@ -197,9 +332,20 @@ const ProfilePage = () => {
                   >
                     نام خانوادگی
                   </Typography>
-                  <Typography variant="body1" sx={{ fontSize: "1.1rem" }}>
-                    {userInfo?.last_name || "—"}
-                  </Typography>
+                  {isEditing ? (
+                    <TextField
+                      value={editForm.last_name}
+                      onChange={handleInputChange('last_name')}
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      sx={{ mt: 1 }}
+                    />
+                  ) : (
+                    <Typography variant="body1" sx={{ fontSize: "1.1rem" }}>
+                      {userInfo?.last_name || "—"}
+                    </Typography>
+                  )}
                 </Box>
               </Box>
             </CardContent>
@@ -232,12 +378,25 @@ const ProfilePage = () => {
                   >
                     ایمیل
                   </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{ fontSize: "1.1rem", direction: "ltr", textAlign: "right" }}
-                  >
-                    {userInfo?.email || "—"}
-                  </Typography>
+                  {isEditing ? (
+                    <TextField
+                      value={editForm.email}
+                      onChange={handleInputChange('email')}
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      type="email"
+                      sx={{ mt: 1, direction: "ltr" }}
+                      InputProps={{ sx: { textAlign: "right" } }}
+                    />
+                  ) : (
+                    <Typography
+                      variant="body1"
+                      sx={{ fontSize: "1.1rem", direction: "ltr", textAlign: "right" }}
+                    >
+                      {userInfo?.email || "—"}
+                    </Typography>
+                  )}
                 </Box>
 
                 <Box>
@@ -271,7 +430,10 @@ const ProfilePage = () => {
           }}
         >
           <Typography variant="body2" color="text.secondary" align="center">
-            برای ویرایش اطلاعات پروفایل، لطفاً با پشتیبانی تماس بگیرید
+            {isEditing 
+              ? "ایمیل، نام و نام خانوادگی قابل ویرایش هستند. شماره موبایل قابل تغییر نیست."
+              : "برای ویرایش اطلاعات پروفایل، روی دکمه ویرایش کلیک کنید"
+            }
           </Typography>
         </Box>
       </Box>
