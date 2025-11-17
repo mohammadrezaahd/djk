@@ -1,29 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import type { Route } from "./+types/auth";
 import {
   Container,
   Paper,
-  TextField,
-  Button,
   Typography,
   Box,
-  Alert,
-  CircularProgress,
-  InputAdornment,
-  IconButton,
   Fade,
   useTheme,
   alpha,
 } from "@mui/material";
+import { Login as LoginIcon } from "@mui/icons-material";
 import {
-  Person as PersonIcon,
-  Lock as LockIcon,
-  Visibility,
-  VisibilityOff,
-  Login as LoginIcon,
-} from "@mui/icons-material";
-import { useLoginNumber } from "~/api/auth.api";
+  useCheckNumber,
+  useSendOtp,
+  useVerifyOtp,
+  useRegister,
+  useLoginWithPassword,
+} from "~/api/auth.api";
 import { useNavigate } from "react-router";
+import {
+  PhoneInput,
+  OtpInput,
+  RegisterForm,
+  PasswordLogin,
+} from "~/components/auth";
+import { useSnackbar } from "notistack";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -32,69 +33,252 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
+type AuthStep =
+  | "phone"
+  | "otp-new-user"
+  | "register"
+  | "password-login"
+  | "otp-existing-user";
+
 const Auth = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<{
-    username?: string;
-    password?: string;
-  }>({});
+  const { enqueueSnackbar } = useSnackbar();
+
+  // State
+  const [step, setStep] = useState<AuthStep>("phone");
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+
+  // API Hooks
+  const checkNumber = useCheckNumber();
+  const sendOtp = useSendOtp();
+  const verifyOtp = useVerifyOtp();
+  const register = useRegister();
+  const loginWithPassword = useLoginWithPassword();
 
   // بررسی اینکه آیا کاربر قبلاً لاگین کرده یا نه
-  React.useEffect(() => {
+  useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (token) {
-      // اگر توکن موجود است، کاربر را به صفحه اصلی هدایت کن
       navigate("/", { replace: true });
     }
   }, [navigate]);
 
-  // استفاده از React Query hook
-  const {
-    mutateAsync: login,
-    isPending: isLoading,
-    error: apiError,
-    isSuccess,
-  } = useLoginNumber();
+  // اگر کاربر در مرحله register از صفحه خارج شد (unmount شد)، توکن را حذف کن
+  // این فقط یک بار در cleanup کامپوننت اجرا می‌شود (نه در هر تغییر step)
+  useEffect(() => {
+    const currentStep = step;
+    
+    return () => {
+      // فقط اگر از کل صفحه خارج شد و هنوز در مراحل ثبت‌نام بود
+      const wasInRegistrationFlow = 
+        currentStep === "register" || 
+        currentStep === "otp-new-user";
+      
+      if (wasInRegistrationFlow) {
+        const token = localStorage.getItem("access_token");
+        if (token) {
+          console.log("🗑️ پاک کردن توکن موقت به دلیل خروج از صفحه در حین ثبت‌نام");
+          localStorage.removeItem("access_token");
+        }
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // فقط یک بار mount/unmount
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Handlers
+  const handlePhoneSubmit = async (phoneValue: string) => {
+    try {
+      enqueueSnackbar("در حال بررسی شماره موبایل...", { variant: "info" });
+      const result = await checkNumber.mutateAsync({ phone: phoneValue });
 
-    // Simple validation
-    const newErrors: { username?: string; password?: string } = {};
+      if (result.new_user) {
+        // کاربر جدید - ارسال OTP
+        await sendOtp.mutateAsync({ phone: phoneValue });
+        setStep("otp-new-user");
+        enqueueSnackbar("کد تایید به شماره شما ارسال شد", { variant: "success" });
+      } else {
+        // کاربر موجود - نمایش فرم لاگین با رمز
+        setStep("password-login");
+        enqueueSnackbar("لطفاً با رمز عبور خود وارد شوید", { variant: "info" });
+      }
+    } catch (err: any) {
+      enqueueSnackbar(
+        err?.response?.data?.message ||
+          err?.message ||
+          "خطا در بررسی شماره موبایل",
+        { variant: "error" }
+      );
+    }
+  };
 
-    if (!username) {
-      newErrors.username = "نام کاربری الزامی است";
+  const handleOtpSubmit = async () => {
+    const otpCode = otp.join("");
+    if (otpCode.length !== 6) {
+      enqueueSnackbar("کد وارد شده باید 6 رقم باشد", { variant: "error" });
+      return;
     }
 
-    if (!password) {
-      newErrors.password = "رمز عبور الزامی است";
-    } else if (password.length < 3) {
-      newErrors.password = "رمز عبور باید حداقل ۳ کاراکتر باشد";
-    }
+    try {
+      enqueueSnackbar("در حال تایید کد...", { variant: "info" });
+      const result = await verifyOtp.mutateAsync({ phone, code: otpCode });
 
-    setErrors(newErrors);
-
-    if (Object.keys(newErrors).length === 0) {
-      try {
-        const result = await login({ username, password });
-
-        console.log("Login successful:", result);
-
-        // Clear form
-        setUsername("");
-        setPassword("");
-
-        // Redirect to home page after successful login
+      if (step === "otp-new-user") {
+        // کاربر جدید - به فرم ثبت نام بروید
+        setStep("register");
+        enqueueSnackbar("کد تایید شد! لطفاً اطلاعات خود را تکمیل کنید", { variant: "success" });
+      } else {
+        // کاربر موجود - لاگین شد
+        enqueueSnackbar("ورود موفقیت‌آمیز! در حال انتقال...", { variant: "success" });
         setTimeout(() => {
           navigate("/");
         }, 1500);
-      } catch (error: any) {
-        console.error("Login error:", error);
       }
+    } catch (err: any) {
+      enqueueSnackbar(
+        err?.response?.data?.message || err?.message || "کد تایید نامعتبر است",
+        { variant: "error" }
+      );
+    }
+  };
+
+  const handleRegisterSubmit = async (data: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    password: string;
+  }) => {
+    try {
+      enqueueSnackbar("در حال ثبت نام...", { variant: "info" });
+      await register.mutateAsync(data);
+      enqueueSnackbar("ثبت نام موفقیت‌آمیز! در حال ورود به سیستم...", { variant: "success" });
+      setTimeout(() => {
+        navigate("/");
+      }, 1500);
+    } catch (err: any) {
+      enqueueSnackbar(
+        err?.response?.data?.message || err?.message || "خطا در ثبت نام",
+        { variant: "error" }
+      );
+    }
+  };
+
+  const handlePasswordLogin = async (phoneNum: string, password: string) => {
+    try {
+      enqueueSnackbar("در حال ورود...", { variant: "info" });
+      await loginWithPassword.mutateAsync({
+        phone: phoneNum,
+        password,
+      });
+      enqueueSnackbar("ورود موفقیت‌آمیز! در حال انتقال...", { variant: "success" });
+      setTimeout(() => {
+        navigate("/");
+      }, 1500);
+    } catch (err: any) {
+      enqueueSnackbar(
+        err?.response?.data?.message ||
+          err?.message ||
+          "شماره یا رمز عبور اشتباه است",
+        { variant: "error" }
+      );
+    }
+  };
+
+  const handleSwitchToOtp = async () => {
+    if (!phone.trim()) {
+      enqueueSnackbar("لطفاً ابتدا شماره موبایل را وارد کنید", { variant: "warning" });
+      return;
+    }
+
+    try {
+      enqueueSnackbar("در حال ارسال کد...", { variant: "info" });
+      await sendOtp.mutateAsync({ phone });
+      setStep("otp-existing-user");
+      enqueueSnackbar("کد تایید به شماره شما ارسال شد", { variant: "success" });
+    } catch (err: any) {
+      enqueueSnackbar(
+        err?.response?.data?.message || err?.message || "خطا در ارسال کد",
+        { variant: "error" }
+      );
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setOtp(["", "", "", "", "", ""]);
+    try {
+      enqueueSnackbar("در حال ارسال مجدد کد...", { variant: "info" });
+      await sendOtp.mutateAsync({ phone });
+      enqueueSnackbar("کد تایید مجدداً ارسال شد", { variant: "success" });
+    } catch (err: any) {
+      enqueueSnackbar(
+        err?.response?.data?.message || err?.message || "خطا در ارسال مجدد کد",
+        { variant: "error" }
+      );
+    }
+  };
+
+  const handleBackToPhone = () => {
+    setStep("phone");
+    setOtp(["", "", "", "", "", ""]);
+    enqueueSnackbar("بازگشت به صفحه ورود شماره موبایل", { variant: "info" });
+  };
+
+  const isLoading =
+    checkNumber.isPending ||
+    sendOtp.isPending ||
+    verifyOtp.isPending ||
+    register.isPending ||
+    loginWithPassword.isPending;
+
+  // Render current step
+  const renderStep = () => {
+    switch (step) {
+      case "phone":
+        return (
+          <PhoneInput
+            phone={phone}
+            onPhoneChange={setPhone}
+            onSubmit={handlePhoneSubmit}
+            isLoading={isLoading}
+          />
+        );
+
+      case "otp-new-user":
+      case "otp-existing-user":
+        return (
+          <OtpInput
+            otp={otp}
+            onOtpChange={setOtp}
+            onSubmit={handleOtpSubmit}
+            onResend={handleResendOtp}
+            onBack={handleBackToPhone}
+            isLoading={isLoading}
+            phone={phone}
+          />
+        );
+
+      case "register":
+        return (
+          <RegisterForm
+            onSubmit={handleRegisterSubmit}
+            isLoading={isLoading}
+          />
+        );
+
+      case "password-login":
+        return (
+          <PasswordLogin
+            phone={phone}
+            onPhoneChange={setPhone}
+            onSubmit={handlePasswordLogin}
+            onSwitchToOtp={handleSwitchToOtp}
+            isLoading={isLoading}
+          />
+        );
+
+      default:
+        return null;
     }
   };
 
@@ -185,170 +369,17 @@ const Auth = () => {
                 color="text.secondary"
                 sx={{ mb: 4, textAlign: "center" }}
               >
-                برای ادامه لطفاً وارد حساب کاربری خود شوید
+                {step === "register"
+                  ? "لطفاً اطلاعات خود را وارد کنید"
+                  : step === "password-login"
+                    ? "برای ادامه وارد حساب کاربری خود شوید"
+                    : step === "otp-new-user" || step === "otp-existing-user"
+                      ? "کد تایید ارسال شده را وارد کنید"
+                      : "برای ورود یا ثبت نام شماره موبایل خود را وارد کنید"}
               </Typography>
 
-              {/* Success Message */}
-              {isSuccess && (
-                <Fade in>
-                  <Alert
-                    severity="success"
-                    sx={{
-                      width: "100%",
-                      mb: 2,
-                      borderRadius: 2,
-                    }}
-                  >
-                    ورود موفقیت آمیز بود! در حال انتقال...
-                  </Alert>
-                </Fade>
-              )}
-
-              {/* Error Message */}
-              {apiError && (
-                <Fade in>
-                  <Alert
-                    severity="error"
-                    sx={{
-                      width: "100%",
-                      mb: 2,
-                      borderRadius: 2,
-                    }}
-                  >
-                    {(apiError as any)?.response?.data?.message ||
-                      (apiError as any)?.message ||
-                      "خطایی در ورود رخ داد"}
-                  </Alert>
-                </Fade>
-              )}
-
-              <Box
-                component="form"
-                onSubmit={handleSubmit}
-                sx={{ width: "100%" }}
-              >
-                <TextField
-                  fullWidth
-                  margin="normal"
-                  id="username"
-                  label="نام کاربری"
-                  name="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  error={!!errors.username}
-                  helperText={errors.username}
-                  autoComplete="username"
-                  autoFocus
-                  disabled={isLoading}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <PersonIcon color="action" />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 2,
-                      transition: "all 0.3s",
-                      "&:hover": {
-                        boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.1)}`,
-                      },
-                      "&.Mui-focused": {
-                        boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
-                      },
-                    },
-                  }}
-                />
-
-                <TextField
-                  fullWidth
-                  margin="normal"
-                  id="password"
-                  label="رمز عبور"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  error={!!errors.password}
-                  helperText={errors.password}
-                  autoComplete="current-password"
-                  disabled={isLoading}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <LockIcon color="action" />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle password visibility"
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge="end"
-                          disabled={isLoading}
-                        >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 2,
-                      transition: "all 0.3s",
-                      "&:hover": {
-                        boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.1)}`,
-                      },
-                      "&.Mui-focused": {
-                        boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
-                      },
-                    },
-                  }}
-                />
-
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  size="large"
-                  disabled={isLoading}
-                  sx={{
-                    mt: 4,
-                    mb: 2,
-                    py: 1.5,
-                    borderRadius: 2,
-                    fontSize: "1.1rem",
-                    fontWeight: "bold",
-                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-                    boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.4)}`,
-                    transition: "all 0.3s",
-                    "&:hover": {
-                      transform: "translateY(-2px)",
-                      boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.5)}`,
-                    },
-                    "&:active": {
-                      transform: "translateY(0)",
-                    },
-                    "&:disabled": {
-                      background: theme.palette.action.disabledBackground,
-                    },
-                  }}
-                >
-                  {isLoading ? (
-                    <>
-                      <CircularProgress
-                        size={24}
-                        sx={{ mr: 1, color: "white" }}
-                      />
-                      در حال ورود...
-                    </>
-                  ) : (
-                    "ورود به سیستم"
-                  )}
-                </Button>
-              </Box>
+              {/* Render current step */}
+              {renderStep()}
             </Box>
           </Paper>
         </Fade>
@@ -369,4 +400,5 @@ const Auth = () => {
     </Box>
   );
 };
+
 export default Auth;

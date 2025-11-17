@@ -24,7 +24,7 @@ import {
   Shield as ShieldIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router";
-import { useLogout } from "~/api/auth.api";
+// import { useLogout } from "~/api/auth.api";
 
 const Navbar: React.FC = () => {
   const theme = useTheme();
@@ -32,7 +32,7 @@ const Navbar: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null);
 
-  const { mutateAsync: logout } = useLogout();
+  // const { mutateAsync: logout } = useLogout();
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -52,7 +52,7 @@ const Navbar: React.FC = () => {
 
   const handleLogout = async () => {
     handleMenuClose();
-    await logout();
+    // await logout();
     navigate("/auth");
   };
 
