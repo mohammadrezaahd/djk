@@ -20,11 +20,13 @@ import {
   setAttributesData,
   resetAttributes,
   getFinalAttributesObject,
+  type AttributesState,
 } from "~/store/slices/attributesSlice";
 import {
   setDetailsData,
   resetDetails,
   getFinalDetailsObject,
+  type DetailsState,
 } from "~/store/slices/detailsSlice";
 import type { ICategoryList } from "~/types/interfaces/categories.interface";
 import CategorySelector from "~/components/templates/CategorySelector";
@@ -46,8 +48,8 @@ const NewTemplatePage = () => {
   const dispatch = useAppDispatch();
   const { enqueueSnackbar } = useSnackbar();
 
-  const attributesStore = useAppSelector((state) => state.attributes);
-  const detailsStore = useAppSelector((state) => state.details);
+  const attributesStore = useAppSelector((state) => state.attributes) as AttributesState;
+  const detailsStore = useAppSelector((state) => state.details) as DetailsState;
 
   const [selectedCategory, setSelectedCategory] =
     useState<ICategoryList | null>(null);
@@ -104,11 +106,19 @@ const NewTemplatePage = () => {
 
   // استخراج categories از response
   const categories = categoriesResponse?.data?.items || [];
+  const suggestedCategories = categoriesResponse?.data?.suugest || [];
 
   // تابع برای جستجو در categories
   const handleSearchChange = (search: string) => {
     setSearchTerm(search);
   };
+
+  // Initialize empty search on component mount to get suggestions
+  useEffect(() => {
+    if (searchTerm === "") {
+      // API will be called automatically by useCategoriesList with empty search
+    }
+  }, []);
 
   // Update store when category data changes
   useEffect(() => {
@@ -256,6 +266,8 @@ const NewTemplatePage = () => {
               loadingCategories={loadingCategories}
               onCategoryChange={handleCategoryChange}
               onSearchChange={handleSearchChange}
+              suggestedCategories={suggestedCategories}
+              loadingSuggestions={loadingCategories}
             />
 
             {/* Tabs Section */}

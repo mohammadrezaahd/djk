@@ -5,6 +5,10 @@ import {
   CardContent,
   Typography,
   Grid,
+  Chip,
+  Box,
+  Skeleton,
+  Stack,
 } from "@mui/material";
 import type { ICategoryList } from "~/types/interfaces/categories.interface";
 
@@ -25,6 +29,9 @@ interface CategorySelectorProps {
   loadingCategories: boolean;
   onCategoryChange: (category: ICategoryList | null) => void;
   onSearchChange: (search: string) => void;
+  // اضافه کردن suggest ها
+  suggestedCategories: ICategoryList[];
+  loadingSuggestions: boolean;
 }
 
 const CategorySelector = ({
@@ -33,7 +40,13 @@ const CategorySelector = ({
   loadingCategories,
   onCategoryChange,
   onSearchChange,
+  suggestedCategories,
+  loadingSuggestions,
 }: CategorySelectorProps) => {
+  const handleSuggestionClick = (suggestion: ICategoryList) => {
+    onSearchChange(suggestion.title);
+  };
+
   return (
     <Grid size={{ xs: 12 }}>
       <SectionCard title="دسته‌بندی قالب">
@@ -59,6 +72,48 @@ const CategorySelector = ({
                 />
               )}
             />
+          </Grid>
+
+          {/* Suggested Categories Section */}
+          <Grid size={{ xs: 12 }}>
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1, color: "text.secondary" }}>
+                پیشنهادات:
+              </Typography>
+              {loadingSuggestions ? (
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <Skeleton 
+                      key={index} 
+                      variant="rounded" 
+                      width={80} 
+                      height={32} 
+                      sx={{ borderRadius: 2 }} 
+                    />
+                  ))}
+                </Stack>
+              ) : (
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                  {suggestedCategories.map((suggestion) => (
+                    <Chip
+                      key={suggestion.id}
+                      label={suggestion.title}
+                      variant="outlined"
+                      clickable
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      sx={{
+                        fontSize: '0.875rem',
+                        '&:hover': {
+                          backgroundColor: 'primary.light',
+                          borderColor: 'primary.main',
+                          color: 'primary.contrastText',
+                        },
+                      }}
+                    />
+                  ))}
+                </Stack>
+              )}
+            </Box>
           </Grid>
         </Grid>
       </SectionCard>

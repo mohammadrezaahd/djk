@@ -4,7 +4,7 @@ import type { ICategoryAttr } from "~/types/interfaces/attributes.interface";
 import type { IPostAttr } from "~/types/dtos/attributes.dto";
 import { TemplateSource } from "~/types/dtos/templates.dto";
 
-interface AttributesState {
+export interface AttributesState {
   currentCategoryId: number | null;
   attributesData: ICategoryAttr | null;
   formData: { [key: string]: any };

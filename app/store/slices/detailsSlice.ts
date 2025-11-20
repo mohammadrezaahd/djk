@@ -4,7 +4,7 @@ import type { ICategoryDetails } from "~/types/interfaces/details.interface";
 import type { IPostDetail } from "~/types/dtos/details.dto";
 import { TemplateSource } from "~/types/dtos/templates.dto";
 
-interface DetailsState {
+export interface DetailsState {
   currentCategoryId: number | null;
   detailsData: ICategoryDetails | null;
   formData: { [key: string]: any };

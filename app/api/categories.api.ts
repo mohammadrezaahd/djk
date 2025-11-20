@@ -16,12 +16,14 @@ const getCategoriesList = async (
   page: number,
   limit: number
 ) => {
-  return apiUtils<{ items: ICategoryList[] }>(async () => {
-    const response = await authorizedGet(
-      `/v1/categories/list?search=${search}&page=${page}&limit=${limit}&just_children=true`
-    );
-    return response.data;
-  });
+  return apiUtils<{ items: ICategoryList[], suugest: ICategoryList[] }>(
+    async () => {
+      const response = await authorizedGet(
+        `/v1/categories/list?search=${search}&page=${page}&limit=${limit}&just_children=true`
+      );
+      return response.data;
+    }
+  );
 };
 
 const getCategories = async (
