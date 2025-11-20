@@ -1,30 +1,90 @@
-import React from "react";
+import React, { type FC } from "react";
 import Icon from "./Icon";
-import type { IconProps } from "./Icon";
+import type { IconProps, VariantType } from "./Icon";
 
-// کامپوننت خاص برای آیکون Trophy Solid
-export interface TrophySolidProps extends Omit<IconProps, "name" | "variant"> {}
+interface CustomIconProps extends Omit<IconProps, "name" | "variant"> {}
 
-export const TrophySolid: React.FC<TrophySolidProps> = (props) => {
-  return <Icon name="trophy" variant="solid" {...props} />;
+const iconGroups = {
+  "jelly-duo-regular": {
+    GalleryIcon: "images",
+    ImportIcon: "arrow-down-to-line",
+    TagIcon: "tag",
+    GridIcon: "grid",
+    TemplateIcon: "layer-group",
+    MenuBars: "bars",
+    AngleDown: "angle-down",
+    AngleUp: "angle-up",
+    AiIcon: "sparkles",
+    SpeedIcon: "gauge",
+    SearchIcon: "magnifying-glass",
+    LoginIcon: "arrow-right-to-bracket",
+    CircleCheckIcon: "circle-check",
+    QuoteIcon: "quote-left",
+    EmailIcon: "envelope",
+    PhoneIcon: "phone",
+    LocationIcon: "location-dot",
+    UserIcon: "user",
+    SettingsIcon: "gear",
+    NotificationIcon: "bell",
+    HelpIcon: "circle-question",
+    LogoutIcon: "arrow-right-from-bracket",
+    AccountIcon: "circle-user",
+    ShieldIcon: "shield",
+  },
+
+  "duotone-regular": {
+    RocketIcon: "rocket-launch",
+    CloudUploadIcon: "cloud-arrow-up",
+    TrendUpIcon: "arrow-trend-up",
+  },
+  brands: {
+    TelegramIcon: "telegram",
+    WhatsappIcon: "whatsapp",
+    InstagramIcon: "instagram",
+  },
 };
 
-// کامپوننت خاص برای آیکون Trophy Regular
-export interface TrophyRegularProps extends Omit<IconProps, "name" | "variant"> {}
+const Icons: Record<string, FC<CustomIconProps>> = {};
 
-export const TrophyRegular: React.FC<TrophyRegularProps> = (props) => {
-  return <Icon name="trophy" variant="regular" {...props} />;
-};
+// 🔧 ساخت خودکار کامپوننت‌ها
+Object.entries(iconGroups).forEach(([variant, icons]) => {
+  Object.entries(icons).forEach(([componentName, iconName]) => {
+    const Component: FC<CustomIconProps> = (props) => (
+      <Icon name={iconName} variant={variant as VariantType} {...props} />
+    );
+    Icons[componentName] = Component;
+  });
+});
 
-// فانکشن یاردهندۀ برای ساخت کامپوننت‌های آیکون جدید
-export const createIconComponent = (name: string, variant: "solid" | "regular" = "solid") => {
-  const IconComponent: React.FC<Omit<IconProps, "name" | "variant">> = (props) => {
-    return <Icon name={name} variant={variant} {...props} />;
-  };
-  
-  IconComponent.displayName = `${name.charAt(0).toUpperCase() + name.slice(1)}${
-    variant === "solid" ? "Solid" : "Regular"
-  }`;
-  
-  return IconComponent;
-};
+export const {
+  GalleryIcon,
+  ImportIcon,
+  TagIcon,
+  GridIcon,
+  TemplateIcon,
+  MenuBars,
+  AngleDown,
+  AngleUp,
+  AiIcon,
+  SpeedIcon,
+  SearchIcon,
+  RocketIcon,
+  CloudUploadIcon,
+  LoginIcon,
+  CircleCheckIcon,
+  QuoteIcon,
+  EmailIcon,
+  PhoneIcon,
+  LocationIcon,
+  UserIcon,
+  TelegramIcon,
+  WhatsappIcon,
+  InstagramIcon,
+  TrendUpIcon,
+  SettingsIcon,
+  NotificationIcon,
+  HelpIcon,
+  LogoutIcon,
+  AccountIcon,
+  ShieldIcon,
+} = Icons;

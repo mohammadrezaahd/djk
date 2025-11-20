@@ -11,13 +11,16 @@ import {
   useTheme,
 } from "@mui/material";
 import { Link } from "react-router";
-import EmailIcon from "@mui/icons-material/Email";
-import PhoneIcon from "@mui/icons-material/Phone";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import TelegramIcon from "@mui/icons-material/Telegram";
-import InstagramIcon from "@mui/icons-material/Instagram";
-import WhatsAppIcon from "@mui/icons-material/WhatsApp";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+
+import {
+  EmailIcon,
+  PhoneIcon,
+  LocationIcon,
+  AiIcon,
+  TelegramIcon,
+  WhatsappIcon,
+  InstagramIcon,
+} from "~/components/icons/IconComponents";
 
 const Footer: React.FC = () => {
   const theme = useTheme();
@@ -73,7 +76,7 @@ const Footer: React.FC = () => {
       subtitle: "پاسخ در کمتر از ۲ ساعت",
     },
     {
-      icon: <LocationOnIcon />,
+      icon: <LocationIcon />,
       title: "تهران، ایران",
       subtitle: "دفتر مرکزی",
     },
@@ -91,7 +94,7 @@ const Footer: React.FC = () => {
       label: "اینستاگرام",
     },
     {
-      icon: <WhatsAppIcon />,
+      icon: <WhatsappIcon />,
       href: "https://wa.me/989123456789",
       label: "واتساپ",
     },
@@ -139,11 +142,11 @@ const Footer: React.FC = () => {
                     width: 50,
                     height: 50,
                     borderRadius: 2,
-                    objectFit: 'contain'
+                    objectFit: "contain",
                   }}
                   onError={(e: any) => {
-                    console.error('Logo failed to load:', e.target.src);
-                    e.target.style.display = 'none';
+                    console.error("Logo failed to load:", e.target.src);
+                    e.target.style.display = "none";
                   }}
                 />
                 <Typography
@@ -347,7 +350,12 @@ const Footer: React.FC = () => {
               © ۲۰۲۵ هوش مارکت. تمامی حقوق محفوظ است.
             </Typography>
 
-            <Box display="flex" gap={3} flexWrap="wrap" justifyContent={{ xs: "center", md: "flex-start" }}>
+            <Box
+              display="flex"
+              gap={3}
+              flexWrap="wrap"
+              justifyContent={{ xs: "center", md: "flex-start" }}
+            >
               <Button
                 component={Link}
                 to="/terms"

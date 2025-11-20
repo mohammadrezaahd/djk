@@ -9,10 +9,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { Link } from "react-router";
-import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-
+import { RocketIcon, AiIcon, TrendUpIcon } from "../icons/IconComponents";
 const CTASection: React.FC = () => {
   const theme = useTheme();
 
@@ -110,7 +107,7 @@ const CTASection: React.FC = () => {
                   backdropFilter: "blur(10px)",
                 }}
               >
-                <AutoAwesomeIcon sx={{ fontSize: 16 }} />
+                <AiIcon style={{ fontSize: 16 }} />
                 آماده‌ای هوشمندتر بفروشی؟
               </Box>
 
@@ -195,7 +192,7 @@ const CTASection: React.FC = () => {
                 to="/dashboard"
                 variant="contained"
                 size="large"
-                startIcon={<RocketLaunchIcon />}
+                startIcon={<RocketIcon />}
                 sx={{
                   background:
                     "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
@@ -224,7 +221,7 @@ const CTASection: React.FC = () => {
                 to="/demo"
                 variant="outlined"
                 size="large"
-                startIcon={<TrendingUpIcon />}
+                startIcon={<TrendUpIcon />}
                 sx={{
                   borderRadius: 3,
                   px: 6,

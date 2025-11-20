@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Box } from "@mui/material";
 
+export type VariantType =
+  | "solid"
+  | "regular"
+  | "duotone-regular"
+  | "jelly-duo-regular";
+
 export interface IconProps {
   name: string;
-  variant?: "solid" | "regular";
+  variant?: VariantType;
   size?: string | number;
   color?: string;
   className?: string;
@@ -29,19 +35,19 @@ const Icon: React.FC<IconProps> = ({
       try {
         setLoading(true);
         setError(false);
-        
+
         const response = await fetch(`/icons/${variant}/${name}.svg`);
         if (!response.ok) {
           throw new Error(`Icon not found: ${name}`);
         }
-        
+
         let svgText = await response.text();
-        
+
         // Replace fill="currentColor" with the specified color
         if (color !== "currentColor") {
           svgText = svgText.replace(/fill="currentColor"/g, `fill="${color}"`);
         }
-        
+
         setSvgContent(svgText);
       } catch (err) {
         console.warn(`Failed to load icon: ${name} (${variant})`, err);
@@ -106,13 +112,14 @@ const Icon: React.FC<IconProps> = ({
         justifyContent: "center",
         width: typeof size === "number" ? `${size}px` : size,
         height: typeof size === "number" ? `${size}px` : size,
-        cursor: onClick ? "pointer" : "default",
+        // cursor: onClick ? "pointer" : "default",
         "& svg": {
           width: "100%",
           height: "100%",
           fill: color,
         },
         ...style,
+        cursor: "pointer",
       }}
       dangerouslySetInnerHTML={{ __html: svgContent }}
     />

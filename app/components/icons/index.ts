@@ -7,14 +7,15 @@ export { useIconLoader, useAvailableIcons } from "./useIconLoader";
 export type { IconMetadata } from "./useIconLoader";
 
 // اکسپورت کامپوننت‌های خاص آیکون‌ها
-export { 
-  TrophySolid, 
-  TrophyRegular, 
-  createIconComponent 
-} from "./IconComponents";
-export type { 
-  TrophySolidProps, 
-  TrophyRegularProps 
+export {
+  GalleryIcon,
+  ImportIcon,
+  TagIcon,
+  GridIcon,
+  TemplateIcon,
+  MenuBars,
+  AngleDown,
+  AngleUp,
 } from "./IconComponents";
 
 // اکسپورت پیش‌فرض

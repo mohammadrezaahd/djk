@@ -14,15 +14,16 @@ import {
   alpha,
   Tooltip,
 } from "@mui/material";
+
 import {
-  Person as PersonIcon,
-  Settings as SettingsIcon,
-  Notifications as NotificationsIcon,
-  Help as HelpIcon,
-  ExitToApp as LogoutIcon,
-  AccountCircle as AccountIcon,
-  Shield as ShieldIcon,
-} from "@mui/icons-material";
+  SettingsIcon,
+  NotificationIcon,
+  HelpIcon,
+  LogoutIcon,
+  AccountIcon,
+  ShieldIcon,
+} from "../icons/IconComponents";
+
 import { useNavigate } from "react-router";
 import { useLogout } from "~/api/auth.api";
 import { useProfile } from "~/api/profile.api";
@@ -40,10 +41,10 @@ const Navbar: React.FC = () => {
 
   // دریافت اطلاعات کاربر از store
   const currentUser = useAppSelector((state) => state.user.currentUser);
-  
+
   // دریافت اطلاعات کاربر از API
   const { data: userData, isSuccess } = useProfile();
-  
+
   // ذخیره اطلاعات کاربر در store
   useEffect(() => {
     if (isSuccess && userData?.data) {
@@ -71,16 +72,16 @@ const Navbar: React.FC = () => {
 
   const handleLogout = async () => {
     handleMenuClose();
-    
+
     try {
       enqueueSnackbar("در حال خروج از حساب کاربری...", { variant: "info" });
       await logout();
-      
+
       // پاک کردن اطلاعات کاربر از store
       dispatch(clearUser());
-      
+
       enqueueSnackbar("با موفقیت از حساب خارج شدید", { variant: "success" });
-      
+
       // هدایت به صفحه ورود
       setTimeout(() => {
         navigate("/auth", { replace: true });
@@ -116,7 +117,7 @@ const Navbar: React.FC = () => {
           }}
         >
           <Badge badgeContent={3} color="error">
-            <NotificationsIcon />
+            <NotificationIcon />
           </Badge>
         </IconButton>
       </Tooltip>
@@ -156,9 +157,9 @@ const Navbar: React.FC = () => {
               fontWeight: "bold",
             }}
           >
-            {currentUser?.first_name?.[0]?.toUpperCase() || 
-             currentUser?.email?.[0]?.toUpperCase() || 
-             "U"}
+            {currentUser?.first_name?.[0]?.toUpperCase() ||
+              currentUser?.email?.[0]?.toUpperCase() ||
+              "U"}
           </Avatar>
         </IconButton>
       </Tooltip>
@@ -208,9 +209,9 @@ const Navbar: React.FC = () => {
                 background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
               }}
             >
-              {currentUser?.first_name?.[0]?.toUpperCase() || 
-               currentUser?.email?.[0]?.toUpperCase() || 
-               "U"}
+              {currentUser?.first_name?.[0]?.toUpperCase() ||
+                currentUser?.email?.[0]?.toUpperCase() ||
+                "U"}
             </Avatar>
             <Box>
               <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
@@ -218,7 +219,11 @@ const Navbar: React.FC = () => {
                   ? `${currentUser.first_name} ${currentUser.last_name}`
                   : "کاربر محترم"}
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ fontSize: "0.75rem" }}
+              >
                 {currentUser?.email || currentUser?.phone || "بدون اطلاعات"}
               </Typography>
             </Box>
@@ -238,11 +243,10 @@ const Navbar: React.FC = () => {
           }}
         >
           <ListItemIcon>
-            <AccountIcon fontSize="small" />
+            <AccountIcon size={20} />
           </ListItemIcon>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, flex: 1 }}>
             <Typography>پروفایل من</Typography>
-            <Chip label="به زودی" size="small" color="primary" />
           </Box>
         </MenuItem>
 
@@ -256,7 +260,7 @@ const Navbar: React.FC = () => {
           }}
         >
           <ListItemIcon>
-            <SettingsIcon fontSize="small" />
+            <SettingsIcon size={20} />
           </ListItemIcon>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, flex: 1 }}>
             <Typography>تنظیمات</Typography>
@@ -274,7 +278,7 @@ const Navbar: React.FC = () => {
           }}
         >
           <ListItemIcon>
-            <ShieldIcon fontSize="small" />
+            <ShieldIcon size={20} />
           </ListItemIcon>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, flex: 1 }}>
             <Typography>امنیت و حریم خصوصی</Typography>
@@ -296,9 +300,11 @@ const Navbar: React.FC = () => {
           }}
         >
           <ListItemIcon>
-            <LogoutIcon fontSize="small" color="error" />
+            <LogoutIcon size={20} color="error" />
           </ListItemIcon>
-          <Typography>{isLoggingOut ? "در حال خروج..." : "خروج از حساب"}</Typography>
+          <Typography>
+            {isLoggingOut ? "در حال خروج..." : "خروج از حساب"}
+          </Typography>
         </MenuItem>
       </Menu>
 

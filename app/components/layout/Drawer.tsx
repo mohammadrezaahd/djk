@@ -13,19 +13,23 @@ import {
   IconButton,
   useTheme,
 } from "@mui/material";
-import WidgetsIcon from "@mui/icons-material/Widgets";
-import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
-import LocalShippingIcon from "@mui/icons-material/LocalShipping";
-import SellIcon from "@mui/icons-material/Sell";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import MenuOpenIcon from "@mui/icons-material/MenuOpen";
-import DashboardIcon from "@mui/icons-material/Dashboard";
+
+// import DashboardIcon from "@mui/icons-material/Dashboard";
 import { Link, useLocation } from "react-router";
 import type { SvgIconComponent } from "@mui/icons-material";
+import {
+  AngleDown,
+  AngleUp,
+  GalleryIcon,
+  GridIcon,
+  ImportIcon,
+  MenuBars,
+  TagIcon,
+  TemplateIcon,
+} from "../icons/IconComponents";
+import type { FC, ComponentType } from "react";
 
 const drawerWidth = 280;
-const collapsedDrawerWidth = 64;
 
 interface SubMenuItem {
   id: string;
@@ -37,7 +41,7 @@ interface MenuItem {
   id: string;
   title: string;
   path?: string;
-  icon: SvgIconComponent;
+  icon: SvgIconComponent | ComponentType<any>;
   expandable?: boolean;
   subItems?: SubMenuItem[];
 }
@@ -47,12 +51,12 @@ const menuItems: MenuItem[] = [
     id: "dashboard",
     title: "داشبورد",
     path: "/dashboard",
-    icon: DashboardIcon,
+    icon: GridIcon,
   },
   {
     id: "templates",
     title: "قالب ها",
-    icon: WidgetsIcon,
+    icon: TemplateIcon,
     expandable: true,
     subItems: [
       {
@@ -71,18 +75,18 @@ const menuItems: MenuItem[] = [
     id: "gallery",
     title: "گالری",
     path: "/dashboard/gallery",
-    icon: PhotoLibraryIcon,
+    icon: GalleryIcon,
   },
   {
     id: "transportation",
     title: "انتقال محصول",
     path: "/dashboard/transportation",
-    icon: LocalShippingIcon,
+    icon: ImportIcon,
   },
   {
     id: "products",
     title: "محصولات",
-    icon: SellIcon,
+    icon: TagIcon,
     expandable: true,
     subItems: [
       {
@@ -172,10 +176,12 @@ const Drawer = ({
               xs: "none",
               sm: "flex",
               marginLeft: desktopCollapsed ? 0 : "-5px",
+              cursor: "pointer",
+              ":hover": { color: theme.palette.primary.main },
             },
           }}
         >
-          <MenuOpenIcon />
+          <MenuBars />
         </IconButton>
       </Toolbar>
       <Divider />
@@ -200,6 +206,7 @@ const Drawer = ({
                     "&:hover": {
                       backgroundColor: theme.palette.action.hover,
                     },
+                    margin: "4px",
                   }}
                 >
                   <ListItemIcon
@@ -227,7 +234,11 @@ const Drawer = ({
                         }}
                       />
                       {item.expandable &&
-                        (isOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />)}
+                        (isOpen ? (
+                          <AngleUp size={15} />
+                        ) : (
+                          <AngleDown size={15} />
+                        ))}
                     </>
                   )}
                 </ListItemButton>
