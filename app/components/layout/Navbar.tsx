@@ -234,7 +234,7 @@ const Navbar: React.FC = () => {
 
         {/* Menu Items */}
         <MenuItem
-          onClick={() => handleNavigation("/profile")}
+          onClick={() => handleNavigation("/dashboard/profile")}
           sx={{
             py: 1.5,
             "&:hover": {
