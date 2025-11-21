@@ -112,23 +112,36 @@ const NewProductPage = () => {
     const newImages: number[] = [];
 
     // Check if active details template has images
-    if (activeDetailsTemplateData?.data?.images && activeDetailsTemplateData.data.images.length > 0) {
+    if (
+      activeDetailsTemplateData?.data?.images &&
+      activeDetailsTemplateData.data.images.length > 0
+    ) {
       newImages.push(...activeDetailsTemplateData.data.images);
     }
 
     // Check if active attributes template has images
-    if (activeAttributesTemplateData?.data?.images && activeAttributesTemplateData.data.images.length > 0) {
+    if (
+      activeAttributesTemplateData?.data?.images &&
+      activeAttributesTemplateData.data.images.length > 0
+    ) {
       newImages.push(...activeAttributesTemplateData.data.images);
     }
 
     // Auto-select images that aren't already selected
     if (newImages.length > 0) {
       const currentImages = new Set(productState.selectedImages);
-      const imagesToAdd = newImages.filter(imgId => !currentImages.has(imgId));
-      
+      const imagesToAdd = newImages.filter(
+        (imgId) => !currentImages.has(imgId)
+      );
+
       if (imagesToAdd.length > 0) {
-        console.log(`🖼️ Auto-selecting ${imagesToAdd.length} images from templates:`, imagesToAdd);
-        dispatch(setSelectedImages([...productState.selectedImages, ...imagesToAdd]));
+        console.log(
+          `🖼️ Auto-selecting ${imagesToAdd.length} images from templates:`,
+          imagesToAdd
+        );
+        dispatch(
+          setSelectedImages([...productState.selectedImages, ...imagesToAdd])
+        );
       }
     }
   }, [
@@ -136,19 +149,23 @@ const NewProductPage = () => {
     activeAttributesTemplateData?.data?.images,
     // Removed productState.selectedImages from deps to avoid infinite loop
     // We check it inside the effect instead
-    dispatch
+    dispatch,
   ]);
 
   // Log when templates change for debugging
   useEffect(() => {
     if (activeDetailsTemplate) {
-      console.log(`📋 Active details template changed to: ${activeDetailsTemplate.title} (ID: ${activeDetailsTemplate.id})`);
+      console.log(
+        `📋 Active details template changed to: ${activeDetailsTemplate.title} (ID: ${activeDetailsTemplate.id})`
+      );
     }
   }, [activeDetailsTemplate?.id, activeDetailsTemplate?.title]);
 
   useEffect(() => {
     if (activeAttributesTemplate) {
-      console.log(`🏷️ Active attributes template changed to: ${activeAttributesTemplate.title} (ID: ${activeAttributesTemplate.id})`);
+      console.log(
+        `🏷️ Active attributes template changed to: ${activeAttributesTemplate.title} (ID: ${activeAttributesTemplate.id})`
+      );
     }
   }, [activeAttributesTemplate?.id, activeAttributesTemplate?.title]);
 
@@ -803,6 +820,8 @@ const NewProductPage = () => {
               loadingCategories={categoriesLoading}
               onCategoryChange={handleCategorySelect}
               onSearchChange={setCategorySearch}
+              // loadingSuggestions={categorySearchLoading}
+              // suggestedCategories={[]}
             />
           );
 

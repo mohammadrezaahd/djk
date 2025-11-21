@@ -30,8 +30,8 @@ interface CategorySelectorProps {
   onCategoryChange: (category: ICategoryList | null) => void;
   onSearchChange: (search: string) => void;
   // اضافه کردن suggest ها
-  suggestedCategories: ICategoryList[];
-  loadingSuggestions: boolean;
+  suggestedCategories?: ICategoryList[];
+  loadingSuggestions?: boolean;
 }
 
 const CategorySelector = ({
@@ -77,24 +77,27 @@ const CategorySelector = ({
           {/* Suggested Categories Section */}
           <Grid size={{ xs: 12 }}>
             <Box sx={{ mt: 2 }}>
-              <Typography variant="subtitle2" sx={{ mb: 1, color: "text.secondary" }}>
+              <Typography
+                variant="subtitle2"
+                sx={{ mb: 1, color: "text.secondary" }}
+              >
                 پیشنهادات:
               </Typography>
               {loadingSuggestions ? (
                 <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                   {Array.from({ length: 5 }).map((_, index) => (
-                    <Skeleton 
-                      key={index} 
-                      variant="rounded" 
-                      width={80} 
-                      height={32} 
-                      sx={{ borderRadius: 2 }} 
+                    <Skeleton
+                      key={index}
+                      variant="rounded"
+                      width={80}
+                      height={32}
+                      sx={{ borderRadius: 2 }}
                     />
                   ))}
                 </Stack>
               ) : (
                 <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                  {suggestedCategories.map((suggestion) => (
+                  {suggestedCategories?.map((suggestion) => (
                     <Chip
                       key={suggestion.id}
                       label={suggestion.title}
@@ -102,11 +105,11 @@ const CategorySelector = ({
                       clickable
                       onClick={() => handleSuggestionClick(suggestion)}
                       sx={{
-                        fontSize: '0.875rem',
-                        '&:hover': {
-                          backgroundColor: 'primary.light',
-                          borderColor: 'primary.main',
-                          color: 'primary.contrastText',
+                        fontSize: "0.875rem",
+                        "&:hover": {
+                          backgroundColor: "primary.light",
+                          borderColor: "primary.main",
+                          color: "primary.contrastText",
                         },
                       }}
                     />
