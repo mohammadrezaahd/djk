@@ -28,7 +28,7 @@
 }
 
 @theme {
-  --font-sans: "YekanBakh", "YekanBakhFaNum", ui-sans-serif, system-ui, sans-serif,
+  --font-sans: "YekanBakhFaNum", "YekanBakh", ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 

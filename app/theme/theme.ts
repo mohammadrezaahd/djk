@@ -57,7 +57,7 @@ const palette = {
 
 // تنظیمات typography با فونت یکان بخ
 const typography = {
-  fontFamily: ["YekanBakh", "YekanBakhFaNum", "Arial", "sans-serif"].join(","),
+  fontFamily: ["YekanBakhFaNum", "YekanBakh", "Arial", "sans-serif"].join(","),
   h1: {
     fontSize: "2.125rem",
     fontWeight: 300,
