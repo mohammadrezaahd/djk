@@ -44,6 +44,7 @@ const CategorySelector = ({
   loadingSuggestions,
 }: CategorySelectorProps) => {
   const handleSuggestionClick = (suggestion: ICategoryList) => {
+    onCategoryChange(suggestion);
     onSearchChange(suggestion.title);
   };
 

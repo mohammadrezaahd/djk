@@ -80,6 +80,10 @@ const NewProductPage = () => {
   // Category queries
   const { data: categoriesData, isLoading: categoriesLoading } =
     useCategoriesList(categorySearch, 1, 50);
+  
+  // استخراج categories و suggestions از response
+  const categories = categoriesData?.data?.items || [];
+  const suggestedCategories = categoriesData?.data?.suugest || [];
   const {
     mutateAsync: saveProduct,
     isPending: isProductSaving,
@@ -815,13 +819,13 @@ const NewProductPage = () => {
         case FormStep.CATEGORY_SELECTION:
           return (
             <CategorySelector
-              categories={categoriesData?.data?.items || []}
+              categories={categories}
               selectedCategory={selectedCategory}
               loadingCategories={categoriesLoading}
               onCategoryChange={handleCategorySelect}
               onSearchChange={setCategorySearch}
-              // loadingSuggestions={categorySearchLoading}
-              // suggestedCategories={[]}
+              suggestedCategories={suggestedCategories}
+              loadingSuggestions={categoriesLoading}
             />
           );
 

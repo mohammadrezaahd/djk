@@ -71,10 +71,13 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
     detailsData.forEach((detailTemplate) => {
       if (detailTemplate?.bind) {
         // Add single brand chip if brands exist
-        if (detailTemplate.bind.brands && detailTemplate.bind.brands.length > 0) {
+        if (
+          detailTemplate.bind.brands &&
+          detailTemplate.bind.brands.length > 0
+        ) {
           allBadges.push({
             id: "brand",
-            title: "brand",
+            title: "مدل",
             type: "detail",
           });
         }
@@ -83,7 +86,7 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
         if (detailTemplate.bind.brand_model) {
           allBadges.push({
             id: "brand_model",
-            title: "brand_model",
+            title: "مدل برند",
             type: "detail",
           });
         }
@@ -100,33 +103,36 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
     // Skip update if this is from internal typing
     if (isInternalUpdate.current) {
       isInternalUpdate.current = false;
-      
+
       // Just ensure event listeners are attached
-      const closeButtons = ref.current.querySelectorAll('.badge-close');
+      const closeButtons = ref.current.querySelectorAll(".badge-close");
       closeButtons.forEach((btn) => {
         const badgeContainer = btn.parentElement;
-        if (badgeContainer && !badgeContainer.hasAttribute('data-listeners-attached')) {
-          badgeContainer.setAttribute('data-listeners-attached', 'true');
-          
-          btn.addEventListener('mouseenter', () => {
-            (btn as HTMLElement).style.backgroundColor = 'rgba(0,0,0,0.1)';
+        if (
+          badgeContainer &&
+          !badgeContainer.hasAttribute("data-listeners-attached")
+        ) {
+          badgeContainer.setAttribute("data-listeners-attached", "true");
+
+          btn.addEventListener("mouseenter", () => {
+            (btn as HTMLElement).style.backgroundColor = "rgba(0,0,0,0.1)";
           });
-          btn.addEventListener('mouseleave', () => {
-            (btn as HTMLElement).style.backgroundColor = 'transparent';
+          btn.addEventListener("mouseleave", () => {
+            (btn as HTMLElement).style.backgroundColor = "transparent";
           });
-          
+
           const removeBadge = (e: Event) => {
             e.preventDefault();
             e.stopPropagation();
             badgeContainer.remove();
             handleInput();
           };
-          
-          btn.addEventListener('click', removeBadge);
-          badgeContainer.addEventListener('click', removeBadge);
+
+          btn.addEventListener("click", removeBadge);
+          badgeContainer.addEventListener("click", removeBadge);
         }
       });
-      
+
       lastValue.current = value;
       return;
     }
@@ -157,44 +163,46 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
     if (currentValue === value) {
       return;
     }
-    
+
     // Parse the value and create HTML
     const parts = value.split(/(\{[^}]+\})/g);
-    const html = parts.map((part) => {
-      if (part.startsWith("{") && part.endsWith("}")) {
-        const id = part.slice(1, -1);
-        const badge = badges.find((b) => b.id.toString() === id);
-        if (badge) {
-          return `<span style="display: inline-flex; align-items: center; background: #E3F2FD; border-radius: 8px; padding: 2px 6px; margin: 0 2px; cursor: pointer;" contenteditable="false" data-id="${id}" data-listeners-attached="true"><span style="margin-right: 4px;">${badge.title}</span><span style="font-size: 14px; font-weight: bold; cursor: pointer; padding: 0 2px; border-radius: 50%; line-height: 1;" class="badge-close" title="حذف">×</span></span>`;
+    const html = parts
+      .map((part) => {
+        if (part.startsWith("{") && part.endsWith("}")) {
+          const id = part.slice(1, -1);
+          const badge = badges.find((b) => b.id.toString() === id);
+          if (badge) {
+            return `<span style="display: inline-flex; align-items: center; background: #E3F2FD; border-radius: 8px; padding: 2px 6px; margin: 0 2px; cursor: pointer;" contenteditable="false" data-id="${id}" data-listeners-attached="true"><span style="margin-right: 4px;">${badge.title}</span><span style="font-size: 14px; font-weight: bold; cursor: pointer; padding: 0 2px; border-radius: 50%; line-height: 1;" class="badge-close" title="حذف">×</span></span>`;
+          }
+          return part;
         }
         return part;
-      }
-      return part;
-    }).join("");
+      })
+      .join("");
 
     ref.current.innerHTML = html;
-    
+
     // Re-attach event listeners to close buttons
-    const closeButtons = ref.current.querySelectorAll('.badge-close');
+    const closeButtons = ref.current.querySelectorAll(".badge-close");
     closeButtons.forEach((btn) => {
       const badgeContainer = btn.parentElement;
       if (badgeContainer) {
-        btn.addEventListener('mouseenter', () => {
-          (btn as HTMLElement).style.backgroundColor = 'rgba(0,0,0,0.1)';
+        btn.addEventListener("mouseenter", () => {
+          (btn as HTMLElement).style.backgroundColor = "rgba(0,0,0,0.1)";
         });
-        btn.addEventListener('mouseleave', () => {
-          (btn as HTMLElement).style.backgroundColor = 'transparent';
+        btn.addEventListener("mouseleave", () => {
+          (btn as HTMLElement).style.backgroundColor = "transparent";
         });
-        
+
         const removeBadge = (e: Event) => {
           e.preventDefault();
           e.stopPropagation();
           badgeContainer.remove();
           handleInput();
         };
-        
-        btn.addEventListener('click', removeBadge);
-        badgeContainer.addEventListener('click', removeBadge);
+
+        btn.addEventListener("click", removeBadge);
+        badgeContainer.addEventListener("click", removeBadge);
       }
     });
   }, [value, badges]);
@@ -225,11 +233,12 @@ const DynamicTitleBuilder: React.FC<DynamicTitleBuilderProps> = ({
 
     // Create a range at the end of the contentEditable div
     const range = document.createRange();
-    
+
     // Check if we have existing content
     if (ref.current.childNodes.length > 0) {
       // Move to the end of the content
-      const lastNode = ref.current.childNodes[ref.current.childNodes.length - 1];
+      const lastNode =
+        ref.current.childNodes[ref.current.childNodes.length - 1];
       range.setStartAfter(lastNode);
       range.setEndAfter(lastNode);
     } else {
