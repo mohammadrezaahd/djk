@@ -36,6 +36,7 @@ const iconGroups = {
     RocketIcon: "rocket-launch",
     CloudUploadIcon: "cloud-arrow-up",
     TrendUpIcon: "arrow-trend-up",
+    SupportIcon: "user-headset",
   },
   brands: {
     TelegramIcon: "telegram",
@@ -87,4 +88,5 @@ export const {
   LogoutIcon,
   AccountIcon,
   ShieldIcon,
+  SupportIcon,
 } = Icons;

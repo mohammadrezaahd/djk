@@ -20,6 +20,7 @@ const Layout = ({ children, title }: LayoutProps) => {
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [productTemplatesOpen, setProductTemplatesOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
+  const [ticketingOpen, setTicketingOpen] = useState(false);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
 
   // Keep templates menu open if any child path is active
@@ -29,6 +30,9 @@ const Layout = ({ children, title }: LayoutProps) => {
     }
     if (isChildPathActive("/dashboard/products")) {
       setProductsOpen(true);
+    }
+    if (isChildPathActive("/dashboard/tickets")) {
+      setTicketingOpen(true);
     }
   }, [location.pathname]);
 
@@ -52,6 +56,7 @@ const Layout = ({ children, title }: LayoutProps) => {
       setTemplatesOpen(false);
       setProductTemplatesOpen(false);
       setProductsOpen(false);
+      setTicketingOpen(false);
     }
   };
 
@@ -63,6 +68,11 @@ const Layout = ({ children, title }: LayoutProps) => {
   const handleProductsClick = () => {
     if (desktopCollapsed) return; // در حالت collapsed کلیک نکند
     setProductsOpen(!productsOpen);
+  };
+
+  const handleTicketingClick = () => {
+    if (desktopCollapsed) return; // در حالت collapsed کلیک نکند
+    setTicketingOpen(!ticketingOpen);
   };
 
   return (
@@ -84,6 +94,8 @@ const Layout = ({ children, title }: LayoutProps) => {
         handleProductTemplatesClick={handleProductTemplatesClick}
         productsOpen={productsOpen}
         handleProductsClick={handleProductsClick}
+        ticketingOpen={ticketingOpen}
+        handleTicketingClick={handleTicketingClick}
         currentDrawerWidth={currentDrawerWidth}
       />
 

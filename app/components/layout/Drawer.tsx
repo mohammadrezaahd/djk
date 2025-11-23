@@ -24,6 +24,7 @@ import {
   GridIcon,
   ImportIcon,
   MenuBars,
+  SupportIcon,
   TagIcon,
   TemplateIcon,
 } from "../icons/IconComponents";
@@ -101,6 +102,12 @@ const menuItems: MenuItem[] = [
       },
     ],
   },
+  {
+    id: "ticketing",
+    title: "پشتیبانی",
+    path: "/dashboard/ticketing",
+    icon: SupportIcon,
+  },
 ];
 
 interface DrawerProps {
@@ -112,6 +119,7 @@ interface DrawerProps {
   handleProductTemplatesClick: () => void;
   productsOpen: boolean;
   handleProductsClick: () => void;
+
   currentDrawerWidth: number;
 }
 
@@ -124,6 +132,7 @@ const Drawer = ({
   handleProductTemplatesClick,
   productsOpen,
   handleProductsClick,
+
   currentDrawerWidth,
 }: DrawerProps) => {
   const theme = useTheme();
