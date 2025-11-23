@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Paper,
@@ -14,7 +14,7 @@ import {
   useTheme,
   Collapse,
   Alert,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Add as AddIcon,
   Search as SearchIcon,
@@ -22,19 +22,23 @@ import {
   Refresh as RefreshIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
-} from '@mui/icons-material';
-import { useSnackbar } from 'notistack';
-import { useTickets, useDepartments } from '~/api/ticketing.api';
-import { useTicketFiltersValidation } from '~/validation/hooks/useTicketingValidation';
-import type { ITicketsList, IDepartments } from '~/types/interfaces/ticketing.interface';
-import { TicketStatus } from '~/types/interfaces/ticketing.interface';
-import TicketsList from './TicketsList';
+} from "@mui/icons-material";
+import { useSnackbar } from "notistack";
+import { useTickets, useDepartments } from "~/api/ticketing.api";
+import { useTicketFiltersValidation } from "~/validation/hooks/useTicketingValidation";
+import type {
+  ITicketsList,
+  IDepartments,
+} from "~/types/interfaces/ticketing.interface";
+import { TicketStatus } from "~/types/interfaces/ticketing.interface";
+import TicketsList from "./TicketsList";
 
 interface TicketingSidebarProps {
   selectedTicketId?: number;
   onTicketSelect: (ticketId: number) => void;
   onNewTicketClick: () => void;
   width?: number;
+  refreshTrigger?: number;
 }
 
 const TicketingSidebar: React.FC<TicketingSidebarProps> = ({
@@ -42,19 +46,20 @@ const TicketingSidebar: React.FC<TicketingSidebarProps> = ({
   onTicketSelect,
   onNewTicketClick,
   width = 400,
+  refreshTrigger = 0,
 }) => {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
-  
+
   const [tickets, setTickets] = useState<ITicketsList[]>([]);
   const [departments, setDepartments] = useState<IDepartments[]>([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   const { watch, setValue, reset } = useTicketFiltersValidation();
-  const searchValue = watch('search');
-  const statusFilter = watch('status_filter');
-  const departmentFilter = watch('department_id');
+  const searchValue = watch("search");
+  const statusFilter = watch("status_filter");
+  const departmentFilter = watch("department_id");
 
   const ticketsMutation = useTickets();
   const departmentsMutation = useDepartments();
@@ -64,6 +69,13 @@ const TicketingSidebar: React.FC<TicketingSidebarProps> = ({
     loadTickets();
     loadDepartments();
   }, []);
+
+  // Reload tickets when refreshTrigger changes (new ticket created)
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      loadTickets();
+    }
+  }, [refreshTrigger]);
 
   // Auto search with debounce
   useEffect(() => {
@@ -78,7 +90,7 @@ const TicketingSidebar: React.FC<TicketingSidebarProps> = ({
     setLoading(true);
     try {
       const filters = {
-        search: searchValue || '',
+        search: searchValue || "",
         status_filter: statusFilter || undefined,
         department_id: departmentFilter || undefined,
       };
@@ -88,8 +100,8 @@ const TicketingSidebar: React.FC<TicketingSidebarProps> = ({
         setTickets(response.data.list);
       }
     } catch (error) {
-      console.error('Error loading tickets:', error);
-      enqueueSnackbar('خطا در بارگذاری تیکت‌ها', { variant: 'error' });
+      console.error("Error loading tickets:", error);
+      enqueueSnackbar("خطا در بارگذاری تیکت‌ها", { variant: "error" });
     } finally {
       setLoading(false);
     }
@@ -102,7 +114,7 @@ const TicketingSidebar: React.FC<TicketingSidebarProps> = ({
         setDepartments(response.data.list);
       }
     } catch (error) {
-      console.error('Error loading departments:', error);
+      console.error("Error loading departments:", error);
     }
   };
 
@@ -120,16 +132,22 @@ const TicketingSidebar: React.FC<TicketingSidebarProps> = ({
       elevation={1}
       sx={{
         width,
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        borderRadius: 0,
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       {/* Header */}
       <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 2,
+          }}
+        >
+          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
             پشتیبانی
           </Typography>
           <IconButton size="small" onClick={handleRefresh} disabled={loading}>
@@ -151,10 +169,12 @@ const TicketingSidebar: React.FC<TicketingSidebarProps> = ({
         <TextField
           fullWidth
           placeholder="جستجو در تیکت‌ها..."
-          value={searchValue || ''}
-          onChange={(e) => setValue('search', e.target.value)}
+          value={searchValue || ""}
+          onChange={(e) => setValue("search", e.target.value)}
           InputProps={{
-            startAdornment: <SearchIcon sx={{ color: 'text.secondary', mr: 1 }} />,
+            startAdornment: (
+              <SearchIcon sx={{ color: "text.secondary", mr: 1 }} />
+            ),
           }}
           size="small"
           sx={{ mb: 2 }}
@@ -174,13 +194,18 @@ const TicketingSidebar: React.FC<TicketingSidebarProps> = ({
 
         {/* Filters */}
         <Collapse in={filtersOpen}>
-          <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
             <FormControl fullWidth size="small">
               <InputLabel>وضعیت</InputLabel>
               <Select
-                value={statusFilter || ''}
-                onChange={(e) => setValue('status_filter', e.target.value)}
+                value={statusFilter || ""}
+                onChange={(e) => setValue("status_filter", e.target.value)}
                 label="وضعیت"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 1
+                  }
+                }}
               >
                 <MenuItem value="">همه</MenuItem>
                 <MenuItem value={TicketStatus.OPEN}>باز</MenuItem>
@@ -191,9 +216,16 @@ const TicketingSidebar: React.FC<TicketingSidebarProps> = ({
             <FormControl fullWidth size="small">
               <InputLabel>دپارتمان</InputLabel>
               <Select
-                value={departmentFilter || ''}
-                onChange={(e) => setValue('department_id', Number(e.target.value))}
+                value={departmentFilter || ""}
+                onChange={(e) =>
+                  setValue("department_id", Number(e.target.value))
+                }
                 label="دپارتمان"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 1
+                  }
+                }}
               >
                 <MenuItem value="">همه</MenuItem>
                 {departments.map((dept) => (
@@ -217,13 +249,13 @@ const TicketingSidebar: React.FC<TicketingSidebarProps> = ({
       </Box>
 
       {/* Tickets List */}
-      <Box sx={{ flex: 1, overflow: 'auto' }}>
+      <Box sx={{ flex: 1, overflow: "auto" }}>
         {ticketsMutation.error && (
           <Alert severity="error" sx={{ m: 2 }}>
             خطا در بارگذاری تیکت‌ها
           </Alert>
         )}
-        
+
         <TicketsList
           tickets={tickets}
           selectedTicketId={selectedTicketId}

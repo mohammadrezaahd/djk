@@ -1,10 +1,15 @@
-import { authorizedGet, authorizedPost } from "~/utils/authorizeReq";
-import { apiUtils } from "./apiUtils.api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  authorizedGet,
+  authorizedPost,
+  authorizedPostMultipleFilesWithQuery,
+} from "~/utils/authorizeReq";
+import { apiUtils } from "~/api/apiUtils.api";
 import type {
+  IAddMessage,
   IPostTicket,
   IPostTicketResponse,
 } from "~/types/dtos/ticketing.dto";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   IDepartments,
   ITicket,
@@ -13,7 +18,57 @@ import type {
 
 const creatNewTicket = async (data: IPostTicket) => {
   return apiUtils<{ data: IPostTicketResponse }>(async () => {
-    const response = await authorizedPost("/v1/ticketing/create", data);
+    // Always use FormData for all data
+    const formData = new FormData();
+
+    // Add all form fields to FormData
+    formData.append("subject", data.subject);
+    formData.append("department_id", String(data.department_id));
+    formData.append("priority", String(data.priority));
+    formData.append("first_message", data.first_message);
+
+    // Add files if they exist
+    if (data.files && data.files.length > 0) {
+      data.files.forEach((file, index) => {
+        formData.append("files", file);
+      });
+    }
+
+    const response = await authorizedPost("/v1/ticketing/create", formData, {
+      headers: {
+        // Don't set Content-Type, let browser set it with boundary for FormData
+      },
+    });
+
+    return response.data;
+  });
+};
+
+const addNewMessage = async (data: IAddMessage) => {
+  return apiUtils<{ data: IPostTicketResponse }>(async () => {
+    // Always use FormData for all data
+    const formData = new FormData();
+
+    // Add all form fields to FormData
+
+    formData.append("is_admin", "false");
+    formData.append("message", data.message);
+    // Add files if they exist
+    if (data.files && data.files.length > 0) {
+      data.files.forEach((file, index) => {
+        formData.append("files", file);
+      });
+    }
+
+    const response = await authorizedPost(
+      `/v1/ticketing/message/add/${data.ticket_id}`,
+      formData,
+      {
+        headers: {
+          // Don't set Content-Type, let browser set it with boundary for FormData
+        },
+      }
+    );
 
     return response.data;
   });
@@ -65,6 +120,14 @@ const getTicket = async ({
   });
 };
 
+const closeTicket = async (ticket_id: number) => {
+  return apiUtils<any>(async () => {
+    const response = await authorizedPost(`/v1/ticketing/close/${ticket_id}`);
+
+    return response.data;
+  });
+};
+
 const getDepartments = async () => {
   return apiUtils<{ list: IDepartments[] }>(async () => {
     const response = await authorizedGet("/v1/ticketing/departments");
@@ -83,6 +146,21 @@ export const useNewTicket = () => {
     },
     onError: (error) => {
       console.error("❌ Error adding ticket:", error);
+    },
+  });
+};
+
+export const useNewMessage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: addNewMessage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ticket"] });
+      queryClient.invalidateQueries({ queryKey: ["tickets list"] });
+    },
+    onError: (error) => {
+      console.error("❌ Error adding ticket message:", error);
     },
   });
 };
@@ -109,6 +187,21 @@ export const useTicket = () => {
     },
     onError: (error) => {
       console.error("❌ Error fetching ticket:", error);
+    },
+  });
+};
+
+export const useCloseTicket = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: closeTicket,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ticket"] });
+      queryClient.invalidateQueries({ queryKey: ["tickets list"] });
+    },
+    onError: (error) => {
+      console.error("❌ Error closing ticket:", error);
     },
   });
 };

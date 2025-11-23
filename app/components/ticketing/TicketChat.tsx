@@ -20,14 +20,16 @@ import {
   PriorityHigh as PriorityIcon,
   Schedule as ScheduleIcon,
   Business as BusinessIcon,
+  Lock as LockIcon,
 } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
-import { useTicket } from "~/api/ticketing.api";
+import { useTicket, useNewMessage, useCloseTicket } from "~/api/ticketing.api";
 import { useReplyMessageValidation } from "~/validation/hooks/useTicketingValidation";
 import type {
   ITicket,
   ITicketMessage,
 } from "~/types/interfaces/ticketing.interface";
+import type { IAddMessage } from "~/types/dtos/ticketing.dto";
 import { TicketPriority } from "~/types/dtos/ticketing.dto";
 import { TicketStatus } from "~/types/interfaces/ticketing.interface";
 import TicketMessage from "./TicketMessage";
@@ -48,10 +50,23 @@ const TicketChat: React.FC<TicketChatProps> = ({ ticketId, onClose }) => {
   const [showFileUpload, setShowFileUpload] = useState(false);
 
   const ticketMutation = useTicket();
+  const newMessageMutation = useNewMessage();
+  const closeTicketMutation = useCloseTicket();
   const replyForm = useReplyMessageValidation();
 
-  // Debug log
-  console.log('TicketChat rendered with ticketId:', ticketId);
+  // Debug log for form validation
+  const messageValue = replyForm.watch("message");
+  const isButtonDisabled = !messageValue?.trim() || newMessageMutation.isPending;
+  
+  console.log('Form validation debug:', {
+    messageValue: messageValue,
+    messageLength: messageValue?.length || 0,
+    hasMessageText: !!messageValue?.trim(),
+    isButtonDisabled: isButtonDisabled,
+    isPending: newMessageMutation.isPending,
+    formValid: replyForm.isFormValid,
+    formErrors: replyForm.formState.errors
+  });
 
   // Load ticket data
   useEffect(() => {
@@ -171,21 +186,49 @@ const TicketChat: React.FC<TicketChatProps> = ({ ticketId, onClose }) => {
   };
 
   const handleSendMessage = async () => {
-    if (!replyForm.isFormValid) return;
+    const messageText = replyForm.watch("message")?.trim();
+    if (!messageText) {
+      enqueueSnackbar("متن پیام نمی‌تواند خالی باشد", { variant: "warning" });
+      return;
+    }
 
     try {
-      // Here you would send the reply message
       const messageData = replyForm.getValues();
-      console.log("Sending message:", messageData);
-
-      // Reset form after successful send
-      replyForm.reset();
-      setShowFileUpload(false);
-
-      enqueueSnackbar("پیام با موفقیت ارسال شد", { variant: "success" });
-
-      // Reload ticket to get new messages
-      loadTicket();
+      const validFiles = (messageData.files || []).filter((file): file is File => 
+        file instanceof File && file.size > 0
+      );
+      
+      // Create payload for new message
+      const payload: IAddMessage = {
+        ticket_id: ticketId,
+        message: messageData.message,
+        ...(validFiles.length > 0 && { files: validFiles })
+      };
+      
+      console.log('Sending message payload:', {
+        ticket_id: payload.ticket_id,
+        message: payload.message,
+        files: validFiles.map(f => ({ name: f.name, size: f.size, type: f.type }))
+      });
+      
+      const response = await newMessageMutation.mutateAsync(payload);
+      
+      console.log('Send message response:', response);
+      
+      // Check for success
+      if (response?.status === 'true') {
+        enqueueSnackbar("پیام با موفقیت ارسال شد", { variant: "success" });
+        
+        // Reset form after successful send
+        replyForm.reset();
+        setShowFileUpload(false);
+        
+        // Reload ticket to get new messages
+        loadTicket();
+      } else {
+        const errorMessage = response?.error || response?.message || 'خطا در ارسال پیام';
+        enqueueSnackbar(errorMessage, { variant: 'error' });
+      }
     } catch (error) {
       console.error("Error sending message:", error);
       enqueueSnackbar("خطا در ارسال پیام", { variant: "error" });
@@ -194,6 +237,29 @@ const TicketChat: React.FC<TicketChatProps> = ({ ticketId, onClose }) => {
 
   const handleFileUpload = () => {
     setShowFileUpload(!showFileUpload);
+  };
+
+  const handleCloseTicket = async () => {
+    if (!ticket?.id) return;
+
+    try {
+      const response = await closeTicketMutation.mutateAsync(ticket.id);
+      
+      console.log('Close ticket response:', response);
+      
+      if (response?.status === 'true') {
+        enqueueSnackbar('تیکت با موفقیت بسته شد', { variant: 'success' });
+        
+        // Reload ticket to get updated status
+        loadTicket();
+      } else {
+        const errorMessage = response?.error || response?.message || 'خطا در بستن تیکت';
+        enqueueSnackbar(errorMessage, { variant: 'error' });
+      }
+    } catch (error) {
+      console.error('Error closing ticket:', error);
+      enqueueSnackbar('خطا در بستن تیکت', { variant: 'error' });
+    }
   };
 
   if (loading) {
@@ -289,9 +355,25 @@ const TicketChat: React.FC<TicketChatProps> = ({ ticketId, onClose }) => {
             </Box>
           </Box>
 
-          <IconButton onClick={onClose} size="small">
-            <CloseIcon />
-          </IconButton>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>            
+            {ticket.status === TicketStatus.OPEN && (
+              <Button
+                variant="outlined"
+                size="small"
+                color="error"
+                startIcon={<LockIcon />}
+                onClick={handleCloseTicket}
+                disabled={closeTicketMutation.isPending}
+                sx={{ mr: 1 }}
+              >
+                {closeTicketMutation.isPending ? 'در حال بستن...' : 'بستن تیکت'}
+              </Button>
+            )}
+            
+            <IconButton onClick={onClose} size="small">
+              <CloseIcon />
+            </IconButton>
+          </Box>
         </Box>
       </Paper>
 
@@ -354,7 +436,12 @@ const TicketChat: React.FC<TicketChatProps> = ({ ticketId, onClose }) => {
               maxRows={4}
               placeholder="پیام خود را بنویسید..."
               value={replyForm.watch("message") || ""}
-              onChange={(e) => replyForm.setValue("message", e.target.value)}
+              onChange={(e) => {
+                replyForm.setValue("message", e.target.value, { 
+                  shouldValidate: true,
+                  shouldDirty: true 
+                });
+              }}
               error={!!replyForm.formState.errors.message}
               helperText={replyForm.formState.errors.message?.message}
               sx={{ flex: 1 }}
@@ -371,11 +458,12 @@ const TicketChat: React.FC<TicketChatProps> = ({ ticketId, onClose }) => {
               variant="contained"
               onClick={handleSendMessage}
               disabled={
-                !replyForm.isFormValid || replyForm.formState.isSubmitting
+                !replyForm.watch("message")?.trim() || 
+                newMessageMutation.isPending
               }
               startIcon={<SendIcon />}
             >
-              ارسال
+              {newMessageMutation.isPending ? "در حال ارسال..." : "ارسال"}
             </Button>
           </Box>
         </Paper>

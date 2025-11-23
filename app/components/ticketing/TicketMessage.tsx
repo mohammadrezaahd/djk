@@ -17,6 +17,7 @@ import {
   AttachFile as AttachFileIcon,
   InsertDriveFile as FileIcon,
 } from "@mui/icons-material";
+import { useAppSelector } from "~/store/hooks";
 
 import type {
   ITicketMessage,
@@ -34,6 +35,9 @@ const TicketMessage: React.FC<TicketMessageProps> = ({
 }) => {
   const theme = useTheme();
   const isAdmin = message.is_admin;
+
+  // دریافت اطلاعات کاربر از store
+  const currentUser = useAppSelector((state) => state.user.currentUser);
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes";
@@ -121,25 +125,30 @@ const TicketMessage: React.FC<TicketMessageProps> = ({
     <Box
       sx={{
         display: "flex",
-        flexDirection: isAdmin ? "row" : "row-reverse",
+        flexDirection: isAdmin ? "row-reverse" : "row",
+        justifyContent: isAdmin ? "flex-end" : "flex-start",
         gap: 1,
         mb: 2,
         opacity: isLastMessage ? 1 : 0.9,
       }}
     >
+      {" "}
       <Avatar
         sx={{
           bgcolor: isAdmin
             ? theme.palette.warning.main
-            : theme.palette.primary.main,
+            : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
           width: 32,
           height: 32,
           fontSize: "0.875rem",
         }}
       >
-        {isAdmin ? "پ" : "ش"}
+        {isAdmin
+          ? "پ"
+          : currentUser?.first_name?.[0]?.toUpperCase() ||
+            currentUser?.email?.[0]?.toUpperCase() ||
+            "ک"}
       </Avatar>
-
       <Box sx={{ maxWidth: "70%" }}>
         <Paper
           elevation={1}
@@ -147,16 +156,22 @@ const TicketMessage: React.FC<TicketMessageProps> = ({
             p: 2,
             backgroundColor: isAdmin
               ? theme.palette.grey[100]
-              : theme.palette.primary.light,
+              : theme.palette.primary.main,
             color: isAdmin ? "text.primary" : "white",
-            borderRadius: 2,
+            borderRadius: isAdmin ? "0 10px 10px 10px " : "10px 0 10px 10px",
             position: "relative",
           }}
         >
           {/* Message sender indicator */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
             <Chip
-              label={isAdmin ? "پشتیبانی" : "شما"}
+              label={
+                isAdmin
+                  ? "پشتیبانی"
+                  : currentUser?.first_name && currentUser?.last_name
+                    ? `${currentUser.first_name} ${currentUser.last_name}`
+                    : "شما"
+              }
               size="small"
               variant="outlined"
               sx={{

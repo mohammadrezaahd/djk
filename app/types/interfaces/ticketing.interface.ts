@@ -42,5 +42,5 @@ export interface IDepartments {
 
 export enum TicketStatus {
   OPEN = "open",
-  CLOSE = "close",
+  CLOSE = "closed",
 }

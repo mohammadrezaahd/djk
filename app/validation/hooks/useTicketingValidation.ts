@@ -23,9 +23,14 @@ export const useNewTicketValidation = () => {
     resolver: yupResolver(newTicketSchema) as any,
     defaultValues,
     mode: 'onChange',
+    reValidateMode: 'onChange',
+    criteriaMode: 'all',
   });
 
-  const isFormValid = form.formState.isValid && !form.formState.isSubmitting;
+  // More accurate validation check
+  const isFormValid = form.formState.isValid && 
+    !form.formState.isSubmitting &&
+    form.formState.isDirty;
   const hasErrors = Object.keys(form.formState.errors).length > 0;
 
   return {

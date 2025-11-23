@@ -13,6 +13,13 @@ export interface IPostTicketResponse {
   files: { file_name: string; file_type: string; path: string; size: number }[];
 }
 
+export interface IAddMessage {
+  message: string;
+  // is_admin: boolean;
+  files?: File[];
+  ticket_id: number;
+}
+
 export enum TicketPriority {
   HIGH = 0,
   MEDIUM = 1,

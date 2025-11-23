@@ -11,7 +11,7 @@ export const newTicketSchema = yup.object({
   department_id: yup
     .number()
     .required('انتخاب دپارتمان الزامی است')
-    .positive('دپارتمان معتبری انتخاب کنید'),
+    .min(1, 'دپارتمان معتبری انتخاب کنید'),
   priority: yup
     .number()
     .required('انتخاب اولویت الزامی است')
@@ -60,7 +60,7 @@ export type TicketFiltersFormData = yup.InferType<typeof ticketFiltersSchema>;
 // Default values
 export const getNewTicketDefaultValues = (): NewTicketFormData => ({
   subject: '',
-  department_id: 0,
+  department_id: undefined as any, // Will be set when departments load
   priority: TicketPriority.MEDIUM,
   first_message: '',
   files: [],

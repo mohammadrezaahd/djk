@@ -9,6 +9,7 @@ const TicketingPage: React.FC = () => {
   const theme = useTheme();
   const [selectedTicketId, setSelectedTicketId] = useState<number>();
   const [currentView, setCurrentView] = useState<TicketingView>('empty');
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleTicketSelect = (ticketId: number) => {
     setSelectedTicketId(ticketId);
@@ -26,8 +27,14 @@ const TicketingPage: React.FC = () => {
   };
 
   const handleTicketCreated = (ticketId: number) => {
-    setSelectedTicketId(ticketId);
-    setCurrentView('chat');
+    // First trigger refresh of sidebar to reload tickets list
+    setRefreshTrigger(prev => prev + 1);
+    
+    // Then select the newly created ticket and switch to chat view
+    setTimeout(() => {
+      setSelectedTicketId(ticketId);
+      setCurrentView('chat');
+    }, 500); // Small delay to allow sidebar to refresh first
   };
 
   const renderMainContent = () => {
@@ -92,6 +99,7 @@ const TicketingPage: React.FC = () => {
           onTicketSelect={handleTicketSelect}
           onNewTicketClick={handleNewTicketClick}
           width={400}
+          refreshTrigger={refreshTrigger}
         />
 
         {/* Main Content */}
