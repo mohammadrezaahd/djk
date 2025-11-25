@@ -1,9 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  authorizedGet,
-  authorizedPost,
-  authorizedPostMultipleFilesWithQuery,
-} from "~/utils/authorizeReq";
+import { authorizedGet, authorizedPost } from "~/utils/authorizeReq";
 import { apiUtils } from "~/api/apiUtils.api";
 import type {
   IAddMessage,

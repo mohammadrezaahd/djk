@@ -1,0 +1,45 @@
+import type { IPricing } from "~/types/interfaces/pricing.interface";
+import { apiUtils } from "./apiUtils.api";
+import { authorizedGet, authorizedPost } from "~/utils/authorizeReq";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+const getPricingList = async () => {
+  return apiUtils<{ list: IPricing[] }>(async () => {
+    const response = await authorizedGet(`/v1/payments/plans`);
+    return response.data;
+  });
+};
+
+const initPayment = async (plan_id: number) => {
+  return apiUtils<any>(async () => {
+    const response = await authorizedPost(`/v1/payments/create`, {
+      plan_id: plan_id,
+    });
+
+    return response.data;
+  });
+};
+
+export const usePricing = () => {
+  return useQuery({
+    queryKey: ["pricing"],
+    queryFn: () => getPricingList(),
+    enabled: true,
+    staleTime: 30 * 60 * 1000, // 30 minutes
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useInitPayment = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: initPayment,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["pricing"] });
+    },
+    onError: (error) => {
+      console.error("❌ Error initiating payment:", error);
+    },
+  });
+};
