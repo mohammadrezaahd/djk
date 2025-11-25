@@ -1,5 +1,5 @@
 import React from "react";
-import { Container, Box, Alert } from "@mui/material";
+import { Container, Box, Alert, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import AppLayout from "~/components/layout/AppLayout";
 import { PricingHeader, PricingGrid } from "~/components/pricing";
@@ -56,21 +56,25 @@ const PricingPage: React.FC = () => {
 
   return (
     <AppLayout title="پلان‌های اشتراک">
-      <Container maxWidth="lg" sx={{ py: 6 }}>
+      <Container maxWidth="lg" sx={{ py: 8 }}>
         <PricingHeader />
 
         {pricingError && (
           <Alert
             severity="error"
             sx={{
-              mb: 4,
+              mb: 6,
+              borderRadius: 3,
+              "& .MuiAlert-icon": {
+                fontSize: 24,
+              },
             }}
           >
             {errorMessage}
           </Alert>
         )}
 
-        <Box sx={{ mt: 4 }}>
+        <Box sx={{ mt: 6 }}>
           <PricingGrid
             plans={plans}
             isLoading={pricingLoading}
@@ -81,18 +85,53 @@ const PricingPage: React.FC = () => {
         </Box>
 
         {/* Additional Information Section */}
-        <Box sx={{ mt: 8, textAlign: "center" }}>
-          <Alert
-            severity="info"
+        <Box sx={{ mt: 12, textAlign: "center" }}>
+          <Box
             sx={{
-              maxWidth: 600,
+              maxWidth: 700,
               mx: "auto",
+              p: 4,
+              borderRadius: 4,
+              background: "linear-gradient(135deg, #f8f9ff, #f0f4ff)",
+              border: "1px solid",
+              borderColor: "grey.200",
+              position: "relative",
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: -2,
+                left: -2,
+                right: -2,
+                bottom: -2,
+                background: "linear-gradient(135deg, #667eea, #764ba2)",
+                borderRadius: "inherit",
+                zIndex: -1,
+                opacity: 0.1,
+              },
             }}
           >
-            تمامی پلان‌ها شامل پشتیبانی کامل و به‌روزرسانی‌های رایگان هستند.
-            <br />
-            در صورت عدم رضایت، تا ۷ روز امکان بازگشت وجه وجود دارد.
-          </Alert>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 600,
+                color: "primary.main",
+                mb: 2,
+              }}
+            >
+              🎯 تضمین کیفیت و پشتیبانی
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                color: "text.secondary",
+                lineHeight: 1.8,
+              }}
+            >
+              تمامی پلان‌ها شامل پشتیبانی کامل و به‌روزرسانی‌های رایگان هستند.
+              <br />
+              در صورت عدم رضایت، تا ۷ روز امکان بازگشت وجه وجود دارد.
+            </Typography>
+          </Box>
         </Box>
       </Container>
     </AppLayout>

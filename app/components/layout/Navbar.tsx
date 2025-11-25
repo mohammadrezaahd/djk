@@ -22,6 +22,7 @@ import {
   LogoutIcon,
   AccountIcon,
   ShieldIcon,
+  SupportIcon,
 } from "../icons/IconComponents";
 
 import { useNavigate } from "react-router";
@@ -134,6 +135,21 @@ const Navbar: React.FC = () => {
           }}
         >
           <HelpIcon />
+        </IconButton>
+      </Tooltip>
+
+      {/* Support */}
+      <Tooltip title="پشتیبانی" arrow>
+        <IconButton
+          onClick={() => navigate("/dashboard/ticketing")}
+          sx={{
+            color: "inherit",
+            "&:hover": {
+              backgroundColor: alpha(theme.palette.primary.main, 0.1),
+            },
+          }}
+        >
+          <SupportIcon />
         </IconButton>
       </Tooltip>
 
@@ -283,6 +299,21 @@ const Navbar: React.FC = () => {
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, flex: 1 }}>
             <Typography>امنیت و حریم خصوصی</Typography>
             <Chip label="به زودی" size="small" color="primary" />
+          </Box>
+        </MenuItem>
+
+        <MenuItem
+          onClick={() => handleNavigation("/dashboard/pricing")}
+          sx={{
+            py: 1.5,
+            "&:hover": {
+              backgroundColor: alpha(theme.palette.primary.main, 0.08),
+            },
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, flex: 1 }}>
+            <Typography>اشتراک فعال ندارید</Typography>
+            <Chip label="برای خرید اشتراک" size="small" color="warning" />
           </Box>
         </MenuItem>
 

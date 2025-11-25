@@ -70,18 +70,34 @@ const PricingCard: React.FC<PricingCardProps> = ({
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        border: isPopular ? 2 : 1,
-        borderColor: isPopular ? "primary.main" : "divider",
-        borderRadius: 3,
+        border: isPopular ? 0 : 1,
+        borderColor: "divider",
+        borderRadius: 4,
         overflow: "visible",
-        transition: "all 0.3s ease",
+        background: isPopular
+          ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+          : "background.paper",
+        color: isPopular ? "white" : "text.primary",
+        transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
         "&:hover": {
-          transform: "translateY(-8px)",
-          boxShadow: (theme) =>
-            isPopular
-              ? `0 20px 40px ${theme.palette.primary.main}40`
-              : theme.shadows[10],
+          transform: "translateY(-12px)",
+          boxShadow: isPopular
+            ? "0 25px 50px rgba(102, 126, 234, 0.4)"
+            : "0 25px 50px rgba(0, 0, 0, 0.15)",
         },
+        "&::before": isPopular
+          ? {
+              content: '""',
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              borderRadius: "inherit",
+              zIndex: -1,
+            }
+          : {},
       }}
     >
       {isPopular && (
@@ -90,27 +106,34 @@ const PricingCard: React.FC<PricingCardProps> = ({
           icon={<StarIcon />}
           sx={{
             position: "absolute",
-            top: -12,
+            top: -16,
             left: "50%",
             transform: "translateX(-50%)",
-            bgcolor: "primary.main",
+            background: "linear-gradient(45deg, #FF6B35, #F7931E)",
             color: "white",
-            fontWeight: 600,
-            px: 2,
-            zIndex: 1,
+            fontWeight: 700,
+            px: 3,
+            py: 0.5,
+            height: 32,
+            zIndex: 2,
+            boxShadow: "0 4px 12px rgba(255, 107, 53, 0.4)",
+            "& .MuiChip-icon": {
+              color: "white",
+            },
           }}
         />
       )}
 
-      <CardContent sx={{ flexGrow: 1, p: 3 }}>
-        <Box sx={{ textAlign: "center", mb: 3 }}>
+      <CardContent sx={{ flexGrow: 1, p: 4 }}>
+        <Box sx={{ textAlign: "center", mb: 4 }}>
           <Typography
             variant="h5"
             component="h2"
             sx={{
               fontWeight: 700,
-              color: isPopular ? "primary.main" : "text.primary",
-              mb: 1,
+              color: isPopular ? "rgba(255, 255, 255, 0.95)" : "text.primary",
+              mb: 1.5,
+              letterSpacing: "-0.5px",
             }}
           >
             {plan.name}
@@ -118,21 +141,23 @@ const PricingCard: React.FC<PricingCardProps> = ({
           <Typography
             variant="body2"
             sx={{
-              color: "text.secondary",
+              color: isPopular ? "rgba(255, 255, 255, 0.8)" : "text.secondary",
+              lineHeight: 1.6,
             }}
           >
             {plan.description}
           </Typography>
         </Box>
 
-        <Box sx={{ textAlign: "center", mb: 3 }}>
-          <Box sx={{ display: "flex", alignItems: "baseline", justifyContent: "center" }}>
+        <Box sx={{ textAlign: "center", mb: 4 }}>
+          <Box sx={{ display: "flex", alignItems: "baseline", justifyContent: "center", mb: 1 }}>
             <Typography
               variant="h3"
               component="span"
               sx={{
                 fontWeight: 800,
-                color: isPopular ? "primary.main" : "text.primary",
+                color: isPopular ? "rgba(255, 255, 255, 0.95)" : "primary.main",
+                letterSpacing: "-1px",
               }}
             >
               {formatPrice(plan.price_toman)}
@@ -141,8 +166,9 @@ const PricingCard: React.FC<PricingCardProps> = ({
               variant="h6"
               component="span"
               sx={{
-                color: "text.secondary",
+                color: isPopular ? "rgba(255, 255, 255, 0.8)" : "text.secondary",
                 mr: 1,
+                fontWeight: 500,
               }}
             >
               تومان
@@ -151,33 +177,59 @@ const PricingCard: React.FC<PricingCardProps> = ({
           <Typography
             variant="body2"
             sx={{
-              color: "text.secondary",
+              color: isPopular ? "rgba(255, 255, 255, 0.7)" : "text.secondary",
               mt: 0.5,
+              fontWeight: 500,
             }}
           >
             برای {formatDuration(plan.duration_days)}
           </Typography>
         </Box>
 
-        <Divider sx={{ mb: 2 }} />
+        <Box
+          sx={{
+            width: "100%",
+            height: 1,
+            background: isPopular
+              ? "rgba(255, 255, 255, 0.2)"
+              : "divider",
+            mb: 3,
+          }}
+        />
 
         <List sx={{ p: 0 }}>
           {features.map((feature, index) => (
-            <ListItem key={index} sx={{ px: 0, py: 1 }}>
-              <ListItemIcon sx={{ minWidth: 32 }}>
-                <CheckIcon
+            <ListItem key={index} sx={{ px: 0, py: 1.5 }}>
+              <ListItemIcon sx={{ minWidth: 36 }}>
+                <Box
                   sx={{
-                    color: feature.included ? "success.main" : "text.disabled",
-                    fontSize: 20,
+                    width: 24,
+                    height: 24,
+                    borderRadius: "50%",
+                    background: isPopular
+                      ? "rgba(255, 255, 255, 0.2)"
+                      : "success.main",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
-                />
+                >
+                  <CheckIcon
+                    sx={{
+                      color: isPopular ? "white" : "white",
+                      fontSize: 16,
+                    }}
+                  />
+                </Box>
               </ListItemIcon>
               <ListItemText
                 primary={feature.text}
                 sx={{
                   "& .MuiListItemText-primary": {
                     fontSize: "0.95rem",
-                    color: feature.included ? "text.primary" : "text.disabled",
+                    color: isPopular ? "rgba(255, 255, 255, 0.9)" : "text.primary",
+                    fontWeight: 500,
+                    lineHeight: 1.5,
                   },
                 }}
               />
@@ -186,20 +238,46 @@ const PricingCard: React.FC<PricingCardProps> = ({
         </List>
       </CardContent>
 
-      <CardActions sx={{ p: 3, pt: 0 }}>
+      <CardActions sx={{ p: 4, pt: 0 }}>
         <Button
           variant={isPopular ? "contained" : "outlined"}
-          color="primary"
+          color={isPopular ? "inherit" : "primary"}
           fullWidth
           size="large"
           onClick={() => onPurchase(plan.id)}
           disabled={isLoading}
           sx={{
-            height: 48,
-            borderRadius: 2,
-            fontWeight: 600,
+            height: 56,
+            borderRadius: 3,
+            fontWeight: 700,
             fontSize: "1rem",
             position: "relative",
+            background: isPopular
+              ? "rgba(255, 255, 255, 0.15)"
+              : "transparent",
+            backdropFilter: isPopular ? "blur(10px)" : "none",
+            border: isPopular
+              ? "2px solid rgba(255, 255, 255, 0.3)"
+              : "2px solid",
+            borderColor: isPopular ? "transparent" : "primary.main",
+            color: isPopular ? "white" : "primary.main",
+            textTransform: "none",
+            "&:hover": {
+              background: isPopular
+                ? "rgba(255, 255, 255, 0.25)"
+                : "primary.main",
+              color: isPopular ? "white" : "white",
+              borderColor: isPopular ? "transparent" : "primary.main",
+              transform: "translateY(-2px)",
+            },
+            "&:disabled": {
+              background: isPopular
+                ? "rgba(255, 255, 255, 0.1)"
+                : "action.disabledBackground",
+              color: isPopular
+                ? "rgba(255, 255, 255, 0.5)"
+                : "action.disabled",
+            },
           }}
         >
           {isLoading ? (

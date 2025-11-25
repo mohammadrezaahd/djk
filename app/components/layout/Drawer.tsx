@@ -102,12 +102,6 @@ const menuItems: MenuItem[] = [
       },
     ],
   },
-  {
-    id: "ticketing",
-    title: "پشتیبانی",
-    path: "/dashboard/ticketing",
-    icon: SupportIcon,
-  },
 ];
 
 interface DrawerProps {

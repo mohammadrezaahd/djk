@@ -1,6 +1,7 @@
 import React from "react";
-import { Grid, Box, Alert, CircularProgress } from "@mui/material";
+import { Grid, Box, Alert } from "@mui/material";
 import PricingCard from "./PricingCard";
+import { PricingGridSkeleton } from "./PricingSkeleton";
 import type { IPricing } from "~/types/interfaces/pricing.interface";
 
 interface PricingGridProps {
@@ -19,18 +20,7 @@ const PricingGrid: React.FC<PricingGridProps> = ({
   purchaseLoading = false,
 }) => {
   if (isLoading) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: 400,
-        }}
-      >
-        <CircularProgress size={60} />
-      </Box>
-    );
+    return <PricingGridSkeleton />;
   }
 
   if (error) {
