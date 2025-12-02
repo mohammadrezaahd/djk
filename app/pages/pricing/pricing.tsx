@@ -2,7 +2,8 @@ import React from "react";
 import { Container, Box, Alert, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import AppLayout from "~/components/layout/AppLayout";
-import { PricingHeader, PricingGrid } from "~/components/pricing";
+import { PricingGrid } from "~/components/pricing";
+import { TitleCard } from "~/components/common";
 import { usePricing, useInitPayment } from "~/api/pricing.api";
 
 const PricingPage: React.FC = () => {
@@ -21,10 +22,8 @@ const PricingPage: React.FC = () => {
       await new Promise((resolve) => {
         initPayment(planId, {
           onSuccess: (response) => {
-            // Handle successful payment initialization
             console.log("Payment initiated:", response);
 
-            // If the response contains a payment URL, redirect to it
             if (response?.data?.payment_url) {
               window.location.href = response.data.payment_url;
             } else {
@@ -56,25 +55,28 @@ const PricingPage: React.FC = () => {
 
   return (
     <AppLayout title="پلان‌های اشتراک">
-      <Container maxWidth="lg" sx={{ py: 8 }}>
-        <PricingHeader />
-
+      <Container maxWidth="xl" sx={{ py: 6 }}>
+        <TitleCard
+          title="پلان‌های اشتراک"
+          description="بهترین پلان را برای کسب و کار خود انتخاب کنید"
+        />
+        {/* Error Alert */}
         {pricingError && (
           <Alert
             severity="error"
             sx={{
               mb: 6,
-              borderRadius: 3,
-              "& .MuiAlert-icon": {
-                fontSize: 24,
-              },
+              borderRadius: 2,
+              bgcolor: "error.light",
+              color: "error.contrastText",
             }}
           >
             {errorMessage}
           </Alert>
         )}
 
-        <Box sx={{ mt: 6 }}>
+        {/* Pricing Grid */}
+        <Box sx={{ mb: 8 }}>
           <PricingGrid
             plans={plans}
             isLoading={pricingLoading}
@@ -84,54 +86,42 @@ const PricingPage: React.FC = () => {
           />
         </Box>
 
-        {/* Additional Information Section */}
-        <Box sx={{ mt: 12, textAlign: "center" }}>
-          <Box
+
+
+        {/* Guarantee Section */}
+        <Box
+          sx={{
+            textAlign: "center",
+            p: 4,
+            borderRadius: 3,
+            bgcolor: "grey.50",
+            border: "2px dashed",
+            borderColor: "success.main",
+          }}
+        >
+          {/* <StarIcon sx={{ fontSize: 48, color: "success.main", mb: 2 }} /> */}
+          <Typography
+            variant="h5"
             sx={{
-              maxWidth: 700,
-              mx: "auto",
-              p: 4,
-              borderRadius: 4,
-              background: "linear-gradient(135deg, #f8f9ff, #f0f4ff)",
-              border: "1px solid",
-              borderColor: "grey.200",
-              position: "relative",
-              "&::before": {
-                content: '""',
-                position: "absolute",
-                top: -2,
-                left: -2,
-                right: -2,
-                bottom: -2,
-                background: "linear-gradient(135deg, #667eea, #764ba2)",
-                borderRadius: "inherit",
-                zIndex: -1,
-                opacity: 0.1,
-              },
+              fontWeight: 700,
+              color: "success.main",
+              mb: 2,
             }}
           >
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 600,
-                color: "primary.main",
-                mb: 2,
-              }}
-            >
-              🎯 تضمین کیفیت و پشتیبانی
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                color: "text.secondary",
-                lineHeight: 1.8,
-              }}
-            >
-              تمامی پلان‌ها شامل پشتیبانی کامل و به‌روزرسانی‌های رایگان هستند.
-              <br />
-              در صورت عدم رضایت، تا ۷ روز امکان بازگشت وجه وجود دارد.
-            </Typography>
-          </Box>
+            ۷ روز ضمانت بازگشت وجه
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              color: "text.secondary",
+              maxWidth: 500,
+              mx: "auto",
+              lineHeight: 1.7,
+            }}
+          >
+            اگر از خدمات ما راضی نبودید، تا ۷ روز پس از خرید می‌توانید درخواست
+            بازگشت کامل وجه خود را بدهید. بدون سوال، بدون دردسر.
+          </Typography>
         </Box>
       </Container>
     </AppLayout>

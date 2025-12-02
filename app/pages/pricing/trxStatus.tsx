@@ -18,18 +18,18 @@ import {
   Home as HomeIcon,
   Receipt as ReceiptIcon,
 } from "@mui/icons-material";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { useSnackbar } from "notistack";
 import AppLayout from "~/components/layout/AppLayout";
 import { useTrxStatus } from "~/api/pricing.api";
 import { TrxStatus } from "~/types/interfaces/pricing.interface";
 
 const TrxStatusPage: React.FC = () => {
-  const params = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   
-  const trxId = params.trx;
+  const trxId = searchParams.get('trx');
   const trxIdNumber = trxId ? parseInt(trxId, 10) : null;
 
   const {
