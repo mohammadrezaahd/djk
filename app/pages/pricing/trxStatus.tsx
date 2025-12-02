@@ -28,8 +28,8 @@ const TrxStatusPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-  
-  const trxId = searchParams.get('trx');
+
+  const trxId = searchParams.get("trx");
   const trxIdNumber = trxId ? parseInt(trxId, 10) : null;
 
   const {
@@ -58,8 +58,8 @@ const TrxStatusPage: React.FC = () => {
           icon: <CheckCircleIcon />,
           title: "پرداخت موفق",
           message: "پرداخت شما با موفقیت انجام شد و اشتراک شما فعال گردید.",
-          bgColor: "success.light",
-          textColor: "success.dark",
+          bgColor: "#4caf50",
+          textColor: "#2e7d32",
         };
       case TrxStatus.UNVERIFIED:
         return {
@@ -110,12 +110,7 @@ const TrxStatusPage: React.FC = () => {
             <Typography variant="body1" sx={{ mb: 4, color: "text.secondary" }}>
               شناسه تراکنش معتبر نیست
             </Typography>
-            <Button
-              variant="contained"
-              startIcon={<HomeIcon />}
-              onClick={handleGoHome}
-              size="large"
-            >
+            <Button variant="contained" onClick={handleGoHome} size="large">
               بازگشت به خانه
             </Button>
           </Card>
@@ -213,7 +208,7 @@ const TrxStatusPage: React.FC = () => {
               height: 120,
               borderRadius: "50%",
               bgcolor: statusConfig.bgColor,
-              color: statusConfig.textColor,
+              color: "#fff",
               mb: 3,
               fontSize: 60,
             }}
@@ -266,7 +261,13 @@ const TrxStatusPage: React.FC = () => {
             <Divider sx={{ mb: 3 }} />
 
             <Stack spacing={3}>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <Typography variant="body1" sx={{ color: "text.secondary" }}>
                   شناسه تراکنش:
                 </Typography>
@@ -275,7 +276,13 @@ const TrxStatusPage: React.FC = () => {
                 </Typography>
               </Box>
 
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <Typography variant="body1" sx={{ color: "text.secondary" }}>
                   شناسه پلان:
                 </Typography>
@@ -284,7 +291,13 @@ const TrxStatusPage: React.FC = () => {
                 </Typography>
               </Box>
 
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <Typography variant="body1" sx={{ color: "text.secondary" }}>
                   مبلغ:
                 </Typography>
@@ -293,15 +306,29 @@ const TrxStatusPage: React.FC = () => {
                 </Typography>
               </Box>
 
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <Typography variant="body1" sx={{ color: "text.secondary" }}>
                   وضعیت:
                 </Typography>
                 <Chip
                   label={statusConfig.title}
                   icon={statusConfig.icon}
-                  color={statusConfig.color}
                   variant="filled"
+                  sx={{
+                    bgcolor: statusConfig.color === "success" ? "#4caf50" : 
+                             statusConfig.color === "error" ? "#f44336" : "#ff9800",
+                    color: "#fff",
+                    "& .MuiChip-icon": {
+                      color: "#fff",
+                      marginRight: 1
+                    }
+                  }}
                 />
               </Box>
             </Stack>
@@ -313,11 +340,11 @@ const TrxStatusPage: React.FC = () => {
           direction={{ xs: "column", sm: "row" }}
           spacing={2}
           justifyContent="center"
+          gap={5}
           alignItems="center"
         >
           <Button
             variant="outlined"
-            startIcon={<ReceiptIcon />}
             onClick={handleGoToPricing}
             size="large"
             sx={{ minWidth: 200 }}
@@ -326,7 +353,6 @@ const TrxStatusPage: React.FC = () => {
           </Button>
           <Button
             variant="contained"
-            startIcon={<HomeIcon />}
             onClick={handleGoHome}
             size="large"
             sx={{ minWidth: 200 }}
@@ -348,7 +374,8 @@ const TrxStatusPage: React.FC = () => {
             }}
           >
             <Typography variant="body2">
-              اشتراک شما با موفقیت فعال شد. اکنون می‌توانید از تمامی امکانات پلان خود استفاده کنید.
+              اشتراک شما با موفقیت فعال شد. اکنون می‌توانید از تمامی امکانات
+              پلان خود استفاده کنید.
             </Typography>
           </Alert>
         )}
@@ -365,8 +392,8 @@ const TrxStatusPage: React.FC = () => {
             }}
           >
             <Typography variant="body2">
-              در صورت کسر مبلغ از حساب شما، وجه طی ۲۴ ساعت به حساب شما بازگشت داده خواهد شد.
-              برای اطلاعات بیشتر با پشتیبانی تماس بگیرید.
+              در صورت کسر مبلغ از حساب شما، وجه طی ۲۴ ساعت به حساب شما بازگشت
+              داده خواهد شد. برای اطلاعات بیشتر با پشتیبانی تماس بگیرید.
             </Typography>
           </Alert>
         )}

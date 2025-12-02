@@ -151,8 +151,15 @@ const TicketsList: React.FC<TicketsListProps> = ({
                     </Typography>
                     <Badge
                       variant="dot"
-                      invisible={ticket.status !== TicketStatus.OPEN}
-                      color="success"
+                      invisible={false}
+                      color={ticket.status === TicketStatus.OPEN ? "success" : "error"}
+                      sx={{
+                        '& .MuiBadge-dot': {
+                          backgroundColor: ticket.status === TicketStatus.OPEN ? '#4caf50' : '#f44336',
+                          width: 8,
+                          height: 8
+                        }
+                      }}
                     />
                   </Box>
                 }
@@ -163,16 +170,32 @@ const TicketsList: React.FC<TicketsListProps> = ({
                       label={getPriorityText(ticket.priority)}
                       size="small"
                       variant="outlined"
-                      sx={{ fontSize: '0.75rem', height: 24 }}
+                      sx={{ 
+                        fontSize: '0.75rem', 
+                        height: 26,
+                        borderRadius: 1.5,
+                        backgroundColor: 'rgba(102, 126, 234, 0.08)',
+                        borderColor: 'primary.light',
+                        color: 'primary.dark',
+                        fontWeight: 500,
+                        '& .MuiChip-icon': {
+                          fontSize: '0.875rem'
+                        }
+                      }}
                     />
                     <Chip
                       label={getStatusText(ticket.status)}
                       size="small"
                       sx={{
-                        backgroundColor: getStatusColor(ticket.status),
+                        backgroundColor: ticket.status === TicketStatus.OPEN 
+                          ? '#4caf50' // سبز برای باز
+                          : '#f44336', // قرمز برای بسته
                         color: 'white',
                         fontSize: '0.75rem',
-                        height: 24,
+                        height: 26,
+                        borderRadius: 1.5,
+                        fontWeight: 600,
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                       }}
                     />
                   </Box>

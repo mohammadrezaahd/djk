@@ -181,7 +181,7 @@ export const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: shape.borderRadius,
+          borderRadius: 8, // کاهش از shape.borderRadius به 8
           textTransform: "none",
           fontWeight: 500,
           boxShadow: "none",
@@ -210,10 +210,22 @@ export const theme = createTheme({
       },
     },
 
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          // حداکثر radius برای جلوگیری از گرد شدن بیش از حد
+          '&.MuiMenu-paper, &.MuiSelect-paper, &.MuiPopover-paper': {
+            borderRadius: '6px !important',
+            maxHeight: 240,
+          },
+        },
+      },
+    },
+
     MuiSelect: {
       styleOverrides: {
         root: {
-          borderRadius: shape.borderRadius,
+          borderRadius: 6,
           backgroundColor: palette.background.paper,
         },
       },
@@ -222,10 +234,13 @@ export const theme = createTheme({
           disablePortal: false,
           PaperProps: {
             sx: {
-              borderRadius: shape.borderRadius,
+              borderRadius: 6, // تطبیق با borderRadius فیلدها
               boxShadow: `0 0 2px 0 rgba(145, 158, 171, 0.2), 0 12px 24px -4px rgba(145, 158, 171, 0.12)`,
               mt: 1,
               maxHeight: 240,
+              '&.MuiPaper-root': {
+                borderRadius: '6px !important', // اجبار به استفاده از radius مشخص
+              }
             },
           },
           MenuListProps: {
@@ -246,7 +261,7 @@ export const theme = createTheme({
     MuiMenuItem: {
       styleOverrides: {
         root: {
-          borderRadius: shape.borderRadius / 2,
+          borderRadius: 6, // کاهش از shape.borderRadius / 2 به 6
           margin: "2px 8px",
           "&:hover": {
             backgroundColor: palette.grey[100],
@@ -262,11 +277,54 @@ export const theme = createTheme({
       },
     },
 
+    MuiMenu: {
+      styleOverrides: {
+        paper: {
+          borderRadius: '6px !important',
+          boxShadow: `0 0 2px 0 rgba(145, 158, 171, 0.2), 0 12px 24px -4px rgba(145, 158, 171, 0.12)`,
+          maxHeight: 240,
+        },
+      },
+    },
+
+    MuiPopover: {
+      styleOverrides: {
+        paper: {
+          '&[role="listbox"], &[role="menu"]': {
+            borderRadius: '6px !important',
+            maxHeight: 240,
+          },
+        },
+      },
+    },
+
     MuiChip: {
       styleOverrides: {
         root: {
-          borderRadius: shape.borderRadius / 1.5,
+          borderRadius: 6, // کاهش از shape.borderRadius / 1.5 به 6
           backgroundColor: palette.grey[200],
+          padding: "4px 8px", // اضافه کردن padding مناسب
+          height: "auto", // حذف محدودیت ارتفاع
+        },
+        label: {
+          padding: "2px 4px", // افزودن padding برای label
+          fontSize: "0.75rem", // اندازه فونت مناسب
+          lineHeight: 1.2,
+        },
+        icon: {
+          margin: "0 4px 0 -4px", // فاصله مناسب برای آیکن
+          fontSize: "0.875rem",
+        },
+        sizeSmall: {
+          height: 24,
+          fontSize: "0.6875rem",
+          "& .MuiChip-label": {
+            padding: "0 4px",
+          },
+          "& .MuiChip-icon": {
+            margin: "0 2px 0 -2px",
+            fontSize: "0.75rem",
+          },
         },
       },
     },
@@ -365,7 +423,7 @@ export const theme = createTheme({
           },
           "& .MuiOutlinedInput-root": {
             direction: "rtl",
-            borderRadius: shape.borderRadius,
+            borderRadius: 8, // کاهش از shape.borderRadius به 8
             backgroundColor: palette.background.paper,
             "& .MuiOutlinedInput-notchedOutline": {
               borderColor: palette.grey[300],

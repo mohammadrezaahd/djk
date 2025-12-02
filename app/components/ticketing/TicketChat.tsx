@@ -327,30 +327,61 @@ const TicketChat: React.FC<TicketChatProps> = ({ ticketId, onClose }) => {
                 sx={{
                   backgroundColor: getPriorityColor(ticket.priority),
                   color: "white",
+                  fontWeight: 600,
+                  borderRadius: 1.5,
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
+                  '& .MuiChip-icon': {
+                    color: 'white',
+                    fontSize: '0.875rem'
+                  }
                 }}
               />
 
               <Chip
                 label={getStatusText(ticket.status)}
                 size="small"
-                color={
-                  ticket.status === TicketStatus.OPEN ? "success" : "default"
-                }
-                variant="outlined"
+                sx={{
+                  backgroundColor: ticket.status === TicketStatus.OPEN ? '#4caf50' : '#f44336',
+                  color: 'white',
+                  fontWeight: 600,
+                  borderRadius: 1.5,
+                  border: 'none',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.15)'
+                }}
               />
 
               <Chip
                 icon={<BusinessIcon />}
                 label={ticket.department?.name || "نامشخص"}
                 size="small"
-                variant="outlined"
+                sx={{
+                  backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                  color: 'primary.main',
+                  borderRadius: 1.5,
+                  border: '1px solid rgba(102, 126, 234, 0.3)',
+                  fontWeight: 500,
+                  '& .MuiChip-icon': {
+                    color: 'primary.main',
+                    fontSize: '0.875rem'
+                  }
+                }}
               />
 
               <Chip
                 icon={<ScheduleIcon />}
                 label={new Date(ticket.created_at).toLocaleDateString("fa-IR")}
                 size="small"
-                variant="outlined"
+                sx={{
+                  backgroundColor: 'rgba(158, 158, 158, 0.1)',
+                  color: 'text.secondary',
+                  borderRadius: 1.5,
+                  border: '1px solid rgba(158, 158, 158, 0.3)',
+                  fontWeight: 500,
+                  '& .MuiChip-icon': {
+                    color: 'text.secondary',
+                    fontSize: '0.875rem'
+                  }
+                }}
               />
             </Box>
           </Box>

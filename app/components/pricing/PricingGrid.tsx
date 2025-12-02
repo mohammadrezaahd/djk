@@ -29,9 +29,9 @@ const PricingGrid: React.FC<PricingGridProps> = ({
 
   if (error) {
     return (
-      <Alert 
-        severity="error" 
-        sx={{ 
+      <Alert
+        severity="error"
+        sx={{
           mb: 4,
           borderRadius: 2,
           textAlign: "center",
@@ -56,9 +56,9 @@ const PricingGrid: React.FC<PricingGridProps> = ({
           borderColor: "grey.200",
         }}
       >
-        <Typography 
-          variant="h6" 
-          sx={{ 
+        <Typography
+          variant="h6"
+          sx={{
             color: "text.secondary",
             mb: 2,
             fontWeight: 500,
@@ -66,10 +66,7 @@ const PricingGrid: React.FC<PricingGridProps> = ({
         >
           در حال حاضر پلان اشتراکی موجود نیست
         </Typography>
-        <Typography 
-          variant="body2" 
-          sx={{ color: "text.secondary" }}
-        >
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
           لطفاً بعداً مراجعه کنید یا با پشتیبانی تماس بگیرید
         </Typography>
       </Box>
@@ -90,13 +87,8 @@ const PricingGrid: React.FC<PricingGridProps> = ({
       {/* Pricing Cards */}
       <Grid container spacing={2} sx={{ justifyContent: "center" }}>
         {plans.map((plan, index) => (
-          <Grid 
-            item 
-            xs={12} 
-            sm={6} 
-            md={3}
-            lg={3}
-            xl={3}
+          <Grid
+            size={{ xs: 12, sm: 6, md: 3, lg: 3, xl: 3 }}
             key={plan.id}
             sx={{
               display: "flex",

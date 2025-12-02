@@ -204,48 +204,148 @@ const TicketFileUpload: React.FC<TicketFileUploadProps> = ({
       {/* Files List */}
       {files.length > 0 && (
         <Box sx={{ mt: 2 }}>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+          <Typography variant="subtitle2" sx={{ mb: 2 }}>
             فایل‌های انتخاب شده ({files.length})
           </Typography>
-          {files.map((file, index) => (
-            <Paper
-              key={index}
-              elevation={1}
-              sx={{
-                p: 2,
-                mb: 1,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-              }}
-            >
-              <AttachFileIcon color="primary" />
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="body2" noWrap>
-                  {file.name}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {formatFileSize(file.size)}
-                </Typography>
-              </Box>
-              <Chip
-                label={file.type || 'unknown'}
-                size="small"
-                variant="outlined"
-              />
-              <IconButton
-                size="small"
-                color="error"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeFile(index);
-                }}
-                disabled={disabled}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Paper>
-          ))}
+          
+          {/* Separate images from other files */}
+          {(() => {
+            const imageFiles = files.filter(file => file.type.startsWith('image/'));
+            const otherFiles = files.filter(file => !file.type.startsWith('image/'));
+            
+            return (
+              <>
+                {/* Image Grid */}
+                {imageFiles.length > 0 && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', mb: 1, display: 'block' }}>
+                      تصاویر ({imageFiles.length})
+                    </Typography>
+                    <Box 
+                      sx={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+                        gap: 1,
+                        mb: 2
+                      }}
+                    >
+                      {imageFiles.map((file, index) => (
+                        <Paper
+                          key={`image-${index}`}
+                          elevation={1}
+                          sx={{
+                            position: 'relative',
+                            aspectRatio: '1/1',
+                            borderRadius: 1.5,
+                            overflow: 'hidden',
+                            backgroundColor: 'grey.100',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={file.name}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover'
+                            }}
+                          />
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeFile(files.indexOf(file));
+                            }}
+                            disabled={disabled}
+                            sx={{
+                              position: 'absolute',
+                              top: 4,
+                              right: 4,
+                              backgroundColor: 'rgba(255,255,255,0.9)',
+                              '&:hover': {
+                                backgroundColor: 'rgba(255,255,255,1)'
+                              }
+                            }}
+                          >
+                            <DeleteIcon sx={{ fontSize: 16 }} />
+                          </IconButton>
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              backgroundColor: 'rgba(0,0,0,0.7)',
+                              color: 'white',
+                              p: 0.5,
+                              fontSize: '0.65rem',
+                              textAlign: 'center'
+                            }}
+                          >
+                            {file.name.length > 15 ? file.name.substring(0, 12) + '...' : file.name}
+                          </Box>
+                        </Paper>
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+                
+                {/* Other Files List */}
+                {otherFiles.length > 0 && (
+                  <Box>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', mb: 1, display: 'block' }}>
+                      سایر فایل‌ها ({otherFiles.length})
+                    </Typography>
+                    {otherFiles.map((file, index) => (
+                      <Paper
+                        key={`file-${index}`}
+                        elevation={1}
+                        sx={{
+                          p: 2,
+                          mb: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          borderRadius: 1.5
+                        }}
+                      >
+                        <AttachFileIcon color="primary" />
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography variant="body2" noWrap>
+                            {file.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {formatFileSize(file.size)}
+                          </Typography>
+                        </Box>
+                        <Chip
+                          label={file.type || 'unknown'}
+                          size="small"
+                          variant="outlined"
+                          sx={{ borderRadius: 1 }}
+                        />
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeFile(files.indexOf(file));
+                          }}
+                          disabled={disabled}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Paper>
+                    ))}
+                  </Box>
+                )}
+              </>
+            );
+          })()}
         </Box>
       )}
     </Box>

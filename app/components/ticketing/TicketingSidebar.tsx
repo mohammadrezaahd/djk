@@ -129,7 +129,7 @@ const TicketingSidebar: React.FC<TicketingSidebarProps> = ({
 
   return (
     <Paper
-      elevation={1}
+      // elevation={1}
       sx={{
         width,
         height: "100%",
@@ -201,11 +201,6 @@ const TicketingSidebar: React.FC<TicketingSidebarProps> = ({
                 value={statusFilter || ""}
                 onChange={(e) => setValue("status_filter", e.target.value)}
                 label="وضعیت"
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 1
-                  }
-                }}
               >
                 <MenuItem value="">همه</MenuItem>
                 <MenuItem value={TicketStatus.OPEN}>باز</MenuItem>
@@ -221,11 +216,6 @@ const TicketingSidebar: React.FC<TicketingSidebarProps> = ({
                   setValue("department_id", Number(e.target.value))
                 }
                 label="دپارتمان"
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 1
-                  }
-                }}
               >
                 <MenuItem value="">همه</MenuItem>
                 {departments.map((dept) => (

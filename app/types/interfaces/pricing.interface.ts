@@ -22,4 +22,8 @@ export enum TrxStatus {
 
 export enum SubscriptionType {
   BASIC = "basic",
+  STARTER = "starter",
+  PROFESSIONAL = "professional",
+  ENTERPRISE = "enterprise",
+  
 }
