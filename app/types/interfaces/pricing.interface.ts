@@ -9,6 +9,17 @@ export interface IPricing {
   description: string;
 }
 
+export interface ITrxStatus {
+  plan_id: number;
+  amount: number;
+  status: TrxStatus;
+}
+
+export enum TrxStatus {
+  VERIFIED = "VERIFIED",
+  UNVERIFIED = "UNVERIFIED",
+}
+
 export enum SubscriptionType {
   BASIC = "basic",
 }

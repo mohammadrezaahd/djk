@@ -21,7 +21,8 @@ export default [
     route("dashboard/products/list", "pages/products/list.tsx"),
     route("dashboard/products/edit/:id", "pages/products/edit.tsx"),
     route("dashboard/ticketing", "pages/Ticketing/index.tsx"),
-    route("dashboard/pricing", "pages/pricing/index.tsx"),
+    route("dashboard/pricing", "pages/pricing/pricing.tsx"),
+    route("dashboard/pricing/invoice/:trx", "pages/pricing/trxStatus.tsx"),
     route("/test", "pages/test.tsx"),
     // Coming Soon Pages
     route("dashboard/profile", "pages/profile.tsx"),

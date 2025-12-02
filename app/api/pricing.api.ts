@@ -1,4 +1,7 @@
-import type { IPricing } from "~/types/interfaces/pricing.interface";
+import type {
+  IPricing,
+  ITrxStatus,
+} from "~/types/interfaces/pricing.interface";
 import { apiUtils } from "./apiUtils.api";
 import { authorizedGet, authorizedPost } from "~/utils/authorizeReq";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -16,6 +19,13 @@ const initPayment = async (plan_id: number) => {
       plan_id: plan_id,
     });
 
+    return response.data;
+  });
+};
+
+const getTrxStatus = async (trxId: number) => {
+  return apiUtils<ITrxStatus>(async () => {
+    const response = await authorizedGet(`/v1/payments/status/${trxId}`);
     return response.data;
   });
 };
@@ -41,5 +51,17 @@ export const useInitPayment = () => {
     onError: (error) => {
       console.error("❌ Error initiating payment:", error);
     },
+  });
+};
+
+export const useTrxStatus = (trxId: number, options?: { enabled?: boolean; retry?: number; retryDelay?: number }) => {
+  return useQuery({
+    queryKey: ["trx", trxId],
+    queryFn: () => getTrxStatus(trxId),
+    enabled: options?.enabled ?? !!trxId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+    retry: options?.retry ?? 3,
+    retryDelay: options?.retryDelay ?? 1000,
   });
 };

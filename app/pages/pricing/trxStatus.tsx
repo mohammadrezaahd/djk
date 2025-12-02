@@ -1,0 +1,378 @@
+import React, { useEffect } from "react";
+import {
+  Container,
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Button,
+  Alert,
+  Chip,
+  Divider,
+  Stack,
+  CircularProgress,
+} from "@mui/material";
+import {
+  CheckCircle as CheckCircleIcon,
+  Error as ErrorIcon,
+  Home as HomeIcon,
+  Receipt as ReceiptIcon,
+} from "@mui/icons-material";
+import { useNavigate, useParams } from "react-router";
+import { useSnackbar } from "notistack";
+import AppLayout from "~/components/layout/AppLayout";
+import { useTrxStatus } from "~/api/pricing.api";
+import { TrxStatus } from "~/types/interfaces/pricing.interface";
+
+const TrxStatusPage: React.FC = () => {
+  const params = useParams();
+  const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
+  
+  const trxId = params.trx;
+  const trxIdNumber = trxId ? parseInt(trxId, 10) : null;
+
+  const {
+    data: trxData,
+    isLoading,
+    error,
+    refetch,
+  } = useTrxStatus(trxIdNumber || 0, {
+    enabled: !!trxIdNumber,
+    retry: 3,
+    retryDelay: 1000,
+  });
+
+  useEffect(() => {
+    if (!trxId || !trxIdNumber) {
+      enqueueSnackbar("شناسه تراکنش یافت نشد", { variant: "error" });
+      navigate("/dashboard/pricing");
+    }
+  }, [trxId, trxIdNumber, navigate, enqueueSnackbar]);
+
+  const getStatusConfig = (status: TrxStatus) => {
+    switch (status) {
+      case TrxStatus.VERIFIED:
+        return {
+          color: "success" as const,
+          icon: <CheckCircleIcon />,
+          title: "پرداخت موفق",
+          message: "پرداخت شما با موفقیت انجام شد و اشتراک شما فعال گردید.",
+          bgColor: "success.light",
+          textColor: "success.dark",
+        };
+      case TrxStatus.UNVERIFIED:
+        return {
+          color: "error" as const,
+          icon: <ErrorIcon />,
+          title: "پرداخت ناموفق",
+          message: "متأسفانه پرداخت شما انجام نشد. لطفاً مجدداً تلاش کنید.",
+          bgColor: "error.light",
+          textColor: "error.dark",
+        };
+      default:
+        return {
+          color: "warning" as const,
+          icon: <ErrorIcon />,
+          title: "وضعیت نامشخص",
+          message: "وضعیت پرداخت مشخص نیست. لطفاً با پشتیبانی تماس بگیرید.",
+          bgColor: "warning.light",
+          textColor: "warning.dark",
+        };
+    }
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("fa-IR").format(price);
+  };
+
+  const handleGoHome = () => {
+    navigate("/dashboard");
+  };
+
+  const handleGoToPricing = () => {
+    navigate("/dashboard/pricing");
+  };
+
+  const handleRetry = () => {
+    refetch();
+  };
+
+  if (!trxIdNumber) {
+    return (
+      <AppLayout title="نتیجه پرداخت">
+        <Container maxWidth="md" sx={{ py: 8 }}>
+          <Card sx={{ textAlign: "center", p: 4 }}>
+            <ErrorIcon sx={{ fontSize: 64, color: "error.main", mb: 2 }} />
+            <Typography variant="h5" sx={{ mb: 2, color: "error.main" }}>
+              خطا در شناسه تراکنش
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 4, color: "text.secondary" }}>
+              شناسه تراکنش معتبر نیست
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<HomeIcon />}
+              onClick={handleGoHome}
+              size="large"
+            >
+              بازگشت به خانه
+            </Button>
+          </Card>
+        </Container>
+      </AppLayout>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <AppLayout title="نتیجه پرداخت">
+        <Container maxWidth="md" sx={{ py: 8 }}>
+          <Card sx={{ textAlign: "center", p: 6 }}>
+            <CircularProgress size={60} sx={{ mb: 3 }} />
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              در حال بررسی وضعیت پرداخت...
+            </Typography>
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
+              لطفاً صبر کنید
+            </Typography>
+          </Card>
+        </Container>
+      </AppLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AppLayout title="نتیجه پرداخت">
+        <Container maxWidth="md" sx={{ py: 8 }}>
+          <Card sx={{ textAlign: "center", p: 4 }}>
+            <ErrorIcon sx={{ fontSize: 64, color: "error.main", mb: 2 }} />
+            <Typography variant="h5" sx={{ mb: 2, color: "error.main" }}>
+              خطا در دریافت اطلاعات
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 4, color: "text.secondary" }}>
+              {error?.message || "خطا در دریافت وضعیت تراکنش"}
+            </Typography>
+            <Stack direction="row" spacing={2} justifyContent="center">
+              <Button
+                variant="outlined"
+                startIcon={<ReceiptIcon />}
+                onClick={handleRetry}
+                size="large"
+              >
+                تلاش مجدد
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<HomeIcon />}
+                onClick={handleGoHome}
+                size="large"
+              >
+                بازگشت به خانه
+              </Button>
+            </Stack>
+          </Card>
+        </Container>
+      </AppLayout>
+    );
+  }
+
+  const statusConfig = getStatusConfig(trxData?.data?.status as TrxStatus);
+
+  return (
+    <AppLayout title="نتیجه پرداخت">
+      <Container maxWidth="md" sx={{ py: 8 }}>
+        {/* Status Header */}
+        <Box
+          sx={{
+            textAlign: "center",
+            mb: 6,
+            position: "relative",
+            "&::before": {
+              content: '""',
+              position: "absolute",
+              top: -100,
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: 200,
+              height: 200,
+              background: `${statusConfig.bgColor}40`,
+              borderRadius: "50%",
+              filter: "blur(60px)",
+              zIndex: -1,
+            },
+          }}
+        >
+          <Box
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 120,
+              height: 120,
+              borderRadius: "50%",
+              bgcolor: statusConfig.bgColor,
+              color: statusConfig.textColor,
+              mb: 3,
+              fontSize: 60,
+            }}
+          >
+            {statusConfig.icon}
+          </Box>
+          <Typography
+            variant="h3"
+            component="h1"
+            sx={{
+              fontWeight: 700,
+              color: statusConfig.textColor,
+              mb: 2,
+              letterSpacing: "-0.5px",
+            }}
+          >
+            {statusConfig.title}
+          </Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              color: "text.secondary",
+              maxWidth: 500,
+              mx: "auto",
+              lineHeight: 1.6,
+            }}
+          >
+            {statusConfig.message}
+          </Typography>
+        </Box>
+
+        {/* Transaction Details */}
+        <Card
+          sx={{
+            mb: 4,
+            borderRadius: 4,
+            overflow: "hidden",
+            border: "1px solid",
+            borderColor: "divider",
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+              <ReceiptIcon sx={{ color: "primary.main", mr: 2 }} />
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                جزئیات تراکنش
+              </Typography>
+            </Box>
+
+            <Divider sx={{ mb: 3 }} />
+
+            <Stack spacing={3}>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Typography variant="body1" sx={{ color: "text.secondary" }}>
+                  شناسه تراکنش:
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                  {trxId}
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Typography variant="body1" sx={{ color: "text.secondary" }}>
+                  شناسه پلان:
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                  {trxData?.data?.plan_id}
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Typography variant="body1" sx={{ color: "text.secondary" }}>
+                  مبلغ:
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                  {formatPrice(trxData?.data?.amount || 0)} تومان
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Typography variant="body1" sx={{ color: "text.secondary" }}>
+                  وضعیت:
+                </Typography>
+                <Chip
+                  label={statusConfig.title}
+                  icon={statusConfig.icon}
+                  color={statusConfig.color}
+                  variant="filled"
+                />
+              </Box>
+            </Stack>
+          </CardContent>
+        </Card>
+
+        {/* Action Buttons */}
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Button
+            variant="outlined"
+            startIcon={<ReceiptIcon />}
+            onClick={handleGoToPricing}
+            size="large"
+            sx={{ minWidth: 200 }}
+          >
+            مشاهده پلان‌ها
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<HomeIcon />}
+            onClick={handleGoHome}
+            size="large"
+            sx={{ minWidth: 200 }}
+          >
+            بازگشت به داشبورد
+          </Button>
+        </Stack>
+
+        {/* Additional Info */}
+        {trxData?.data?.status === TrxStatus.VERIFIED && (
+          <Alert
+            severity="success"
+            sx={{
+              mt: 4,
+              borderRadius: 3,
+              "& .MuiAlert-icon": {
+                fontSize: 24,
+              },
+            }}
+          >
+            <Typography variant="body2">
+              اشتراک شما با موفقیت فعال شد. اکنون می‌توانید از تمامی امکانات پلان خود استفاده کنید.
+            </Typography>
+          </Alert>
+        )}
+
+        {trxData?.data?.status === TrxStatus.UNVERIFIED && (
+          <Alert
+            severity="info"
+            sx={{
+              mt: 4,
+              borderRadius: 3,
+              "& .MuiAlert-icon": {
+                fontSize: 24,
+              },
+            }}
+          >
+            <Typography variant="body2">
+              در صورت کسر مبلغ از حساب شما، وجه طی ۲۴ ساعت به حساب شما بازگشت داده خواهد شد.
+              برای اطلاعات بیشتر با پشتیبانی تماس بگیرید.
+            </Typography>
+          </Alert>
+        )}
+      </Container>
+    </AppLayout>
+  );
+};
+
+export default TrxStatusPage;
