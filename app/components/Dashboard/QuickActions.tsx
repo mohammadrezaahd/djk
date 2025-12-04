@@ -12,6 +12,7 @@ import {
   Image as ImageIcon,
   Widgets as TemplateIcon,
   Category as CategoryIcon,
+  Speed as QuickIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router";
 
@@ -19,6 +20,12 @@ const QuickActions: React.FC = () => {
   const navigate = useNavigate();
 
   const actions = [
+    {
+      label: "محصول سریع",
+      icon: QuickIcon,
+      color: "#FF6B6B",
+      path: "/dashboard/products/quick",
+    },
     {
       label: "محصول جدید",
       icon: ProductIcon,
@@ -51,7 +58,8 @@ const QuickActions: React.FC = () => {
             gridTemplateColumns: {
               xs: "1fr",
               sm: "repeat(2, 1fr)",
-              md: "repeat(3, 1fr)",
+              md: "repeat(2, 1fr)",
+              lg: "repeat(4, 1fr)",
             },
             gap: 2,
           }}

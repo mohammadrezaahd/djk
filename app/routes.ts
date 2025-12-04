@@ -18,6 +18,7 @@ export default [
     route("dashboard/templates/edit", "pages/templates/edit.tsx"),
     route("dashboard/gallery", "pages/gallery.tsx"),
     route("dashboard/products/new", "pages/products/new.tsx"),
+    route("dashboard/products/quick", "pages/products/quick.tsx"),
     route("dashboard/products/list", "pages/products/list.tsx"),
     route("dashboard/products/edit/:id", "pages/products/edit.tsx"),
     route("dashboard/ticketing", "pages/Ticketing/index.tsx"),

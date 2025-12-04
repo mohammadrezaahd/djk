@@ -4,7 +4,7 @@ import type { TemplateSource } from "./templates.dto";
 
 export interface IPostProduct {
   title: string;
-  description?: string;
+  description: string;
   category_id: number;
   details: { list: ICategoryDetails[] };
   attributes: { list: ICategoryAttr[] };

@@ -4,3 +4,4 @@ export * from "./useGalleryValidation";
 export * from "./useProductValidation";
 export * from "./useAuthValidation";
 export * from "./useTicketingValidation";
+export * from "./useQuickProductValidation";

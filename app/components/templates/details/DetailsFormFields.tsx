@@ -44,7 +44,7 @@ const DetailsFormFields: React.FC<DetailsFormFieldsProps> = ({
   const isGeneralId = (formData.id_type || "general") === "general";
 
   return (
-    <>
+    <Grid container spacing={3}>
       {bind?.allow_fake && (
         <Grid size={{ xs: 12 }}>
           <SectionCard title="نوع کالا">
@@ -225,7 +225,7 @@ const DetailsFormFields: React.FC<DetailsFormFieldsProps> = ({
           </SectionCard>
         </Grid>
       )}
-    </>
+    </Grid>
   );
 };
 

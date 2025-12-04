@@ -100,6 +100,11 @@ const menuItems: MenuItem[] = [
         title: "افزودن محصول جدید",
         path: "/dashboard/products/new",
       },
+      {
+        id: "quick-product",
+        title: "ساخت محصول سریع !",
+        path: "/dashboard/products/quick",
+      },
     ],
   },
 ];

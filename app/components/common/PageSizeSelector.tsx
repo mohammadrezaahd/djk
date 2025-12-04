@@ -27,13 +27,14 @@ const PageSizeSelector: React.FC<PageSizeSelectorProps> = ({
         onChange={onChange}
         label={label}
         MenuProps={{
-          disablePortal: true,
+          disablePortal: false,
           PaperProps: {
             sx: {
               borderRadius: 2,
               mt: 1,
               maxHeight: 240,
               overflow: "auto",
+              zIndex: 9999,
             },
           },
           anchorOrigin: {
