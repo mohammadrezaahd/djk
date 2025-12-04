@@ -42,6 +42,7 @@ import type {
   ProductStatus,
   ISubProducts,
 } from "~/types/interfaces/products.interface";
+import type { IMetaData } from "~/types/interfaces/api.interface";
 import AppLayout from "~/components/layout/AppLayout";
 import {
   PageSizeSelector,
@@ -71,6 +72,7 @@ const ProductsList = () => {
   // Data state
   const [productsList, setProductsList] = useState<IProductList[]>([]);
   const [total, setTotal] = useState<number>(0);
+  const [metaData, setMetaData] = useState<IMetaData | null>(null);
 
   // Delete confirmation dialog state
   const [deleteDialog, setDeleteDialog] = useState<{
@@ -135,6 +137,8 @@ const ProductsList = () => {
       if (response.status === "true" && response.data?.list) {
         setProductsList(response.data.list);
         setTotal(response.data.list.length);
+        // Use meta_data from API response for pagination
+        setMetaData(response.meta_data || null);
       }
     } catch (error: any) {
       enqueueSnackbar(`خطا در دریافت لیست محصولات: ${error.message}`, {
@@ -288,24 +292,18 @@ const ProductsList = () => {
     return colorMap[status] || "default";
   };
 
-  // Filter data based on current filters
-  const filteredData = productsList.filter((item) => {
-    if (
-      searchValue &&
-      !item.title.toLowerCase().includes(searchValue.toLowerCase())
-    ) {
-      return false;
-    }
-    if (categoryId !== undefined && item.category_id !== categoryId) {
-      return false;
-    }
-    if (statusFilter !== undefined && item.user_status !== statusFilter) {
-      return false;
-    }
-    return true;
-  });
+  // Use server-side data without client-side filtering since filtering is done on server
+  const filteredData = productsList;
 
-  const totalPages = Math.ceil(filteredData.length / limit);
+  // Get pagination info from meta_data
+  const totalPages = metaData?.total_pages || 1;
+  const totalItems = metaData?.total_items || 0;
+  const hasNext = metaData?.has_next || false;
+  const hasPrev = metaData?.has_prev || false;
+
+  useEffect(() => {
+    console.log(totalPages);
+  }, [totalPages]);
 
   // Loading skeleton
   const LoadingSkeleton = () => (
@@ -393,8 +391,8 @@ const ProductsList = () => {
                 </IconButton>
               </Tooltip>
               <Typography variant="body2" color="text.secondary">
-                مجموع: {filteredData.length} مورد
-                {searchValue && ` از ${total}`}
+                مجموع: {totalItems} مورد
+                {searchValue && ` (${filteredData.length} در این صفحه)`}
               </Typography>
             </Box>
           </Box>
@@ -538,11 +536,11 @@ const ProductsList = () => {
           </TableContainer>
 
           {/* Pagination */}
-          {filteredData.length > 0 && totalPages > 1 && (
+          {totalItems > 0 && totalPages > 1 && (
             <PaginationControls
               currentPage={page}
               totalPages={totalPages}
-              totalItems={filteredData.length}
+              totalItems={totalItems}
               onPageChange={handlePageChange}
               disabled={isLoading}
             />
