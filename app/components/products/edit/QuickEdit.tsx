@@ -26,7 +26,7 @@ import AttributesFormFields from "~/components/templates/attributes/AttributesFo
 import DetailsFormFields from "~/components/templates/details/DetailsFormFields";
 import { MediaManager } from "~/components/MediaManager";
 import { useImages } from "~/api/gallery.api";
-import { useQuickEditProductValidation } from "~/validation";
+import { useQuickProductValidation } from "~/validation";
 
 export interface QuickEditProductProps {
   productData: any;
@@ -74,11 +74,18 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
     return {
       id: productData.data.category_id,
       title: productData.data.category_title || 'دسته‌بندی',
+      parent_id: productData.data.parent_category_id || 0, // Add required field
+      slug: productData.data.category_slug || '', // Add if available
+      description: '', // Default value
+      image: '', // Default value
+      status: 1, // Default active status
+      created_at: '', // Default value
+      updated_at: '', // Default value
     };
   }, [productData?.data]);
 
-  // Validation hook with initial values
-  const { form, isFormValid, errors } = useQuickEditProductValidation({
+  // Validation hook with initial values - using QuickProduct validation (non-strict)
+  const { form, isFormValid, errors } = useQuickProductValidation({
     title: productTitle,
     description: productDescription,
     selectedCategory: selectedCategory as any,
@@ -229,7 +236,67 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
       details: detailsFormData,
       attributes: attributesFormData,
     });
-  }, [productData?.data]);
+
+    // Initialize templates for parent on first load
+    if (detailsData) {
+      const processedDetails = JSON.parse(JSON.stringify(detailsData));
+      Object.keys(detailsFormData).forEach((field) => {
+        const fieldValue = detailsFormData[field];
+        if (fieldValue !== undefined && fieldValue !== "") {
+          (processedDetails as any)[field] = fieldValue;
+        }
+      });
+
+      onDetailsTemplatesChange([{
+        id: 1000,
+        title: 'قالب ویرایش سریع',
+        source: productData?.data?.source,
+        data: processedDetails,
+        formData: detailsFormData,
+      }]);
+    }
+
+    if (attributesData) {
+      const processedAttributes = JSON.parse(JSON.stringify(attributesData));
+      
+      if (processedAttributes.category_group_attributes) {
+        Object.values(processedAttributes.category_group_attributes).forEach(
+          (categoryData: any) => {
+            Object.values(categoryData.attributes).forEach((attr: any) => {
+              const attrFieldKey = attr.code || attr.id.toString();
+              if (attributesFormData[attrFieldKey] !== undefined) {
+                const fieldValue = attributesFormData[attrFieldKey];
+
+                switch (attr.type) {
+                  case "input":
+                  case "text":
+                    attr.value = fieldValue?.toString() || "";
+                    break;
+                  case "checkbox":
+                    attr.value = Boolean(fieldValue);
+                    break;
+                  case "radio":
+                  case "select":
+                    attr.value = fieldValue;
+                    break;
+                  default:
+                    attr.value = fieldValue;
+                }
+              }
+            });
+          }
+        );
+      }
+
+      onAttributesTemplatesChange([{
+        id: 2000,
+        title: 'قالب ویرایش سریع',
+        source: productData?.data?.source,
+        data: processedAttributes,
+        formData: attributesFormData,
+      }]);
+    }
+  }, [productData?.data, detailsData, attributesData]);
 
   // Handle details form data changes
   const handleDetailsChange = (fieldId: string | number, value: any) => {
@@ -351,7 +418,7 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
     })) || [];
 
   return (
-    <React.Fragment>
+    <>
       {/* Category Info - Read Only */}
       <Grid size={{ xs: 12 }}>
         <Alert severity="info" sx={{ mb: 2 }}>
@@ -432,82 +499,86 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
       </Grid>
 
       {/* Details Form Accordion */}
-      {selectedCategory && detailsData && (
-        <Grid size={{ xs: 12 }}>
-          <Accordion
-            expanded={expandedAccordions.details}
-            onChange={handleAccordionChange("details")}
+      <Grid size={{ xs: 12 }}>
+        <Accordion
+          expanded={expandedAccordions.details}
+          onChange={handleAccordionChange("details")}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="details-content"
+            id="details-header"
           >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="details-content"
-              id="details-header"
+            <Typography variant="h6">
+              اطلاعات تفصیلی محصول
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ ml: 1, color: "text.secondary" }}
             >
-              <Typography variant="h6">
-                اطلاعات تفصیلی محصول
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ ml: 1, color: "text.secondary" }}
-              >
-                (اختیاری)
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              {categoryLoading ? (
-                <Typography>در حال بارگیری...</Typography>
-              ) : (
-                <Box sx={{ "& .MuiGrid-container": { gap: 2 } }}>
-                  <DetailsFormFields
-                    detailsData={detailsData}
-                    formData={formData.details}
-                    onFormDataChange={handleDetailsChange}
-                    validationErrors={{}}
-                  />
-                </Box>
-              )}
-            </AccordionDetails>
-          </Accordion>
-        </Grid>
-      )}
+              (اختیاری)
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            {categoryLoading ? (
+              <Typography>در حال بارگیری...</Typography>
+            ) : detailsData ? (
+              <Box sx={{ "& .MuiGrid-container": { gap: 2 } }}>
+                <DetailsFormFields
+                  detailsData={detailsData}
+                  formData={formData.details}
+                  onFormDataChange={handleDetailsChange}
+                  validationErrors={{}}
+                />
+              </Box>
+            ) : (
+              <Alert severity="info">
+                اطلاعات تفصیلی برای این دسته‌بندی موجود نیست
+              </Alert>
+            )}
+          </AccordionDetails>
+        </Accordion>
+      </Grid>
 
       {/* Attributes Form Accordion */}
-      {selectedCategory && attributesData && (
-        <Grid size={{ xs: 12 }}>
-          <Accordion
-            expanded={expandedAccordions.attributes}
-            onChange={handleAccordionChange("attributes")}
+      <Grid size={{ xs: 12 }}>
+        <Accordion
+          expanded={expandedAccordions.attributes}
+          onChange={handleAccordionChange("attributes")}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="attributes-content"
+            id="attributes-header"
           >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="attributes-content"
-              id="attributes-header"
+            <Typography variant="h6">ویژگی‌های محصول</Typography>
+            <Typography
+              variant="body2"
+              sx={{ ml: 1, color: "text.secondary" }}
             >
-              <Typography variant="h6">ویژگی‌های محصول</Typography>
-              <Typography
-                variant="body2"
-                sx={{ ml: 1, color: "text.secondary" }}
-              >
-                (اختیاری)
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              {categoryLoading ? (
-                <Typography>در حال بارگیری...</Typography>
-              ) : (
-                <Box sx={{ "& .MuiGrid-container": { gap: 2 } }}>
-                  <AttributesFormFields
-                    attributesData={attributesData}
-                    formData={formData.attributes}
-                    onFormDataChange={handleAttributesChange}
-                    validationErrors={{}}
-                  />
-                </Box>
-              )}
-            </AccordionDetails>
-          </Accordion>
-        </Grid>
-      )}
+              (اختیاری)
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            {categoryLoading ? (
+              <Typography>در حال بارگیری...</Typography>
+            ) : attributesData ? (
+              <Box sx={{ "& .MuiGrid-container": { gap: 2 } }}>
+                <AttributesFormFields
+                  attributesData={attributesData}
+                  formData={formData.attributes}
+                  onFormDataChange={handleAttributesChange}
+                  validationErrors={{}}
+                />
+              </Box>
+            ) : (
+              <Alert severity="info">
+                ویژگی‌های محصول برای این دسته‌بندی موجود نیست
+              </Alert>
+            )}
+          </AccordionDetails>
+        </Accordion>
+      </Grid>
 
       {/* Image Selection Accordion */}
       <Grid size={{ xs: 12 }}>
@@ -564,7 +635,7 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
           </AccordionDetails>
         </Accordion>
       </Grid>
-    </React.Fragment>
+    </>
   );
 };
 

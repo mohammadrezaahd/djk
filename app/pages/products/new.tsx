@@ -989,8 +989,8 @@ const NewProductPage = () => {
 
   return (
     <Layout title="افزودن محصول جدید">
-      <Box sx={{ p: 3 }}>
-        <Container maxWidth="lg">
+      <Container maxWidth="lg">
+        <Box sx={{ p: 3 }}>
           {showResultPage ? (
             <ResultPage />
           ) : (
@@ -1064,8 +1064,8 @@ const NewProductPage = () => {
             `}</style>
             </>
           )}
-        </Container>
-      </Box>
+        </Box>
+      </Container>
     </Layout>
   );
 };

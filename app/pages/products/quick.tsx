@@ -107,8 +107,8 @@ const QuickProductPage = () => {
     try {
       // Prepare details array
       const detailsList: ICategoryDetails[] = [];
-      if (detailsData && Object.keys(formData.details).length > 0) {
-        // Create a details object based on form data
+      if (detailsData) {
+        // Always create a details object, even if no form data is entered
         const processedDetails: ICategoryDetails = JSON.parse(
           JSON.stringify(detailsData)
         );
@@ -126,8 +126,8 @@ const QuickProductPage = () => {
 
       // Prepare attributes array
       const attributesList: ICategoryAttr[] = [];
-      if (attributesData && Object.keys(formData.attributes).length > 0) {
-        // Create an attributes object based on form data
+      if (attributesData) {
+        // Always create an attributes object, even if no form data is entered
         const processedAttributes: ICategoryAttr = JSON.parse(
           JSON.stringify(attributesData)
         );
@@ -174,7 +174,7 @@ const QuickProductPage = () => {
         attributes: { list: attributesList },
         variant_data: {}, // Empty for quick product
         images: data.images,
-        source: TemplateSource.App,
+        source: TemplateSource.Quick,
         tag: "quick",
       };
 
@@ -278,12 +278,11 @@ const QuickProductPage = () => {
 
   return (
     <AppLayout title="محصول سریع">
-      <TitleCard
-        title="محصول سریع"
-        description="ایجاد سریع محصول در یک صفحه - همه اطلاعات را در یک مکان وارد کنید"
-      />
-
       <Container maxWidth="lg">
+        <TitleCard
+          title="محصول سریع"
+          description="ایجاد سریع محصول در یک صفحه - همه اطلاعات را در یک مکان وارد کنید"
+        />
         <Grid container spacing={3}>
           <Grid size={{ xs: 12 }}>
             <Grid container spacing={3}>

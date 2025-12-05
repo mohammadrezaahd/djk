@@ -385,8 +385,8 @@ const EditTemplatePage = () => {
 
   return (
     <AppLayout title="ویرایش قالب">
-      <TitleCard title="ویرایش قالب " description="ویرایش اطلاعات قالب‌" />
       <Container maxWidth="lg">
+      <TitleCard title="ویرایش قالب " description="ویرایش اطلاعات قالب‌" />
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, lg: 12 }}>
             <Grid container spacing={3}>

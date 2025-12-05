@@ -343,13 +343,13 @@ const ProductsList = () => {
 
   return (
     <AppLayout title="مدیریت محصولات">
-      <Box sx={{ mb: 3 }}>
-        <TitleCard
-          title="مدیریت محصولات"
-          description="مشاهده و مدیریت محصولات"
-        />
-      </Box>
       <Container maxWidth="lg">
+        <Box sx={{ mb: 3 }}>
+          <TitleCard
+            title="مدیریت محصولات"
+            description="مشاهده و مدیریت محصولات"
+          />
+        </Box>
         <Card>
           <CardContent>
             {/* Filter and Controls */}

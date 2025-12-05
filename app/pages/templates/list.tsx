@@ -328,13 +328,13 @@ const TemplatesList = () => {
 
   return (
     <AppLayout title="مدیریت قالب‌ها">
-      <Box sx={{ mb: 3 }}>
-        <TitleCard
-          title="مدیریت قالب ها"
-          description="مشاهده و مدیریت قالب‌های ویژگی‌ها و اطلاعات"
-        />
-      </Box>
       <Container maxWidth="lg">
+        <Box sx={{ mb: 3 }}>
+          <TitleCard
+            title="مدیریت قالب ها"
+            description="مشاهده و مدیریت قالب‌های ویژگی‌ها و اطلاعات"
+          />
+        </Box>
         <Card>
           <CardContent>
             {/* Filter and Controls */}

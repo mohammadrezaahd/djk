@@ -244,14 +244,22 @@ const EditProductPage = () => {
     return activeTemplateErrors?.errors || {};
   }, [attributesTemplates, activeAttributesTemplate?.id]);
 
-  // Calculate if form is valid
+  // Calculate if form is valid - different logic for Quick vs App
   const isFormValid = useMemo(() => {
+    // Basic validations for all types
     if (!productInfoValidation.isValid) return false;
     if (selectedImages.length === 0) return false;
     const hasProductImage =
       selectedImagesData?.data?.list?.some((img) => img.product === true) ||
       false;
     if (!hasProductImage) return false;
+
+    // For Quick products, templates are optional - no validation required
+    if (productData?.data?.source === TemplateSource.Quick) {
+      return true; // Only basic validations for Quick products
+    }
+
+    // For App products, apply template validations
     if (detailsTemplates.length === 0 || attributesTemplates.length === 0) {
       return false;
     }
@@ -263,6 +271,7 @@ const EditProductPage = () => {
     productInfoValidation.isValid,
     selectedImages.length,
     selectedImagesData,
+    productData?.data?.source,
     detailsTemplates,
     attributesTemplates,
     allDetailsValidationErrors,
@@ -613,12 +622,12 @@ const EditProductPage = () => {
 
   return (
     <Layout title="ویرایش محصول">
-      <Box sx={{ p: 3 }}>
-        <TitleCard
-          title="ویرایش محصول"
-          description="اطلاعات محصول را ویرایش کنید."
-        />
-        <Container maxWidth="lg">
+      <Container maxWidth="lg">
+        <Box sx={{ p: 3 }}>
+          <TitleCard
+            title="ویرایش محصول"
+            description="اطلاعات محصول را ویرایش کنید."
+          />
           <Grid container spacing={3} sx={{ mt: 1 }}>
             {renderComponent()}
 
@@ -642,15 +651,20 @@ const EditProductPage = () => {
                           (product) باشد
                         </li>
                       )}
-                    {(detailsTemplates.length === 0 ||
-                      attributesTemplates.length === 0) && (
-                      <li>حداقل یک قالب برای جزئیات و ویژگی‌ها انتخاب کنید</li>
-                    )}
-                    {Object.keys(allDetailsValidationErrors).length > 0 && (
-                      <li>فیلدهای الزامی در قالب‌های جزئیات را پر کنید</li>
-                    )}
-                    {Object.keys(allAttributesValidationErrors).length > 0 && (
-                      <li>فیلدهای الزامی در قالب‌های ویژگی‌ها را پر کنید</li>
+                    {/* Only show template validations for App products, not Quick */}
+                    {productData?.data?.source === TemplateSource.App && (
+                      <>
+                        {(detailsTemplates.length === 0 ||
+                          attributesTemplates.length === 0) && (
+                          <li>حداقل یک قالب برای جزئیات و ویژگی‌ها انتخاب کنید</li>
+                        )}
+                        {Object.keys(allDetailsValidationErrors).length > 0 && (
+                          <li>فیلدهای الزامی در قالب‌های جزئیات را پر کنید</li>
+                        )}
+                        {Object.keys(allAttributesValidationErrors).length > 0 && (
+                          <li>فیلدهای الزامی در قالب‌های ویژگی‌ها را پر کنید</li>
+                        )}
+                      </>
                     )}
                   </ul>
                 </Alert>
@@ -673,8 +687,8 @@ const EditProductPage = () => {
               </Stack>
             </Grid>
           </Grid>
-        </Container>
-      </Box>
+        </Box>
+      </Container>
     </Layout>
   );
 };
