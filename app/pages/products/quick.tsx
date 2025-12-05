@@ -15,6 +15,7 @@ import {
   AccordionDetails,
   FormControl,
   FormHelperText,
+  Container,
 } from "@mui/material";
 import { ExpandMore as ExpandMoreIcon } from "@mui/icons-material";
 import { Controller } from "react-hook-form";
@@ -182,7 +183,7 @@ const QuickProductPage = () => {
       if (result.status === ApiStatus.SUCCEEDED) {
         enqueueSnackbar("محصول با موفقیت ایجاد شد", { variant: "success" });
         navigate("/dashboard/products/list");
-      }else {
+      } else {
         enqueueSnackbar("خطا در ایجاد محصول", { variant: "error" });
       }
     } catch (error: any) {
@@ -282,272 +283,274 @@ const QuickProductPage = () => {
         description="ایجاد سریع محصول در یک صفحه - همه اطلاعات را در یک مکان وارد کنید"
       />
 
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12 }}>
-          <Grid container spacing={3}>
-            {/* Category Selection */}
-            <Grid size={{ xs: 12 }}>
-              <CategorySelector
-                categories={categories}
-                selectedCategory={selectedCategory}
-                loadingCategories={categoriesLoading}
-                onCategoryChange={handleCategoryChange}
-                onSearchChange={setSearchTerm}
-                suggestedCategories={suggestedCategories}
-                loadingSuggestions={categoriesLoading}
-              />
+      <Container maxWidth="lg">
+        <Grid container spacing={3}>
+          <Grid size={{ xs: 12 }}>
+            <Grid container spacing={3}>
+              {/* Category Selection */}
+              <Grid size={{ xs: 12 }}>
+                <CategorySelector
+                  categories={categories}
+                  selectedCategory={selectedCategory}
+                  loadingCategories={categoriesLoading}
+                  onCategoryChange={handleCategoryChange}
+                  onSearchChange={setSearchTerm}
+                  suggestedCategories={suggestedCategories}
+                  loadingSuggestions={categoriesLoading}
+                />
 
-              {errors.selectedCategory && (
-                <Alert severity="error" sx={{ mt: 2 }}>
-                  {errors.selectedCategory.message}
-                </Alert>
+                {errors.selectedCategory && (
+                  <Alert severity="error" sx={{ mt: 2 }}>
+                    {errors.selectedCategory.message}
+                  </Alert>
+                )}
+              </Grid>
+
+              {/* Basic Product Info Accordion */}
+              <Grid size={{ xs: 12 }}>
+                <Accordion
+                  expanded={expandedAccordions.basic}
+                  onChange={handleAccordionChange("basic")}
+                >
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="basic-content"
+                    id="basic-header"
+                  >
+                    <Typography variant="h6">اطلاعات پایه محصول *</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Grid container spacing={2}>
+                      <Grid size={{ xs: 12, md: 6 }}>
+                        <Controller
+                          name="title"
+                          control={form.control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              fullWidth
+                              label="عنوان محصول"
+                              placeholder="عنوان محصول را وارد کنید..."
+                              required
+                              error={!!errors.title}
+                              helperText={errors.title?.message}
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 12 }}>
+                        <Controller
+                          name="description"
+                          control={form.control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              fullWidth
+                              multiline
+                              rows={4}
+                              label="توضیحات محصول"
+                              placeholder="توضیحات کامل محصول را وارد کنید... (حداقل 100 کاراکتر)"
+                              required
+                              error={!!errors.description}
+                              helperText={
+                                errors.description?.message ||
+                                `${field.value?.length || 0}/100 کاراکتر`
+                              }
+                            />
+                          )}
+                        />
+                      </Grid>
+                    </Grid>
+                  </AccordionDetails>
+                </Accordion>
+              </Grid>
+
+              {/* Template Forms - Only show if category is selected */}
+              {selectedCategory && (
+                <>
+                  {/* Details Form Accordion */}
+                  {detailsData && (
+                    <Grid size={{ xs: 12 }}>
+                      <Accordion
+                        expanded={expandedAccordions.details}
+                        onChange={handleAccordionChange("details")}
+                      >
+                        <AccordionSummary
+                          expandIcon={<ExpandMoreIcon />}
+                          aria-controls="details-content"
+                          id="details-header"
+                        >
+                          <Typography variant="h6">
+                            اطلاعات تفصیلی محصول
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{ ml: 1, color: "text.secondary" }}
+                          >
+                            (اختیاری)
+                          </Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          {categoryLoading ? (
+                            <Typography>در حال بارگیری...</Typography>
+                          ) : (
+                            <Box sx={{ "& .MuiGrid-container": { gap: 2 } }}>
+                              <DetailsFormFields
+                                detailsData={detailsData}
+                                formData={formData.details}
+                                onFormDataChange={handleDetailsChange}
+                                validationErrors={{}}
+                              />
+                            </Box>
+                          )}
+                        </AccordionDetails>
+                      </Accordion>
+                    </Grid>
+                  )}
+
+                  {/* Attributes Form Accordion */}
+                  {attributesData && (
+                    <Grid size={{ xs: 12 }}>
+                      <Accordion
+                        expanded={expandedAccordions.attributes}
+                        onChange={handleAccordionChange("attributes")}
+                      >
+                        <AccordionSummary
+                          expandIcon={<ExpandMoreIcon />}
+                          aria-controls="attributes-content"
+                          id="attributes-header"
+                        >
+                          <Typography variant="h6">ویژگی‌های محصول</Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{ ml: 1, color: "text.secondary" }}
+                          >
+                            (اختیاری)
+                          </Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          {categoryLoading ? (
+                            <Typography>در حال بارگیری...</Typography>
+                          ) : (
+                            <Box sx={{ "& .MuiGrid-container": { gap: 2 } }}>
+                              <AttributesFormFields
+                                attributesData={attributesData}
+                                formData={formData.attributes}
+                                onFormDataChange={handleAttributesChange}
+                                validationErrors={{}}
+                              />
+                            </Box>
+                          )}
+                        </AccordionDetails>
+                      </Accordion>
+                    </Grid>
+                  )}
+
+                  {/* Image Selection Accordion */}
+                  <Grid size={{ xs: 12 }}>
+                    <Accordion
+                      expanded={expandedAccordions.images}
+                      onChange={handleAccordionChange("images")}
+                    >
+                      <AccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        aria-controls="images-content"
+                        id="images-header"
+                      >
+                        <Typography variant="h6">تصاویر محصول *</Typography>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        {errors.images && (
+                          <Alert severity="error" sx={{ mb: 2 }}>
+                            {errors.images.message}
+                          </Alert>
+                        )}
+                        <MediaManager
+                          media={mediaFiles}
+                          loading={galleryLoading}
+                          currentPage={1}
+                          totalItems={galleryData?.data?.list?.length || 0}
+                          pageSize={50}
+                          onPageChange={(event, page) => {
+                            // Handle page change if needed in future
+                            console.log("Page changed to:", page);
+                          }}
+                          onPageSizeChange={(event) => {
+                            // Handle page size change if needed in future
+                            console.log(
+                              "Page size changed to:",
+                              event.target.value
+                            );
+                          }}
+                          showUpload={true}
+                          onUploadSuccess={() => {
+                            refetchGallery();
+                            enqueueSnackbar("تصویر با موفقیت آپلود شد", {
+                              variant: "success",
+                            });
+                          }}
+                          onUploadError={(error) => {
+                            enqueueSnackbar(`خطا در آپلود: ${error}`, {
+                              variant: "error",
+                            });
+                          }}
+                          selectionMode={true}
+                          selectedItems={
+                            formImages?.map((id) => id.toString()) || []
+                          }
+                          onSelectionChange={handleImagesChange}
+                          allowMultiple={true}
+                          showSearch={false}
+                          pageSizeOptions={[20, 50, 100]}
+                        />
+                      </AccordionDetails>
+                    </Accordion>
+                  </Grid>
+
+                  {/* Action Buttons */}
+                  <Grid size={{ xs: 12 }}>
+                    <Paper sx={{ p: 3 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: 2,
+                          justifyContent: "flex-end",
+                        }}
+                      >
+                        <Button
+                          variant="outlined"
+                          onClick={handleReset}
+                          disabled={isProductSaving}
+                          startIcon={<ClearIcon />}
+                        >
+                          پاک کردن فرم
+                        </Button>
+                        <Button
+                          variant="contained"
+                          onClick={handleSubmit}
+                          disabled={isProductSaving || !isFormValid}
+                          startIcon={<SaveIcon />}
+                        >
+                          {isProductSaving ? "در حال ذخیره..." : "ایجاد محصول"}
+                        </Button>
+                      </Box>
+                    </Paper>
+                  </Grid>
+                </>
+              )}
+
+              {/* Show message when no category is selected */}
+              {!selectedCategory && (
+                <Grid size={{ xs: 12 }}>
+                  <Alert severity="info">
+                    برای ادامه، لطفاً ابتدا دسته‌بندی مورد نظر را انتخاب کنید
+                  </Alert>
+                </Grid>
               )}
             </Grid>
-
-            {/* Basic Product Info Accordion */}
-            <Grid size={{ xs: 12 }}>
-              <Accordion
-                expanded={expandedAccordions.basic}
-                onChange={handleAccordionChange("basic")}
-              >
-                <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  aria-controls="basic-content"
-                  id="basic-header"
-                >
-                  <Typography variant="h6">اطلاعات پایه محصول *</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Grid container spacing={2}>
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <Controller
-                        name="title"
-                        control={form.control}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            fullWidth
-                            label="عنوان محصول"
-                            placeholder="عنوان محصول را وارد کنید..."
-                            required
-                            error={!!errors.title}
-                            helperText={errors.title?.message}
-                          />
-                        )}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12 }}>
-                      <Controller
-                        name="description"
-                        control={form.control}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            fullWidth
-                            multiline
-                            rows={4}
-                            label="توضیحات محصول"
-                            placeholder="توضیحات کامل محصول را وارد کنید... (حداقل 100 کاراکتر)"
-                            required
-                            error={!!errors.description}
-                            helperText={
-                              errors.description?.message ||
-                              `${field.value?.length || 0}/100 کاراکتر`
-                            }
-                          />
-                        )}
-                      />
-                    </Grid>
-                  </Grid>
-                </AccordionDetails>
-              </Accordion>
-            </Grid>
-
-            {/* Template Forms - Only show if category is selected */}
-            {selectedCategory && (
-              <>
-                {/* Details Form Accordion */}
-                {detailsData && (
-                  <Grid size={{ xs: 12 }}>
-                    <Accordion
-                      expanded={expandedAccordions.details}
-                      onChange={handleAccordionChange("details")}
-                    >
-                      <AccordionSummary
-                        expandIcon={<ExpandMoreIcon />}
-                        aria-controls="details-content"
-                        id="details-header"
-                      >
-                        <Typography variant="h6">
-                          اطلاعات تفصیلی محصول
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          sx={{ ml: 1, color: "text.secondary" }}
-                        >
-                          (اختیاری)
-                        </Typography>
-                      </AccordionSummary>
-                      <AccordionDetails>
-                        {categoryLoading ? (
-                          <Typography>در حال بارگیری...</Typography>
-                        ) : (
-                          <Box sx={{ "& .MuiGrid-container": { gap: 2 } }}>
-                            <DetailsFormFields
-                              detailsData={detailsData}
-                              formData={formData.details}
-                              onFormDataChange={handleDetailsChange}
-                              validationErrors={{}}
-                            />
-                          </Box>
-                        )}
-                      </AccordionDetails>
-                    </Accordion>
-                  </Grid>
-                )}
-
-                {/* Attributes Form Accordion */}
-                {attributesData && (
-                  <Grid size={{ xs: 12 }}>
-                    <Accordion
-                      expanded={expandedAccordions.attributes}
-                      onChange={handleAccordionChange("attributes")}
-                    >
-                      <AccordionSummary
-                        expandIcon={<ExpandMoreIcon />}
-                        aria-controls="attributes-content"
-                        id="attributes-header"
-                      >
-                        <Typography variant="h6">ویژگی‌های محصول</Typography>
-                        <Typography
-                          variant="body2"
-                          sx={{ ml: 1, color: "text.secondary" }}
-                        >
-                          (اختیاری)
-                        </Typography>
-                      </AccordionSummary>
-                      <AccordionDetails>
-                        {categoryLoading ? (
-                          <Typography>در حال بارگیری...</Typography>
-                        ) : (
-                          <Box sx={{ "& .MuiGrid-container": { gap: 2 } }}>
-                            <AttributesFormFields
-                              attributesData={attributesData}
-                              formData={formData.attributes}
-                              onFormDataChange={handleAttributesChange}
-                              validationErrors={{}}
-                            />
-                          </Box>
-                        )}
-                      </AccordionDetails>
-                    </Accordion>
-                  </Grid>
-                )}
-
-                {/* Image Selection Accordion */}
-                <Grid size={{ xs: 12 }}>
-                  <Accordion
-                    expanded={expandedAccordions.images}
-                    onChange={handleAccordionChange("images")}
-                  >
-                    <AccordionSummary
-                      expandIcon={<ExpandMoreIcon />}
-                      aria-controls="images-content"
-                      id="images-header"
-                    >
-                      <Typography variant="h6">تصاویر محصول *</Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      {errors.images && (
-                        <Alert severity="error" sx={{ mb: 2 }}>
-                          {errors.images.message}
-                        </Alert>
-                      )}
-                      <MediaManager
-                        media={mediaFiles}
-                        loading={galleryLoading}
-                        currentPage={1}
-                        totalItems={galleryData?.data?.list?.length || 0}
-                        pageSize={50}
-                        onPageChange={(event, page) => {
-                          // Handle page change if needed in future
-                          console.log("Page changed to:", page);
-                        }}
-                        onPageSizeChange={(event) => {
-                          // Handle page size change if needed in future
-                          console.log(
-                            "Page size changed to:",
-                            event.target.value
-                          );
-                        }}
-                        showUpload={true}
-                        onUploadSuccess={() => {
-                          refetchGallery();
-                          enqueueSnackbar("تصویر با موفقیت آپلود شد", {
-                            variant: "success",
-                          });
-                        }}
-                        onUploadError={(error) => {
-                          enqueueSnackbar(`خطا در آپلود: ${error}`, {
-                            variant: "error",
-                          });
-                        }}
-                        selectionMode={true}
-                        selectedItems={
-                          formImages?.map((id) => id.toString()) || []
-                        }
-                        onSelectionChange={handleImagesChange}
-                        allowMultiple={true}
-                        showSearch={false}
-                        pageSizeOptions={[20, 50, 100]}
-                      />
-                    </AccordionDetails>
-                  </Accordion>
-                </Grid>
-
-                {/* Action Buttons */}
-                <Grid size={{ xs: 12 }}>
-                  <Paper sx={{ p: 3 }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        gap: 2,
-                        justifyContent: "flex-end",
-                      }}
-                    >
-                      <Button
-                        variant="outlined"
-                        onClick={handleReset}
-                        disabled={isProductSaving}
-                        startIcon={<ClearIcon />}
-                      >
-                        پاک کردن فرم
-                      </Button>
-                      <Button
-                        variant="contained"
-                        onClick={handleSubmit}
-                        disabled={isProductSaving || !isFormValid}
-                        startIcon={<SaveIcon />}
-                      >
-                        {isProductSaving ? "در حال ذخیره..." : "ایجاد محصول"}
-                      </Button>
-                    </Box>
-                  </Paper>
-                </Grid>
-              </>
-            )}
-
-            {/* Show message when no category is selected */}
-            {!selectedCategory && (
-              <Grid size={{ xs: 12 }}>
-                <Alert severity="info">
-                  برای ادامه، لطفاً ابتدا دسته‌بندی مورد نظر را انتخاب کنید
-                </Alert>
-              </Grid>
-            )}
           </Grid>
         </Grid>
-      </Grid>
+      </Container>
     </AppLayout>
   );
 };

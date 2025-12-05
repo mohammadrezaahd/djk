@@ -6,6 +6,7 @@ import {
   CardContent,
   Tabs,
   Tab,
+  Container,
 } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import { useCategoriesList, useCategory } from "~/api/categories.api";
@@ -48,7 +49,9 @@ const NewTemplatePage = () => {
   const dispatch = useAppDispatch();
   const { enqueueSnackbar } = useSnackbar();
 
-  const attributesStore = useAppSelector((state) => state.attributes) as AttributesState;
+  const attributesStore = useAppSelector(
+    (state) => state.attributes
+  ) as AttributesState;
   const detailsStore = useAppSelector((state) => state.details) as DetailsState;
 
   const [selectedCategory, setSelectedCategory] =
@@ -257,73 +260,73 @@ const NewTemplatePage = () => {
         title="افزودن قالب جدید"
         description="ابتدا دسته بندی مورد نظر را انتخال کنید سپس قالب ویژگی و اطلاعات خود را بسازید"
       />
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12, lg: 12 }}>
-          <Grid container spacing={3}>
-            <CategorySelector
-              categories={categories}
-              selectedCategory={selectedCategory}
-              loadingCategories={loadingCategories}
-              onCategoryChange={handleCategoryChange}
-              onSearchChange={handleSearchChange}
-              suggestedCategories={suggestedCategories}
-              loadingSuggestions={loadingCategories}
-            />
-
-            {/* Tabs Section */}
-            {selectedCategory && (
-              <Grid size={{ xs: 12 }}>
-                <Card>
-                  <CardContent>
-                    <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-                      <Tabs
-                        value={activeTab}
-                        onChange={handleTabChange}
-                        aria-label="product template tabs"
-                      >
-                        <Tab label="اطلاعات" />
-                        <Tab label="ویژگی ها" />
-                      </Tabs>
-                    </Box>
-
-                    <Box sx={{ mt: 3 }}>
-                      <Grid container spacing={3}>
-                        {activeTab === 0 && (
-                          <DetailsTab
-                            onValidationChange={setIsDetailsValid}
-                            isLoading={categoryLoading}
-                          />
-                        )}
-                        {activeTab === 1 && (
-                          <AttributesTab
-                            onValidationChange={setIsAttributesValid}
-                            isLoading={categoryLoading}
-                          />
-                        )}
-                      </Grid>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )}
-
-            {/* Action Buttons */}
-            {selectedCategory && (
-              <ActionButtons
-                activeTab={activeTab}
-                onSubmit={handleSubmit}
-                onReset={handleReset}
-                isFormValid={isCurrentFormValid}
-                loading={
-                  activeTab === 0
-                    ? isAttributesSaving
-                    : isDetailsSaving
-                }
+      <Container maxWidth="lg">
+        <Grid container spacing={3}>
+          <Grid size={{ xs: 12, lg: 12 }}>
+            <Grid container spacing={3}>
+              <CategorySelector
+                categories={categories}
+                selectedCategory={selectedCategory}
+                loadingCategories={loadingCategories}
+                onCategoryChange={handleCategoryChange}
+                onSearchChange={handleSearchChange}
+                suggestedCategories={suggestedCategories}
+                loadingSuggestions={loadingCategories}
               />
-            )}
+
+              {/* Tabs Section */}
+              {selectedCategory && (
+                <Grid size={{ xs: 12 }}>
+                  <Card>
+                    <CardContent>
+                      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+                        <Tabs
+                          value={activeTab}
+                          onChange={handleTabChange}
+                          aria-label="product template tabs"
+                        >
+                          <Tab label="اطلاعات" />
+                          <Tab label="ویژگی ها" />
+                        </Tabs>
+                      </Box>
+
+                      <Box sx={{ mt: 3 }}>
+                        <Grid container spacing={3}>
+                          {activeTab === 0 && (
+                            <DetailsTab
+                              onValidationChange={setIsDetailsValid}
+                              isLoading={categoryLoading}
+                            />
+                          )}
+                          {activeTab === 1 && (
+                            <AttributesTab
+                              onValidationChange={setIsAttributesValid}
+                              isLoading={categoryLoading}
+                            />
+                          )}
+                        </Grid>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              )}
+
+              {/* Action Buttons */}
+              {selectedCategory && (
+                <ActionButtons
+                  activeTab={activeTab}
+                  onSubmit={handleSubmit}
+                  onReset={handleReset}
+                  isFormValid={isCurrentFormValid}
+                  loading={
+                    activeTab === 0 ? isAttributesSaving : isDetailsSaving
+                  }
+                />
+              )}
+            </Grid>
           </Grid>
         </Grid>
-      </Grid>
+      </Container>
     </AppLayout>
   );
 };

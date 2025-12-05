@@ -23,6 +23,7 @@ import {
   DialogContent,
   DialogActions,
   Button,
+  Container,
 } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -333,184 +334,189 @@ const TemplatesList = () => {
           description="مشاهده و مدیریت قالب‌های ویژگی‌ها و اطلاعات"
         />
       </Box>
-
-      <Card>
-        <CardContent>
-          {/* Filter and Controls */}
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 3,
-              flexWrap: "wrap",
-              gap: 2,
-            }}
-          >
+      <Container maxWidth="lg">
+        <Card>
+          <CardContent>
+            {/* Filter and Controls */}
             <Box
               sx={{
                 display: "flex",
+                justifyContent: "space-between",
                 alignItems: "center",
-                gap: 2,
+                mb: 3,
                 flexWrap: "wrap",
+                gap: 2,
               }}
             >
-              <ToggleButtonGroup
-                value={templateType}
-                exclusive
-                onChange={handleTemplateTypeChange}
-                aria-label="template type"
-                size="small"
-                dir="ltr"
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  flexWrap: "wrap",
+                }}
               >
-                <ToggleButton value="attributes" aria-label="attributes">
-                  <AttributesIcon sx={{ mr: 1 }} />
-                  ویژگی‌ها
-                </ToggleButton>
-                <ToggleButton value="details" aria-label="details">
-                  <DetailsIcon sx={{ mr: 1 }} />
-                  اطلاعات
-                </ToggleButton>
-              </ToggleButtonGroup>
+                <ToggleButtonGroup
+                  value={templateType}
+                  exclusive
+                  onChange={handleTemplateTypeChange}
+                  aria-label="template type"
+                  size="small"
+                  dir="ltr"
+                >
+                  <ToggleButton value="attributes" aria-label="attributes">
+                    <AttributesIcon sx={{ mr: 1 }} />
+                    ویژگی‌ها
+                  </ToggleButton>
+                  <ToggleButton value="details" aria-label="details">
+                    <DetailsIcon sx={{ mr: 1 }} />
+                    اطلاعات
+                  </ToggleButton>
+                </ToggleButtonGroup>
 
-              <PageSizeSelector
-                value={currentLimit}
-                onChange={
-                  templateType === "attributes"
-                    ? handleAttributesLimitChange
-                    : handleDetailsLimitChange
-                }
-                options={[5, 10, 20, 50]}
-              />
+                <PageSizeSelector
+                  value={currentLimit}
+                  onChange={
+                    templateType === "attributes"
+                      ? handleAttributesLimitChange
+                      : handleDetailsLimitChange
+                  }
+                  options={[5, 10, 20, 50]}
+                />
 
-              <SearchInput
-                onSearchChange={handleSearchChange}
-                label="جستجو در قالب‌ها"
-                placeholder="نام قالب را جستجو کنید..."
-                size="small"
-              />
+                <SearchInput
+                  onSearchChange={handleSearchChange}
+                  label="جستجو در قالب‌ها"
+                  placeholder="نام قالب را جستجو کنید..."
+                  size="small"
+                />
+              </Box>
+
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Tooltip title="به‌روزرسانی">
+                  <IconButton onClick={handleRefresh} disabled={isLoading}>
+                    <RefreshIcon />
+                  </IconButton>
+                </Tooltip>
+                <Typography variant="body2" color="text.secondary">
+                  مجموع: {filteredData.length} مورد
+                  {searchValue && ` از ${currentTotal}`}
+                </Typography>
+              </Box>
             </Box>
 
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Tooltip title="به‌روزرسانی">
-                <IconButton onClick={handleRefresh} disabled={isLoading}>
-                  <RefreshIcon />
-                </IconButton>
-              </Tooltip>
-              <Typography variant="body2" color="text.secondary">
-                مجموع: {filteredData.length} مورد
-                {searchValue && ` از ${currentTotal}`}
-              </Typography>
-            </Box>
-          </Box>
+            {/* Error Display */}
+            {(attributesError || detailsError) && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                خطا در دریافت اطلاعات:{" "}
+                {attributesError?.message || detailsError?.message}
+              </Alert>
+            )}
 
-          {/* Error Display */}
-          {(attributesError || detailsError) && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              خطا در دریافت اطلاعات:{" "}
-              {attributesError?.message || detailsError?.message}
-            </Alert>
-          )}
-
-          {/* Table */}
-          <TableContainer component={Paper} variant="outlined">
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: "bold" }}>شناسه</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>عنوان</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>دسته‌بندی</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>منبع</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }} align="center">
-                    عملیات
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {isLoading ? (
-                  <LoadingSkeleton />
-                ) : filteredData.length > 0 ? (
-                  filteredData.map((item) => (
-                    <TableRow key={item.id} hover>
-                      <TableCell>{item.id}</TableCell>
-                      <TableCell>
-                        <Typography variant="body2" fontWeight="medium">
-                          {item.title}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>{item.category_title}</TableCell>
-                      <TableCell>
-                        <Chip
-                          label={item.source}
-                          size="small"
-                          color="primary"
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell align="center">
-                        <Box
-                          sx={{
-                            display: "flex",
-                            gap: 1,
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Tooltip title="ویرایش">
-                            <IconButton
-                              size="small"
-                              color="primary"
-                              onClick={() => handleEdit(item.id, templateType)}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="حذف">
-                            <IconButton
-                              size="small"
-                              color="error"
-                              onClick={() =>
-                                handleDelete(item.id, templateType)
-                              }
-                              disabled={isRemovingAttribute || isRemovingDetail}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
+            {/* Table */}
+            <TableContainer component={Paper} variant="outlined">
+              <Table>
+                <TableHead>
                   <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        {searchValue
-                          ? "نتیجه‌ای یافت نشد"
-                          : "هیچ قالبی یافت نشد"}
-                      </Typography>
+                    <TableCell sx={{ fontWeight: "bold" }}>شناسه</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>عنوان</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>دسته‌بندی</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>منبع</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }} align="center">
+                      عملیات
                     </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {isLoading ? (
+                    <LoadingSkeleton />
+                  ) : filteredData.length > 0 ? (
+                    filteredData.map((item) => (
+                      <TableRow key={item.id} hover>
+                        <TableCell>{item.id}</TableCell>
+                        <TableCell>
+                          <Typography variant="body2" fontWeight="medium">
+                            {item.title}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>{item.category_title}</TableCell>
+                        <TableCell>
+                          <Chip
+                            label={item.source}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                          />
+                        </TableCell>
+                        <TableCell align="center">
+                          <Box
+                            sx={{
+                              display: "flex",
+                              gap: 1,
+                              justifyContent: "center",
+                            }}
+                          >
+                            <Tooltip title="ویرایش">
+                              <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={() =>
+                                  handleEdit(item.id, templateType)
+                                }
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="حذف">
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() =>
+                                  handleDelete(item.id, templateType)
+                                }
+                                disabled={
+                                  isRemovingAttribute || isRemovingDetail
+                                }
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          {searchValue
+                            ? "نتیجه‌ای یافت نشد"
+                            : "هیچ قالبی یافت نشد"}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
 
-          {/* Pagination */}
-          {filteredData.length > 0 && totalPages > 1 && (
-            <PaginationControls
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={filteredData.length}
-              onPageChange={
-                templateType === "attributes"
-                  ? handleAttributesPageChangeForPagination
-                  : handleDetailsPageChangeForPagination
-              }
-              disabled={isLoading}
-            />
-          )}
-        </CardContent>
-      </Card>
+            {/* Pagination */}
+            {filteredData.length > 0 && totalPages > 1 && (
+              <PaginationControls
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={filteredData.length}
+                onPageChange={
+                  templateType === "attributes"
+                    ? handleAttributesPageChangeForPagination
+                    : handleDetailsPageChangeForPagination
+                }
+                disabled={isLoading}
+              />
+            )}
+          </CardContent>
+        </Card>
+      </Container>
 
       {/* Delete Confirmation Dialog */}
       <Dialog

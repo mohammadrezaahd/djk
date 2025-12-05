@@ -177,7 +177,7 @@ const TrxStatusPage: React.FC = () => {
 
   return (
     <AppLayout title="نتیجه پرداخت">
-      <Container maxWidth="md" sx={{ py: 8 }}>
+      <Container maxWidth="lg" sx={{ py: 8 }}>
         {/* Status Header */}
         <Box
           sx={{

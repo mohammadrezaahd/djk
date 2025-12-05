@@ -1,53 +1,54 @@
-import React, { useState } from 'react';
-import { Box, useTheme, Typography, Paper } from '@mui/material';
-import AppLayout from '~/components/layout/AppLayout';
-import { TicketingSidebar, TicketChat, NewTicketForm } from '~/components/ticketing';
+import React, { useState } from "react";
+import { Box, useTheme, Typography, Paper, Container } from "@mui/material";
+import AppLayout from "~/components/layout/AppLayout";
+import {
+  TicketingSidebar,
+  TicketChat,
+  NewTicketForm,
+} from "~/components/ticketing";
 
-type TicketingView = 'chat' | 'newTicket' | 'empty';
+type TicketingView = "chat" | "newTicket" | "empty";
 
 const TicketingPage: React.FC = () => {
   const theme = useTheme();
   const [selectedTicketId, setSelectedTicketId] = useState<number>();
-  const [currentView, setCurrentView] = useState<TicketingView>('empty');
+  const [currentView, setCurrentView] = useState<TicketingView>("empty");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleTicketSelect = (ticketId: number) => {
     setSelectedTicketId(ticketId);
-    setCurrentView('chat');
+    setCurrentView("chat");
   };
 
   const handleNewTicketClick = () => {
     setSelectedTicketId(undefined);
-    setCurrentView('newTicket');
+    setCurrentView("newTicket");
   };
 
   const handleCloseTicket = () => {
     setSelectedTicketId(undefined);
-    setCurrentView('empty');
+    setCurrentView("empty");
   };
 
   const handleTicketCreated = (ticketId: number) => {
     // First trigger refresh of sidebar to reload tickets list
-    setRefreshTrigger(prev => prev + 1);
-    
+    setRefreshTrigger((prev) => prev + 1);
+
     // Then select the newly created ticket and switch to chat view
     setTimeout(() => {
       setSelectedTicketId(ticketId);
-      setCurrentView('chat');
+      setCurrentView("chat");
     }, 500); // Small delay to allow sidebar to refresh first
   };
 
   const renderMainContent = () => {
     switch (currentView) {
-      case 'chat':
+      case "chat":
         return selectedTicketId ? (
-          <TicketChat
-            ticketId={selectedTicketId}
-            onClose={handleCloseTicket}
-          />
+          <TicketChat ticketId={selectedTicketId} onClose={handleCloseTicket} />
         ) : null;
 
-      case 'newTicket':
+      case "newTicket":
         return (
           <NewTicketForm
             onClose={handleCloseTicket}
@@ -55,15 +56,15 @@ const TicketingPage: React.FC = () => {
           />
         );
 
-      case 'empty':
+      case "empty":
       default:
         return (
           <Box
             sx={{
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               backgroundColor: theme.palette.grey[50],
             }}
           >
@@ -71,8 +72,8 @@ const TicketingPage: React.FC = () => {
               elevation={0}
               sx={{
                 p: 4,
-                textAlign: 'center',
-                backgroundColor: 'transparent',
+                textAlign: "center",
+                backgroundColor: "transparent",
               }}
             >
               <Typography variant="h5" color="text.secondary" sx={{ mb: 2 }}>
@@ -92,21 +93,21 @@ const TicketingPage: React.FC = () => {
 
   return (
     <AppLayout title="پشتیبانی">
-      <Box sx={{ height: 'calc(100vh - 64px)', display: 'flex' }}>
-        {/* Sidebar */}
-        <TicketingSidebar
-          selectedTicketId={selectedTicketId}
-          onTicketSelect={handleTicketSelect}
-          onNewTicketClick={handleNewTicketClick}
-          width={400}
-          refreshTrigger={refreshTrigger}
-        />
+      <Container maxWidth="lg">
+        <Box sx={{ height: "calc(100vh - 64px)", display: "flex" }}>
+          {/* Sidebar */}
+          <TicketingSidebar
+            selectedTicketId={selectedTicketId}
+            onTicketSelect={handleTicketSelect}
+            onNewTicketClick={handleNewTicketClick}
+            width={400}
+            refreshTrigger={refreshTrigger}
+          />
 
-        {/* Main Content */}
-        <Box sx={{ flex: 1, height: '100%' }}>
-          {renderMainContent()}
+          {/* Main Content */}
+          <Box sx={{ flex: 1, height: "100%" }}>{renderMainContent()}</Box>
         </Box>
-      </Box>
+      </Container>
     </AppLayout>
   );
 };

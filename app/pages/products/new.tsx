@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Typography, Box, Paper, Alert, Backdrop, Grid } from "@mui/material";
+import {
+  Typography,
+  Box,
+  Paper,
+  Alert,
+  Backdrop,
+  Grid,
+  Container,
+} from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router";
@@ -80,7 +88,7 @@ const NewProductPage = () => {
   // Category queries
   const { data: categoriesData, isLoading: categoriesLoading } =
     useCategoriesList(categorySearch, 1, 50);
-  
+
   // استخراج categories و suggestions از response
   const categories = categoriesData?.data?.items || [];
   const suggestedCategories = categoriesData?.data?.suugest || [];
@@ -982,79 +990,81 @@ const NewProductPage = () => {
   return (
     <Layout title="افزودن محصول جدید">
       <Box sx={{ p: 3 }}>
-        {showResultPage ? (
-          <ResultPage />
-        ) : (
-          <>
-            <TitleCard
-              title="ایجاد محصول جدید"
-              description="محصول جدید را بر اساس قالب‌های انتخاب شده ایجاد کنید."
-            />
-            <FormSteps
-              currentStep={productState.currentStep}
-              stepValidationErrors={productState.stepValidationErrors}
-            />
+        <Container maxWidth="lg">
+          {showResultPage ? (
+            <ResultPage />
+          ) : (
+            <>
+              <TitleCard
+                title="ایجاد محصول جدید"
+                description="محصول جدید را بر اساس قالب‌های انتخاب شده ایجاد کنید."
+              />
+              <FormSteps
+                currentStep={productState.currentStep}
+                stepValidationErrors={productState.stepValidationErrors}
+              />
 
-            {renderCurrentStep()}
+              {renderCurrentStep()}
 
-            {productState.finalProductData && !isSubmitting && (
-              <Alert severity="success" sx={{ mt: 3 }}>
-                <Typography variant="body2">
-                  محصول با موفقیت ایجاد شد! داده‌های نهایی در کنسول مرورگر قابل
-                  مشاهده است.
-                </Typography>
-              </Alert>
-            )}
+              {productState.finalProductData && !isSubmitting && (
+                <Alert severity="success" sx={{ mt: 3 }}>
+                  <Typography variant="body2">
+                    محصول با موفقیت ایجاد شد! داده‌های نهایی در کنسول مرورگر
+                    قابل مشاهده است.
+                  </Typography>
+                </Alert>
+              )}
 
-            {/* Backdrop overlay when submitting */}
-            <Backdrop
-              sx={{
-                color: "#fff",
-                zIndex: (theme) => theme.zIndex.drawer + 1,
-              }}
-              open={isSubmitting}
-            >
-              <Box
+              {/* Backdrop overlay when submitting */}
+              <Backdrop
                 sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 2,
+                  color: "#fff",
+                  zIndex: (theme) => theme.zIndex.drawer + 1,
                 }}
+                open={isSubmitting}
               >
-                <Paper
+                <Box
                   sx={{
-                    p: 3,
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
                     gap: 2,
                   }}
                 >
-                  <Typography variant="h6" color="primary" fontWeight="bold">
-                    در حال ذخیره محصول...
-                  </Typography>
-                  <div
-                    style={{
-                      width: 60,
-                      height: 60,
-                      border: "4px solid rgba(0, 0, 0, 0.1)",
-                      borderTop: "4px solid #1976d2",
-                      borderRadius: "50%",
-                      animation: "spin 1s linear infinite",
+                  <Paper
+                    sx={{
+                      p: 3,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 2,
                     }}
-                  />
-                </Paper>
-              </Box>
-            </Backdrop>
-            <style>{`
+                  >
+                    <Typography variant="h6" color="primary" fontWeight="bold">
+                      در حال ذخیره محصول...
+                    </Typography>
+                    <div
+                      style={{
+                        width: 60,
+                        height: 60,
+                        border: "4px solid rgba(0, 0, 0, 0.1)",
+                        borderTop: "4px solid #1976d2",
+                        borderRadius: "50%",
+                        animation: "spin 1s linear infinite",
+                      }}
+                    />
+                  </Paper>
+                </Box>
+              </Backdrop>
+              <style>{`
               @keyframes spin {
                 0% { transform: rotate(0deg); }
                 100% { transform: rotate(360deg); }
               }
             `}</style>
-          </>
-        )}
+            </>
+          )}
+        </Container>
       </Box>
     </Layout>
   );

@@ -6,6 +6,7 @@ import {
   CardContent,
   CircularProgress,
   Alert,
+  Container,
 } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router";
@@ -18,11 +19,7 @@ import { useAppDispatch, useAppSelector } from "~/store/hooks";
 import {
   setAttributesData,
   resetAttributes,
-  setTitle,
-  setDescription,
-  updateFormField as updateAttributeFormField,
   getFinalAttributesObject,
-  setImages as setAttributesImages,
   loadTemplateData,
 } from "~/store/slices/attributesSlice";
 import {
@@ -389,74 +386,75 @@ const EditTemplatePage = () => {
   return (
     <AppLayout title="ویرایش قالب">
       <TitleCard title="ویرایش قالب " description="ویرایش اطلاعات قالب‌" />
+      <Container maxWidth="lg">
+        <Grid container spacing={3}>
+          <Grid size={{ xs: 12, lg: 12 }}>
+            <Grid container spacing={3}>
+              {/* Form Section */}
+              <Grid size={{ xs: 12 }}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      {templateType === "attributes"
+                        ? "فرم ویژگی‌ها"
+                        : "فرم اطلاعات"}
+                    </Typography>
 
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12, lg: 12 }}>
-          <Grid container spacing={3}>
-            {/* Form Section */}
-            <Grid size={{ xs: 12 }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    {templateType === "attributes"
-                      ? "فرم ویژگی‌ها"
-                      : "فرم اطلاعات"}
-                  </Typography>
+                    <Box sx={{ mt: 3 }}>
+                      {isFormReady ? (
+                        <Grid container spacing={3}>
+                          {templateType === "attributes" && (
+                            <AttributesTab
+                              onValidationChange={setIsAttributesValid}
+                              isLoading={attributeLoading}
+                            />
+                          )}
+                          {templateType === "details" && (
+                            <DetailsTab
+                              onValidationChange={setIsDetailsValid}
+                              isLoading={detailLoading}
+                            />
+                          )}
+                        </Grid>
+                      ) : (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            minHeight: "200px",
+                          }}
+                        >
+                          <CircularProgress size={30} />
+                          <Typography sx={{ ml: 2 }}>
+                            در حال آماده‌سازی فرم...
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
 
-                  <Box sx={{ mt: 3 }}>
-                    {isFormReady ? (
-                      <Grid container spacing={3}>
-                        {templateType === "attributes" && (
-                          <AttributesTab
-                            onValidationChange={setIsAttributesValid}
-                            isLoading={attributeLoading}
-                          />
-                        )}
-                        {templateType === "details" && (
-                          <DetailsTab
-                            onValidationChange={setIsDetailsValid}
-                            isLoading={detailLoading}
-                          />
-                        )}
-                      </Grid>
-                    ) : (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          minHeight: "200px",
-                        }}
-                      >
-                        <CircularProgress size={30} />
-                        <Typography sx={{ ml: 2 }}>
-                          در حال آماده‌سازی فرم...
-                        </Typography>
-                      </Box>
-                    )}
-                  </Box>
-                </CardContent>
-              </Card>
+              {/* Action Buttons */}
+              {isFormReady && (
+                <ActionButtons
+                  activeTab={templateType === "attributes" ? 0 : 1}
+                  onSubmit={handleSubmit}
+                  onReset={handleReset}
+                  isFormValid={isCurrentFormValid}
+                  isEditMode={true}
+                  loading={
+                    templateType === "attributes"
+                      ? isAttributesSaving
+                      : isDetailsSaving
+                  }
+                />
+              )}
             </Grid>
-
-            {/* Action Buttons */}
-            {isFormReady && (
-              <ActionButtons
-                activeTab={templateType === "attributes" ? 0 : 1}
-                onSubmit={handleSubmit}
-                onReset={handleReset}
-                isFormValid={isCurrentFormValid}
-                isEditMode={true}
-                loading={
-                  templateType === "attributes"
-                    ? isAttributesSaving
-                    : isDetailsSaving
-                }
-              />
-            )}
           </Grid>
         </Grid>
-      </Grid>
+      </Container>
     </AppLayout>
   );
 };

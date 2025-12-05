@@ -55,7 +55,7 @@ const PricingPage: React.FC = () => {
 
   return (
     <AppLayout title="پلان‌های اشتراک">
-      <Container maxWidth="xl" sx={{ py: 6 }}>
+      <Container maxWidth="lg" sx={{ py: 6 }}>
         <TitleCard
           title="پلان‌های اشتراک"
           description="بهترین پلان را برای کسب و کار خود انتخاب کنید"
@@ -85,8 +85,6 @@ const PricingPage: React.FC = () => {
             purchaseLoading={paymentLoading}
           />
         </Box>
-
-
 
         {/* Guarantee Section */}
         <Box

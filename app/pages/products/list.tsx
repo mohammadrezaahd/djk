@@ -21,6 +21,7 @@ import {
   DialogContent,
   DialogActions,
   Button,
+  Container,
 } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -348,205 +349,208 @@ const ProductsList = () => {
           description="مشاهده و مدیریت محصولات"
         />
       </Box>
-
-      <Card>
-        <CardContent>
-          {/* Filter and Controls */}
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 3,
-              flexWrap: "wrap",
-              gap: 2,
-            }}
-          >
+      <Container maxWidth="lg">
+        <Card>
+          <CardContent>
+            {/* Filter and Controls */}
             <Box
               sx={{
                 display: "flex",
+                justifyContent: "space-between",
                 alignItems: "center",
-                gap: 2,
+                mb: 3,
                 flexWrap: "wrap",
+                gap: 2,
               }}
             >
-              <PageSizeSelector
-                value={limit}
-                onChange={handleLimitChange}
-                options={[5, 10, 20, 50]}
-              />
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  flexWrap: "wrap",
+                }}
+              >
+                <PageSizeSelector
+                  value={limit}
+                  onChange={handleLimitChange}
+                  options={[5, 10, 20, 50]}
+                />
 
-              <SearchInput
-                onSearchChange={handleSearchChange}
-                label="جستجو در محصولات"
-                placeholder="نام محصول را جستجو کنید..."
-                size="small"
-              />
+                <SearchInput
+                  onSearchChange={handleSearchChange}
+                  label="جستجو در محصولات"
+                  placeholder="نام محصول را جستجو کنید..."
+                  size="small"
+                />
+              </Box>
+
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Tooltip title="به‌روزرسانی">
+                  <IconButton onClick={handleRefresh} disabled={isLoading}>
+                    <RefreshIcon />
+                  </IconButton>
+                </Tooltip>
+                <Typography variant="body2" color="text.secondary">
+                  مجموع: {totalItems} مورد
+                  {searchValue && ` (${filteredData.length} در این صفحه)`}
+                </Typography>
+              </Box>
             </Box>
 
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Tooltip title="به‌روزرسانی">
-                <IconButton onClick={handleRefresh} disabled={isLoading}>
-                  <RefreshIcon />
-                </IconButton>
-              </Tooltip>
-              <Typography variant="body2" color="text.secondary">
-                مجموع: {totalItems} مورد
-                {searchValue && ` (${filteredData.length} در این صفحه)`}
-              </Typography>
-            </Box>
-          </Box>
+            {/* Error Display */}
+            {fetchError && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                خطا در دریافت اطلاعات: {fetchError?.message}
+              </Alert>
+            )}
 
-          {/* Error Display */}
-          {fetchError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              خطا در دریافت اطلاعات: {fetchError?.message}
-            </Alert>
-          )}
-
-          {/* Table */}
-          <TableContainer component={Paper} variant="outlined" dir="rtl">
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>
-                    شناسه
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>
-                    عنوان
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>
-                    دسته‌بندی
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>
-                    منبع
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>
-                    وضعیت
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>
-                    محصولات ساخته شده
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>
-                    عملیات
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {isLoading ? (
-                  <LoadingSkeleton />
-                ) : filteredData.length > 0 ? (
-                  filteredData.map((item) => (
-                    <TableRow key={item.id} hover>
-                      <TableCell sx={{ textAlign: "right" }}>
-                        {item.id}
-                      </TableCell>
-                      <TableCell sx={{ textAlign: "right" }}>
-                        <Typography variant="body2" fontWeight="medium">
-                          {item.title}
-                        </Typography>
-                      </TableCell>
-                      <TableCell sx={{ textAlign: "right" }}>
-                        {item.category_id}
-                      </TableCell>
-                      <TableCell sx={{ textAlign: "right" }}>
-                        <Chip
-                          label={item.source}
-                          size="small"
-                          color="primary"
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell sx={{ textAlign: "right" }}>
-                        <Chip
-                          label={getStatusText(item.user_status)}
-                          size="small"
-                          color={getStatusColor(item.user_status)}
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell align="center">
-                        <Tooltip title="مشاهده محصولات ساخته شده">
-                          <IconButton
-                            size="small"
-                            color="info"
-                            onClick={() =>
-                              handleViewSubProducts(item.id, item.title)
-                            }
-                          >
-                            <InventoryIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Box
-                          sx={{
-                            display: "flex",
-                            gap: 1,
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Tooltip title="ویرایش">
-                            <IconButton
-                              size="small"
-                              color="primary"
-                              onClick={() => handleEdit(item.id)}
-                              disabled={item.user_status !== 0}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="حذف">
-                            <IconButton
-                              size="small"
-                              color="error"
-                              onClick={() => handleDelete(item.id)}
-                              disabled={item.user_status !== 0 || isRemoving}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="انتشار">
-                            <IconButton
-                              size="small"
-                              color="success"
-                              onClick={() => handlePublish(item.id)}
-                              disabled={item.user_status !== 0 || isPublishing}
-                            >
-                              <PublishIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
+            {/* Table */}
+            <TableContainer component={Paper} variant="outlined" dir="rtl">
+              <Table>
+                <TableHead>
                   <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        {searchValue
-                          ? "نتیجه‌ای یافت نشد"
-                          : "هیچ محصولی یافت نشد"}
-                      </Typography>
+                    <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>
+                      شناسه
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>
+                      عنوان
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>
+                      دسته‌بندی
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>
+                      منبع
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>
+                      وضعیت
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>
+                      محصولات ساخته شده
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>
+                      عملیات
                     </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {isLoading ? (
+                    <LoadingSkeleton />
+                  ) : filteredData.length > 0 ? (
+                    filteredData.map((item) => (
+                      <TableRow key={item.id} hover>
+                        <TableCell sx={{ textAlign: "right" }}>
+                          {item.id}
+                        </TableCell>
+                        <TableCell sx={{ textAlign: "right" }}>
+                          <Typography variant="body2" fontWeight="medium">
+                            {item.title}
+                          </Typography>
+                        </TableCell>
+                        <TableCell sx={{ textAlign: "right" }}>
+                          {item.category_id}
+                        </TableCell>
+                        <TableCell sx={{ textAlign: "right" }}>
+                          <Chip
+                            label={item.source}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                          />
+                        </TableCell>
+                        <TableCell sx={{ textAlign: "right" }}>
+                          <Chip
+                            label={getStatusText(item.user_status)}
+                            size="small"
+                            color={getStatusColor(item.user_status)}
+                            variant="outlined"
+                          />
+                        </TableCell>
+                        <TableCell align="center">
+                          <Tooltip title="مشاهده محصولات ساخته شده">
+                            <IconButton
+                              size="small"
+                              color="info"
+                              onClick={() =>
+                                handleViewSubProducts(item.id, item.title)
+                              }
+                            >
+                              <InventoryIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </TableCell>
+                        <TableCell align="center">
+                          <Box
+                            sx={{
+                              display: "flex",
+                              gap: 1,
+                              justifyContent: "center",
+                            }}
+                          >
+                            <Tooltip title="ویرایش">
+                              <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={() => handleEdit(item.id)}
+                                disabled={item.user_status !== 0}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="حذف">
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() => handleDelete(item.id)}
+                                disabled={item.user_status !== 0 || isRemoving}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="انتشار">
+                              <IconButton
+                                size="small"
+                                color="success"
+                                onClick={() => handlePublish(item.id)}
+                                disabled={
+                                  item.user_status !== 0 || isPublishing
+                                }
+                              >
+                                <PublishIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          {searchValue
+                            ? "نتیجه‌ای یافت نشد"
+                            : "هیچ محصولی یافت نشد"}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
 
-          {/* Pagination */}
-          {totalItems > 0 && totalPages > 1 && (
-            <PaginationControls
-              currentPage={page}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              onPageChange={handlePageChange}
-              disabled={isLoading}
-            />
-          )}
-        </CardContent>
-      </Card>
+            {/* Pagination */}
+            {totalItems > 0 && totalPages > 1 && (
+              <PaginationControls
+                currentPage={page}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                onPageChange={handlePageChange}
+                disabled={isLoading}
+              />
+            )}
+          </CardContent>
+        </Card>
+      </Container>
 
       {/* Delete Confirmation Dialog */}
       <Dialog

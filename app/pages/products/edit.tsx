@@ -1,5 +1,13 @@
 import React, { useState, useMemo } from "react";
-import { Box, Alert, Grid, Button, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Alert,
+  Grid,
+  Button,
+  Stack,
+  Typography,
+  Container,
+} from "@mui/material";
 import { useNavigate, useParams } from "react-router";
 import { useSnackbar } from "notistack";
 import Layout from "~/components/layout/Layout";
@@ -610,61 +618,62 @@ const EditProductPage = () => {
           title="ویرایش محصول"
           description="اطلاعات محصول را ویرایش کنید."
         />
+        <Container maxWidth="lg">
+          <Grid container spacing={3} sx={{ mt: 1 }}>
+            {renderComponent()}
 
-        <Grid container spacing={3} sx={{ mt: 1 }}>
-          {renderComponent()}
-
-          {!isFormValid && (
-            <Grid size={{ xs: 12 }}>
-              <Alert severity="warning">
-                لطفاً تمام فیلدهای الزامی را پر کنید:
-                <ul style={{ margin: "8px 0", paddingRight: "20px" }}>
-                  {!productInfoValidation.isValid && (
-                    <li>عنوان و توضیحات محصول را به درستی وارد کنید</li>
-                  )}
-                  {selectedImages.length === 0 && (
-                    <li>حداقل یک تصویر برای محصول انتخاب کنید</li>
-                  )}
-                  {selectedImages.length > 0 &&
-                    !selectedImagesData?.data?.list?.some(
-                      (img) => img.product === true
-                    ) && (
-                      <li>
-                        حداقل یکی از تصاویر انتخاب شده باید عکس محصول (product)
-                        باشد
-                      </li>
+            {!isFormValid && (
+              <Grid size={{ xs: 12 }}>
+                <Alert severity="warning">
+                  لطفاً تمام فیلدهای الزامی را پر کنید:
+                  <ul style={{ margin: "8px 0", paddingRight: "20px" }}>
+                    {!productInfoValidation.isValid && (
+                      <li>عنوان و توضیحات محصول را به درستی وارد کنید</li>
                     )}
-                  {(detailsTemplates.length === 0 ||
-                    attributesTemplates.length === 0) && (
-                    <li>حداقل یک قالب برای جزئیات و ویژگی‌ها انتخاب کنید</li>
-                  )}
-                  {Object.keys(allDetailsValidationErrors).length > 0 && (
-                    <li>فیلدهای الزامی در قالب‌های جزئیات را پر کنید</li>
-                  )}
-                  {Object.keys(allAttributesValidationErrors).length > 0 && (
-                    <li>فیلدهای الزامی در قالب‌های ویژگی‌ها را پر کنید</li>
-                  )}
-                </ul>
-              </Alert>
-            </Grid>
-          )}
+                    {selectedImages.length === 0 && (
+                      <li>حداقل یک تصویر برای محصول انتخاب کنید</li>
+                    )}
+                    {selectedImages.length > 0 &&
+                      !selectedImagesData?.data?.list?.some(
+                        (img) => img.product === true
+                      ) && (
+                        <li>
+                          حداقل یکی از تصاویر انتخاب شده باید عکس محصول
+                          (product) باشد
+                        </li>
+                      )}
+                    {(detailsTemplates.length === 0 ||
+                      attributesTemplates.length === 0) && (
+                      <li>حداقل یک قالب برای جزئیات و ویژگی‌ها انتخاب کنید</li>
+                    )}
+                    {Object.keys(allDetailsValidationErrors).length > 0 && (
+                      <li>فیلدهای الزامی در قالب‌های جزئیات را پر کنید</li>
+                    )}
+                    {Object.keys(allAttributesValidationErrors).length > 0 && (
+                      <li>فیلدهای الزامی در قالب‌های ویژگی‌ها را پر کنید</li>
+                    )}
+                  </ul>
+                </Alert>
+              </Grid>
+            )}
 
-          {/* Action Buttons */}
-          <Grid size={{ xs: 12 }}>
-            <Stack direction="row" spacing={2} justifyContent="flex-end">
-              <Button onClick={handleNavigateBack} variant="outlined">
-                بازگشت
-              </Button>
-              <Button
-                onClick={handleSave}
-                variant="contained"
-                disabled={!isFormValid || isUpdating}
-              >
-                {isUpdating ? "در حال ذخیره..." : "ذخیره تغییرات"}
-              </Button>
-            </Stack>
+            {/* Action Buttons */}
+            <Grid size={{ xs: 12 }}>
+              <Stack direction="row" spacing={2} justifyContent="flex-end">
+                <Button onClick={handleNavigateBack} variant="outlined">
+                  بازگشت
+                </Button>
+                <Button
+                  onClick={handleSave}
+                  variant="contained"
+                  disabled={!isFormValid || isUpdating}
+                >
+                  {isUpdating ? "در حال ذخیره..." : "ذخیره تغییرات"}
+                </Button>
+              </Stack>
+            </Grid>
           </Grid>
-        </Grid>
+        </Container>
       </Box>
     </Layout>
   );

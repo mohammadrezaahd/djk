@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Box, Typography, Paper } from "@mui/material";
+import { Box, Typography, Paper, Container } from "@mui/material";
 import {
   Inventory as ProductIcon,
   Image as ImageIcon,
@@ -22,10 +22,7 @@ const Dashboard = () => {
     isPending: productsLoading,
   } = useProducts();
 
-  const {
-    data: imagesData,
-    isLoading: imagesLoading,
-  } = useImages({
+  const { data: imagesData, isLoading: imagesLoading } = useImages({
     skip: 0,
     limit: 10,
   });
@@ -100,103 +97,105 @@ const Dashboard = () => {
     productsLoading || imagesLoading || attrsLoading || detailsLoading;
 
   return (
-    <Box sx={{ width: "100%" }}>
-      {/* Welcome Section */}
-      <Box sx={{ mb: 4 }}>
-        <Typography
-          variant="h4"
-          component="h1"
-          gutterBottom
-          sx={{ fontWeight: "bold" }}
-        >
-          خوش آمدید! 👋
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          خلاصه‌ای از فعالیت‌های شما
-        </Typography>
-      </Box>
+    <Container maxWidth="lg">
+      <Box sx={{ width: "100%" }}>
+        {/* Welcome Section */}
+        <Box sx={{ mb: 4 }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            gutterBottom
+            sx={{ fontWeight: "bold" }}
+          >
+            خوش آمدید! 👋
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            خلاصه‌ای از فعالیت‌های شما
+          </Typography>
+        </Box>
 
-      {/* Statistics Cards */}
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: {
-            xs: "1fr",
-            sm: "repeat(2, 1fr)",
-            md: "repeat(4, 1fr)",
-          },
-          gap: 3,
-          mb: 4,
-        }}
-      >
-        <StatCard
-          title="محصولات"
-          value={stats.products}
-          icon={ProductIcon}
-          color="#6C5CE7"
-          isLoading={isLoading}
-        />
-        <StatCard
-          title="تصاویر"
-          value={stats.images}
-          icon={ImageIcon}
-          color="#00CEC9"
-          isLoading={isLoading}
-        />
-        <StatCard
-          title="قالب‌های ویژگی"
-          value={stats.attributeTemplates}
-          icon={TemplateIcon}
-          color="#FDA7DC"
-          isLoading={isLoading}
-        />
-        <StatCard
-          title="قالب‌های اطلاعات"
-          value={stats.detailTemplates}
-          icon={DetailsIcon}
-          color="#FDCB6E"
-          isLoading={isLoading}
-        />
-      </Box>
-
-      {/* Quick Actions */}
-      <Box sx={{ mb: 4 }}>
-        <QuickActions />
-      </Box>
-
-      {/* Recent Activity */}
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: {
-            xs: "1fr",
-            lg: "2fr 1fr",
-          },
-          gap: 3,
-        }}
-      >
-        <RecentActivity activities={recentActivities} isLoading={isLoading} />
-        <Paper
+        {/* Statistics Cards */}
+        <Box
           sx={{
-            p: 3,
-            height: "100%",
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            color: "white",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2, 1fr)",
+              md: "repeat(4, 1fr)",
+            },
+            gap: 3,
+            mb: 4,
           }}
         >
-          <Typography variant="h6" gutterBottom sx={{ fontWeight: "bold" }}>
-            💡 نکته روز
-          </Typography>
-          <Typography variant="body2" sx={{ opacity: 0.95, lineHeight: 1.8 }}>
-            با استفاده از قالب‌های از پیش تعریف شده، می‌توانید سرعت ایجاد
-            محصولات جدید را به شکل چشمگیری افزایش دهید.
-          </Typography>
-        </Paper>
+          <StatCard
+            title="محصولات"
+            value={stats.products}
+            icon={ProductIcon}
+            color="#6C5CE7"
+            isLoading={isLoading}
+          />
+          <StatCard
+            title="تصاویر"
+            value={stats.images}
+            icon={ImageIcon}
+            color="#00CEC9"
+            isLoading={isLoading}
+          />
+          <StatCard
+            title="قالب‌های ویژگی"
+            value={stats.attributeTemplates}
+            icon={TemplateIcon}
+            color="#FDA7DC"
+            isLoading={isLoading}
+          />
+          <StatCard
+            title="قالب‌های اطلاعات"
+            value={stats.detailTemplates}
+            icon={DetailsIcon}
+            color="#FDCB6E"
+            isLoading={isLoading}
+          />
+        </Box>
+
+        {/* Quick Actions */}
+        <Box sx={{ mb: 4 }}>
+          <QuickActions />
+        </Box>
+
+        {/* Recent Activity */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              lg: "2fr 1fr",
+            },
+            gap: 3,
+          }}
+        >
+          <RecentActivity activities={recentActivities} isLoading={isLoading} />
+          <Paper
+            sx={{
+              p: 3,
+              height: "100%",
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              color: "white",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+            }}
+          >
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: "bold" }}>
+              💡 نکته روز
+            </Typography>
+            <Typography variant="body2" sx={{ opacity: 0.95, lineHeight: 1.8 }}>
+              با استفاده از قالب‌های از پیش تعریف شده، می‌توانید سرعت ایجاد
+              محصولات جدید را به شکل چشمگیری افزایش دهید.
+            </Typography>
+          </Paper>
+        </Box>
       </Box>
-    </Box>
+    </Container>
   );
 };
 
