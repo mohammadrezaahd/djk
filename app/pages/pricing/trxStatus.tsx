@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Box,
@@ -28,6 +28,7 @@ const TrxStatusPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
+  const [countdown, setCountdown] = useState(5);
 
   const trxId = searchParams.get("trx");
   const trxIdNumber = trxId ? parseInt(trxId, 10) : null;
@@ -46,9 +47,27 @@ const TrxStatusPage: React.FC = () => {
   useEffect(() => {
     if (!trxId || !trxIdNumber) {
       enqueueSnackbar("شناسه تراکنش یافت نشد", { variant: "error" });
-      navigate("/dashboard/pricing");
+      navigate("/dashboard");
     }
   }, [trxId, trxIdNumber, navigate, enqueueSnackbar]);
+
+  // Countdown effect for redirect to dashboard
+  useEffect(() => {
+    if (trxData?.data && !isLoading && !error) {
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            navigate("/dashboard");
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [trxData?.data, isLoading, error, navigate]);
 
   const getStatusConfig = (status: TrxStatus) => {
     switch (status) {
@@ -91,7 +110,7 @@ const TrxStatusPage: React.FC = () => {
   };
 
   const handleGoToPricing = () => {
-    navigate("/dashboard/pricing");
+    navigate("/dashboard");
   };
 
   const handleRetry = () => {
@@ -335,22 +354,52 @@ const TrxStatusPage: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Countdown Timer */}
+        {trxData?.data && countdown > 0 && (
+          <Box sx={{ textAlign: "center", mb: 4 }}>
+            <Typography variant="body1" sx={{ color: "text.secondary", mb: 1 }}>
+              {countdown} ثانیه دیگر به طور خودکار به داشبورد منتقل می‌شوید
+            </Typography>
+            <Box sx={{ position: "relative", display: "inline-flex" }}>
+              <CircularProgress
+                variant="determinate"
+                value={((5 - countdown) / 5) * 100}
+                size={40}
+                thickness={4}
+              />
+              <Box
+                sx={{
+                  top: 0,
+                  left: 0,
+                  bottom: 0,
+                  right: 0,
+                  position: "absolute",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  component="div"
+                  color="text.secondary"
+                  fontSize={12}
+                  fontWeight={600}
+                >
+                  {countdown}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+        )}
+
         {/* Action Buttons */}
         <Stack
           direction={{ xs: "column", sm: "row" }}
           spacing={2}
           justifyContent="center"
-          gap={5}
           alignItems="center"
         >
-          <Button
-            variant="outlined"
-            onClick={handleGoToPricing}
-            size="large"
-            sx={{ minWidth: 200 }}
-          >
-            مشاهده پلان‌ها
-          </Button>
           <Button
             variant="contained"
             onClick={handleGoHome}
