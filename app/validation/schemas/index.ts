@@ -5,3 +5,4 @@ export * from "./templateCreationSchema";
 export * from "./authSchema";
 export * from "./ticketingSchema";
 export * from "./quickProductSchema";
+export * from "./quickEditProductSchema";

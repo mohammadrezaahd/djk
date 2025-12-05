@@ -5,3 +5,4 @@ export * from "./useProductValidation";
 export * from "./useAuthValidation";
 export * from "./useTicketingValidation";
 export * from "./useQuickProductValidation";
+export * from "./useQuickEditProductValidation";

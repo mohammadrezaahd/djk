@@ -9,5 +9,7 @@ export interface IPostTemplateBase {
 }
 
 export enum TemplateSource {
-  App = "app",
+  App = "bulk",
+  Quick = "quick",
+  Transfer = "transfer",
 }
