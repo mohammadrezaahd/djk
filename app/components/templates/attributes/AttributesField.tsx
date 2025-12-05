@@ -1,20 +1,29 @@
-import { TextField, Box, Autocomplete, Chip, IconButton, Tooltip } from "@mui/material";
+import {
+  TextField,
+  Box,
+  Autocomplete,
+  Chip,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
 import React from "react";
 import {
   AttributeType,
   type IAttr,
 } from "~/types/interfaces/attributes.interface";
 import SuggestedValues from "./SuggestedValues";
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+
+import { AiIcon } from "~/components/icons/IconComponents";
+
 // کامپوننت آیکون AI
 const AIIcon: React.FC<{ attr: IAttr }> = ({ attr }) => {
   const handleAIClick = () => {
     console.log(`AI clicked for field: ${attr.title} (ID: ${attr.id})`);
-    console.log('Field details:', {
+    console.log("Field details:", {
       title: attr.title,
       type: attr.type,
       required: attr.required,
-      hint: attr.hint
+      hint: attr.hint,
     });
   };
 
@@ -24,23 +33,23 @@ const AIIcon: React.FC<{ attr: IAttr }> = ({ attr }) => {
         onClick={handleAIClick}
         size="small"
         sx={{
-          padding: '4px',
-          marginLeft: '4px',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
-          '&:hover': {
-            background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
-            transform: 'scale(1.05)',
+          padding: "4px",
+          marginLeft: "4px",
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          color: "white",
+          "&:hover": {
+            background: "linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)",
+            transform: "scale(1.05)",
           },
-          '&:active': {
-            transform: 'scale(0.95)',
+          "&:active": {
+            transform: "scale(0.95)",
           },
-          transition: 'all 0.2s ease-in-out',
-          width: '24px',
-          height: '24px',
+          transition: "all 0.2s ease-in-out",
+          width: "24px",
+          height: "24px",
         }}
       >
-        <AutoAwesomeIcon sx={{ fontSize: '16px' }} />
+        <AiIcon style={{ fontSize: "16px" }} />
       </IconButton>
     </Tooltip>
   );
@@ -78,7 +87,7 @@ export default function AttributesField({
     case AttributeType.Input:
       return (
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1 }}>
             <TextField
               fullWidth
               type="number"
@@ -112,10 +121,10 @@ export default function AttributesField({
             />
             {attr.Ai && <AIIcon attr={attr} />}
           </Box>
-          <SuggestedValues 
-            attr={attr} 
+          <SuggestedValues
+            attr={attr}
             currentValue={value}
-            onSuggestionClick={(suggestion) => onChange(fieldKey, suggestion)} 
+            onSuggestionClick={(suggestion) => onChange(fieldKey, suggestion)}
           />
         </Box>
       );
@@ -139,7 +148,7 @@ export default function AttributesField({
 
           return (
             <Box>
-              <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+              <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1 }}>
                 <Autocomplete
                   fullWidth
                   openOnFocus
@@ -160,14 +169,18 @@ export default function AttributesField({
                     />
                   )}
                   noOptionsText="گزینه‌ای یافت نشد"
-                  isOptionEqualToValue={(option, value) => option.id === value.id}
+                  isOptionEqualToValue={(option, value) =>
+                    option.id === value.id
+                  }
                 />
                 {attr.Ai && <AIIcon attr={attr} />}
               </Box>
-              <SuggestedValues 
-                attr={attr} 
+              <SuggestedValues
+                attr={attr}
                 currentValue={value}
-                onSuggestionClick={(suggestion) => onChange(fieldKey, suggestion)} 
+                onSuggestionClick={(suggestion) =>
+                  onChange(fieldKey, suggestion)
+                }
               />
             </Box>
           );
@@ -178,7 +191,7 @@ export default function AttributesField({
 
           return (
             <Box>
-              <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+              <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1 }}>
                 <Autocomplete
                   multiple
                   fullWidth
@@ -214,24 +227,26 @@ export default function AttributesField({
                     />
                   )}
                   noOptionsText="گزینه‌ای یافت نشد"
-                  isOptionEqualToValue={(option, value) => option.id === value.id}
+                  isOptionEqualToValue={(option, value) =>
+                    option.id === value.id
+                  }
                   filterSelectedOptions
                   limitTags={3}
                   getLimitTagsText={(more) => `+${more} بیشتر`}
                 />
                 {attr.Ai && <AIIcon attr={attr} />}
               </Box>
-              <SuggestedValues 
-                attr={attr} 
+              <SuggestedValues
+                attr={attr}
                 currentValue={value}
                 onSuggestionClick={(suggestion) => {
-                  if (typeof suggestion === 'function') {
+                  if (typeof suggestion === "function") {
                     const newValue = suggestion(value);
                     onChange(fieldKey, newValue);
                   } else {
                     onChange(fieldKey, suggestion);
                   }
-                }} 
+                }}
               />
             </Box>
           );
@@ -254,7 +269,7 @@ export default function AttributesField({
     case AttributeType.Text:
       return (
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1 }}>
             <TextField
               fullWidth
               label={attr.title + (attr.required ? " *" : "")}
@@ -266,10 +281,10 @@ export default function AttributesField({
             />
             {attr.Ai && <AIIcon attr={attr} />}
           </Box>
-          <SuggestedValues 
-            attr={attr} 
+          <SuggestedValues
+            attr={attr}
             currentValue={value}
-            onSuggestionClick={(suggestion) => onChange(fieldKey, suggestion)} 
+            onSuggestionClick={(suggestion) => onChange(fieldKey, suggestion)}
           />
         </Box>
       );
@@ -277,7 +292,7 @@ export default function AttributesField({
     case AttributeType.MultiText:
       return (
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1 }}>
             <TextField
               fullWidth
               multiline
@@ -291,10 +306,10 @@ export default function AttributesField({
             />
             {attr.Ai && <AIIcon attr={attr} />}
           </Box>
-          <SuggestedValues 
-            attr={attr} 
+          <SuggestedValues
+            attr={attr}
             currentValue={value}
-            onSuggestionClick={(suggestion) => onChange(fieldKey, suggestion)} 
+            onSuggestionClick={(suggestion) => onChange(fieldKey, suggestion)}
           />
         </Box>
       );

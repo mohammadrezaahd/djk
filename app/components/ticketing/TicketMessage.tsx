@@ -13,15 +13,15 @@ import {
   Modal,
   Backdrop,
 } from "@mui/material";
+
 import {
-  Download as DownloadIcon,
-  Image as ImageIcon,
-  AttachFile as AttachFileIcon,
-  InsertDriveFile as FileIcon,
-  Close as CloseIcon,
-  NavigateBefore as PrevIcon,
-  NavigateNext as NextIcon,
-} from "@mui/icons-material";
+  CloseIcon,
+  PaperIcon,
+  AngleLeftIcon,
+  AngleRight,
+  ImportIcon,
+} from "../icons/IconComponents";
+
 import { useAppSelector } from "~/store/hooks";
 
 import type {
@@ -62,26 +62,26 @@ const TicketMessage: React.FC<TicketMessageProps> = ({
       // Fetch the file as blob
       const response = await fetch(attachment.file_path);
       const blob = await response.blob();
-      
+
       // Create blob URL
       const blobUrl = window.URL.createObjectURL(blob);
-      
+
       // Create download link and trigger download
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = blobUrl;
-      link.download = attachment.file_name || 'download';
-      link.style.display = 'none';
-      
+      link.download = attachment.file_name || "download";
+      link.style.display = "none";
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       // Clean up blob URL
       window.URL.revokeObjectURL(blobUrl);
     } catch (error) {
-      console.error('Download failed:', error);
+      console.error("Download failed:", error);
       // Fallback to opening in new tab if download fails
-      window.open(attachment.file_path, '_blank');
+      window.open(attachment.file_path, "_blank");
     }
   };
 
@@ -89,7 +89,10 @@ const TicketMessage: React.FC<TicketMessageProps> = ({
     return fileType.toLowerCase().startsWith("image");
   };
 
-  const openLightbox = (imageIndex: number, imageList: IMessageattachment[]) => {
+  const openLightbox = (
+    imageIndex: number,
+    imageList: IMessageattachment[]
+  ) => {
     setImages(imageList);
     setSelectedImageIndex(imageIndex);
     setLightboxOpen(true);
@@ -119,11 +122,11 @@ const TicketMessage: React.FC<TicketMessageProps> = ({
     console.log(message);
 
     // جدا کردن تصاویر از فایل‌های دیگر
-    const messageImages = message.attachments.filter((attachment: IMessageattachment) =>
-      isImageFile(attachment.file_type)
+    const messageImages = message.attachments.filter(
+      (attachment: IMessageattachment) => isImageFile(attachment.file_type)
     );
-    const otherFiles = message.attachments.filter((attachment: IMessageattachment) =>
-      !isImageFile(attachment.file_type)
+    const otherFiles = message.attachments.filter(
+      (attachment: IMessageattachment) => !isImageFile(attachment.file_type)
     );
 
     return (
@@ -174,37 +177,46 @@ const TicketMessage: React.FC<TicketMessageProps> = ({
                   boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
                 }}
               >
-                {messageImages.slice(0, 2).map((attachment: IMessageattachment, index: number) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      aspectRatio: "4/5",
-                      cursor: "pointer",
-                      transition: "all 0.2s ease",
-                      "&:hover": {
-                        transform: "scale(1.02)",
-                        zIndex: 1,
-                      },
-                    }}
-                    onClick={() => openLightbox(index, messageImages)}
-                  >
+                {messageImages
+                  .slice(0, 2)
+                  .map((attachment: IMessageattachment, index: number) => (
                     <Box
-                      component="img"
-                      src={attachment.file_path}
-                      alt={attachment.file_name}
+                      key={index}
                       sx={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        display: "block",
+                        aspectRatio: "4/5",
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        "&:hover": {
+                          transform: "scale(1.02)",
+                          zIndex: 1,
+                        },
                       }}
-                    />
-                  </Box>
-                ))}
+                      onClick={() => openLightbox(index, messageImages)}
+                    >
+                      <Box
+                        component="img"
+                        src={attachment.file_path}
+                        alt={attachment.file_name}
+                        sx={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
+                      />
+                    </Box>
+                  ))}
               </Box>
             ) : messageImages.length === 3 ? (
               // سه تصویر: یکی بالا، دو تا پایین - بهتر شده
-              <Box sx={{ maxWidth: "320px", borderRadius: 2.5, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>
+              <Box
+                sx={{
+                  maxWidth: "320px",
+                  borderRadius: 2.5,
+                  overflow: "hidden",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                }}
+              >
                 <Box
                   sx={{
                     cursor: "pointer",
@@ -235,33 +247,35 @@ const TicketMessage: React.FC<TicketMessageProps> = ({
                     gap: 0.75,
                   }}
                 >
-                  {messageImages.slice(1, 3).map((attachment: IMessageattachment, index: number) => (
-                    <Box
-                      key={index + 1}
-                      sx={{
-                        aspectRatio: "1",
-                        cursor: "pointer",
-                        transition: "all 0.2s ease",
-                        "&:hover": {
-                          transform: "scale(1.02)",
-                          zIndex: 1,
-                        },
-                      }}
-                      onClick={() => openLightbox(index + 1, messageImages)}
-                    >
+                  {messageImages
+                    .slice(1, 3)
+                    .map((attachment: IMessageattachment, index: number) => (
                       <Box
-                        component="img"
-                        src={attachment.file_path}
-                        alt={attachment.file_name}
+                        key={index + 1}
                         sx={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          display: "block",
+                          aspectRatio: "1",
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            transform: "scale(1.02)",
+                            zIndex: 1,
+                          },
                         }}
-                      />
-                    </Box>
-                  ))}
+                        onClick={() => openLightbox(index + 1, messageImages)}
+                      >
+                        <Box
+                          component="img"
+                          src={attachment.file_path}
+                          alt={attachment.file_name}
+                          sx={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            display: "block",
+                          }}
+                        />
+                      </Box>
+                    ))}
                 </Box>
               </Box>
             ) : (
@@ -277,57 +291,59 @@ const TicketMessage: React.FC<TicketMessageProps> = ({
                   boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
                 }}
               >
-                {messageImages.slice(0, 4).map((attachment: IMessageattachment, index: number) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      aspectRatio: "1",
-                      cursor: "pointer",
-                      position: "relative",
-                      transition: "all 0.2s ease",
-                      "&:hover": {
-                        transform: "scale(1.02)",
-                        zIndex: 1,
-                      },
-                    }}
-                    onClick={() => openLightbox(index, messageImages)}
-                  >
+                {messageImages
+                  .slice(0, 4)
+                  .map((attachment: IMessageattachment, index: number) => (
                     <Box
-                      component="img"
-                      src={attachment.file_path}
-                      alt={attachment.file_name}
+                      key={index}
                       sx={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        display: "block",
+                        aspectRatio: "1",
+                        cursor: "pointer",
+                        position: "relative",
+                        transition: "all 0.2s ease",
+                        "&:hover": {
+                          transform: "scale(1.02)",
+                          zIndex: 1,
+                        },
                       }}
-                    />
-                    {/* نمایش تعداد باقی‌مانده تصاویر - بهتر شده */}
-                    {index === 3 && messageImages.length > 4 && (
+                      onClick={() => openLightbox(index, messageImages)}
+                    >
                       <Box
+                        component="img"
+                        src={attachment.file_path}
+                        alt={attachment.file_name}
                         sx={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          backgroundColor: "rgba(0,0,0,0.7)",
-                          backdropFilter: "blur(2px)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "white",
-                          fontSize: "1.5rem",
-                          fontWeight: "700",
-                          textShadow: "0 2px 4px rgba(0,0,0,0.5)",
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
                         }}
-                      >
-                        +{messageImages.length - 4}
-                      </Box>
-                    )}
-                  </Box>
-                ))}
+                      />
+                      {/* نمایش تعداد باقی‌مانده تصاویر - بهتر شده */}
+                      {index === 3 && messageImages.length > 4 && (
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            backgroundColor: "rgba(0,0,0,0.7)",
+                            backdropFilter: "blur(2px)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "white",
+                            fontSize: "1.5rem",
+                            fontWeight: "700",
+                            textShadow: "0 2px 4px rgba(0,0,0,0.5)",
+                          }}
+                        >
+                          +{messageImages.length - 4}
+                        </Box>
+                      )}
+                    </Box>
+                  ))}
               </Box>
             )}
           </Box>
@@ -351,7 +367,7 @@ const TicketMessage: React.FC<TicketMessageProps> = ({
               }}
               onClick={() => handleFileDownload(attachment)}
             >
-              <FileIcon color="primary" />
+              <PaperIcon color="primary" />
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography variant="body2" noWrap>
                   {attachment.file_name}
@@ -362,7 +378,7 @@ const TicketMessage: React.FC<TicketMessageProps> = ({
               </Box>
               <Tooltip title="دانلود">
                 <IconButton size="small" color="primary">
-                  <DownloadIcon />
+                  <ImportIcon />
                 </IconButton>
               </Tooltip>
             </Paper>
@@ -416,7 +432,6 @@ const TicketMessage: React.FC<TicketMessageProps> = ({
           }}
         >
           {/* Message sender indicator */}
-  
 
           {/* Message content */}
           <Typography
@@ -432,8 +447,7 @@ const TicketMessage: React.FC<TicketMessageProps> = ({
 
           {/* Attachments */}
           {renderAttachments()}
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-        
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
             <Typography
               variant="caption"
               color={isAdmin ? "text.secondary" : "rgba(255,255,255,0.8)"}
@@ -500,7 +514,7 @@ const TicketMessage: React.FC<TicketMessageProps> = ({
                 },
               }}
             >
-              <DownloadIcon />
+              <ImportIcon />
             </IconButton>
 
             {/* Previous Button */}
@@ -520,7 +534,7 @@ const TicketMessage: React.FC<TicketMessageProps> = ({
                   },
                 }}
               >
-                <PrevIcon />
+                <AngleLeftIcon />
               </IconButton>
             )}
 
@@ -541,7 +555,7 @@ const TicketMessage: React.FC<TicketMessageProps> = ({
                   },
                 }}
               >
-                <NextIcon />
+                <AngleRight />
               </IconButton>
             )}
 

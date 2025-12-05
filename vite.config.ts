@@ -6,12 +6,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig(({ command, mode, isSsrBuild }) => ({
   plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
   optimizeDeps: {
-    include: [
-      "@mui/material",
-      "@mui/icons-material",
-      "@emotion/react",
-      "@emotion/styled",
-    ],
+    include: ["@mui/material", "@emotion/react", "@emotion/styled"],
   },
   build: {
     rollupOptions: {
@@ -20,7 +15,6 @@ export default defineConfig(({ command, mode, isSsrBuild }) => ({
         : {
             manualChunks: {
               "mui-core": ["@mui/material"],
-              "mui-icons": ["@mui/icons-material"],
             },
           },
     },

@@ -1,7 +1,6 @@
 ﻿import React, { useMemo } from "react";
 import { Box, Paper, Typography, Button, Stack, Alert } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+
 import ImageSelector from "~/components/templates/ImageSelector";
 import { MediaType } from "~/components/MediaManager/FileUpload";
 import { useSelectedImages } from "~/api/gallery.api";

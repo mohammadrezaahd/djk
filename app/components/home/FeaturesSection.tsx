@@ -9,10 +9,13 @@ import {
   alpha,
   useTheme,
 } from "@mui/material";
-import SpeedIcon from "@mui/icons-material/Speed";
-import SearchIcon from "@mui/icons-material/Search";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import DashboardIcon from "@mui/icons-material/Dashboard";
+
+import {
+  SearchIcon,
+  SpeedIcon,
+  GridIcon,
+  CloudUploadIcon,
+} from "../icons/IconComponents";
 
 const FeaturesSection: React.FC = () => {
   const theme = useTheme();
@@ -44,7 +47,7 @@ const FeaturesSection: React.FC = () => {
     },
     {
       id: 4,
-      icon: <DashboardIcon />,
+      icon: <GridIcon />,
       title: "مدیریت و ساخت انبوه",
       description: "هزاران محصول رو در چند دقیقه بساز، بدون تکرار و خطا.",
       gradient: "linear-gradient(135deg, #FDCB6E, #F7B801)",

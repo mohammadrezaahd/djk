@@ -8,10 +8,8 @@ import {
   alpha,
   Chip,
 } from "@mui/material";
-import {
-  HourglassEmpty as HourglassIcon,
-  Construction as ConstructionIcon,
-} from "@mui/icons-material";
+
+import { HourglassIcon, ConstructionIcon } from "../icons/IconComponents";
 
 interface ComingSoonProps {
   title?: string;
@@ -64,7 +62,7 @@ const ComingSoon: React.FC<ComingSoonProps> = ({
             },
           }}
         >
-          {icon || <HourglassIcon sx={{ fontSize: 60, color: "white" }} />}
+          {icon || <HourglassIcon style={{ fontSize: 60, color: "white" }} />}
         </Box>
 
         {/* Badge */}

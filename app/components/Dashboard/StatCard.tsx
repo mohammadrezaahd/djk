@@ -1,11 +1,19 @@
 import React from "react";
 import { Card, CardContent, Typography, Box, Skeleton } from "@mui/material";
-import type { SvgIconComponent } from "@mui/icons-material";
+import type { FC } from "react";
+
+interface CustomIconProps {
+  size?: string | number | 'small' | 'medium' | 'large' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  color?: string;
+  className?: string;
+  style?: React.CSSProperties;
+  onClick?: () => void;
+}
 
 interface StatCardProps {
   title: string;
   value: number | string;
-  icon: SvgIconComponent;
+  icon: FC<CustomIconProps>;
   color: string;
   trend?: {
     value: number;
@@ -89,7 +97,7 @@ const StatCard: React.FC<StatCardProps> = ({
               justifyContent: "center",
             }}
           >
-            <Icon sx={{ fontSize: 28, color }} />
+            <Icon size={28} color={color} />
           </Box>
         </Box>
       </CardContent>

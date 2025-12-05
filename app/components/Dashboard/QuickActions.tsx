@@ -1,20 +1,7 @@
 import React from "react";
-import {
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Box,
-} from "@mui/material";
-import {
-  Add as AddIcon,
-  Inventory as ProductIcon,
-  Image as ImageIcon,
-  Widgets as TemplateIcon,
-  Category as CategoryIcon,
-  Speed as QuickIcon,
-} from "@mui/icons-material";
+import { Card, CardContent, Typography, Button, Box } from "@mui/material";
 import { useNavigate } from "react-router";
+import { TemplateIcon, ImageIcon, SpeedIcon } from "../icons/IconComponents";
 
 const QuickActions: React.FC = () => {
   const navigate = useNavigate();
@@ -22,13 +9,13 @@ const QuickActions: React.FC = () => {
   const actions = [
     {
       label: "محصول سریع",
-      icon: QuickIcon,
+      icon: SpeedIcon,
       color: "#FF6B6B",
       path: "/dashboard/products/quick",
     },
     {
       label: "محصول جدید",
-      icon: ProductIcon,
+      icon: TemplateIcon,
       color: "#6C5CE7",
       path: "/dashboard/products/new",
     },
@@ -49,7 +36,11 @@ const QuickActions: React.FC = () => {
   return (
     <Card>
       <CardContent>
-        <Typography variant="h6" gutterBottom sx={{ fontWeight: "bold", mb: 3 }}>
+        <Typography
+          variant="h6"
+          gutterBottom
+          sx={{ fontWeight: "bold", mb: 3 }}
+        >
           دسترسی سریع
         </Typography>
         <Box
@@ -85,7 +76,7 @@ const QuickActions: React.FC = () => {
                   gap: 1,
                 }}
               >
-                <Icon sx={{ fontSize: 32 }} />
+                <Icon style={{ fontSize: 32 }} />
                 <Typography variant="body2" sx={{ fontWeight: 500 }}>
                   {action.label}
                 </Typography>

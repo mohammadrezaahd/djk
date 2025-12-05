@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   AppBar,
   Toolbar,
@@ -10,11 +10,11 @@ import {
   Menu,
   MenuItem,
   useTheme,
-  alpha
-} from '@mui/material';
-import { Link } from 'react-router';
-import MenuIcon from '@mui/icons-material/Menu';
-import PersonIcon from '@mui/icons-material/Person';
+  alpha,
+} from "@mui/material";
+import { Link } from "react-router";
+
+import { UserIcon, MenuBars } from "../icons/IconComponents";
 
 const Header: React.FC = () => {
   const theme = useTheme();
@@ -29,26 +29,26 @@ const Header: React.FC = () => {
   };
 
   const navLinks = [
-    { title: 'خانه', href: '/' },
-    { title: 'درباره ما', href: '/about' },
-    { title: 'ویژگی‌ها', href: '/features' },
-    { title: 'راهنما', href: '/help' },
-    { title: 'پشتیبانی', href: '/support' },
-    { title: 'تماس با ما', href: '/contact' }
+    { title: "خانه", href: "/" },
+    { title: "درباره ما", href: "/about" },
+    { title: "ویژگی‌ها", href: "/features" },
+    { title: "راهنما", href: "/help" },
+    { title: "پشتیبانی", href: "/support" },
+    { title: "تماس با ما", href: "/contact" },
   ];
 
   return (
-    <AppBar 
-      position="sticky" 
+    <AppBar
+      position="sticky"
       elevation={0}
       sx={{
         background: alpha(theme.palette.background.paper, 0.9),
-        backdropFilter: 'blur(10px)',
+        backdropFilter: "blur(10px)",
         borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
       }}
     >
       <Container maxWidth="lg">
-        <Toolbar sx={{ justifyContent: 'space-between', py: 1 }}>
+        <Toolbar sx={{ justifyContent: "space-between", py: 1 }}>
           {/* لوگو و نام برند */}
           <Box display="flex" alignItems="center" gap={2}>
             <Box
@@ -58,7 +58,7 @@ const Header: React.FC = () => {
               sx={{
                 width: 40,
                 height: 40,
-                borderRadius: 1
+                borderRadius: 1,
               }}
             />
             <Typography
@@ -66,10 +66,10 @@ const Header: React.FC = () => {
               component={Link}
               to="/"
               sx={{
-                textDecoration: 'none',
+                textDecoration: "none",
                 color: theme.palette.primary.main,
                 fontWeight: 700,
-                fontSize: '1.5rem'
+                fontSize: "1.5rem",
               }}
             >
               هوش مارکت
@@ -77,10 +77,10 @@ const Header: React.FC = () => {
           </Box>
 
           {/* منوی دسکتاپ */}
-          <Box 
-            sx={{ 
-              display: { xs: 'none', md: 'flex' },
-              gap: 1
+          <Box
+            sx={{
+              display: { xs: "none", md: "flex" },
+              gap: 1,
             }}
           >
             {navLinks.map((link) => (
@@ -94,10 +94,10 @@ const Header: React.FC = () => {
                   px: 2,
                   py: 1,
                   borderRadius: 2,
-                  '&:hover': {
+                  "&:hover": {
                     backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                    color: theme.palette.primary.main
-                  }
+                    color: theme.palette.primary.main,
+                  },
                 }}
               >
                 {link.title}
@@ -111,21 +111,21 @@ const Header: React.FC = () => {
               component={Link}
               to="/auth"
               variant="outlined"
-              startIcon={<PersonIcon />}
+              startIcon={<UserIcon />}
               sx={{
                 borderRadius: 3,
                 px: 3,
                 py: 1,
                 borderColor: theme.palette.primary.main,
                 color: theme.palette.primary.main,
-                '&:hover': {
-                  backgroundColor: alpha(theme.palette.primary.main, 0.1)
-                }
+                "&:hover": {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                },
               }}
             >
               ورود / ثبت نام
             </Button>
-            
+
             <Button
               component={Link}
               to="/dashboard"
@@ -134,11 +134,11 @@ const Header: React.FC = () => {
                 borderRadius: 3,
                 px: 3,
                 py: 1,
-                background: 'linear-gradient(135deg, #6C5CE7, #A29BFE)',
+                background: "linear-gradient(135deg, #6C5CE7, #A29BFE)",
                 boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.3)}`,
-                '&:hover': {
-                  boxShadow: `0 6px 25px ${alpha(theme.palette.primary.main, 0.4)}`
-                }
+                "&:hover": {
+                  boxShadow: `0 6px 25px ${alpha(theme.palette.primary.main, 0.4)}`,
+                },
               }}
             >
               ورود به مارکت
@@ -146,13 +146,13 @@ const Header: React.FC = () => {
 
             {/* منوی موبایل */}
             <IconButton
-              sx={{ 
-                display: { xs: 'flex', md: 'none' },
-                color: theme.palette.text.primary
+              sx={{
+                display: { xs: "flex", md: "none" },
+                color: theme.palette.text.primary,
               }}
               onClick={handleMenuOpen}
             >
-              <MenuIcon />
+              <MenuBars />
             </IconButton>
           </Box>
 
@@ -164,8 +164,8 @@ const Header: React.FC = () => {
             sx={{ mt: 2 }}
           >
             {navLinks.map((link) => (
-              <MenuItem 
-                key={link.href} 
+              <MenuItem
+                key={link.href}
                 onClick={handleMenuClose}
                 component={Link}
                 to={link.href}

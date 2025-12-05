@@ -12,12 +12,14 @@ import {
   Stack,
   CircularProgress,
 } from "@mui/material";
+
 import {
-  CheckCircle as CheckCircleIcon,
-  Error as ErrorIcon,
-  Home as HomeIcon,
-  Receipt as ReceiptIcon,
-} from "@mui/icons-material";
+  CircleCheckIcon,
+  ErrorIcon,
+  HomeIcon,
+  ReceiptIcon,
+} from "~/components/icons/IconComponents";
+
 import { useNavigate, useSearchParams } from "react-router";
 import { useSnackbar } from "notistack";
 import AppLayout from "~/components/layout/AppLayout";
@@ -74,7 +76,7 @@ const TrxStatusPage: React.FC = () => {
       case TrxStatus.VERIFIED:
         return {
           color: "success" as const,
-          icon: <CheckCircleIcon />,
+          icon: <CircleCheckIcon />,
           title: "پرداخت موفق",
           message: "پرداخت شما با موفقیت انجام شد و اشتراک شما فعال گردید.",
           bgColor: "#4caf50",
@@ -122,7 +124,9 @@ const TrxStatusPage: React.FC = () => {
       <AppLayout title="نتیجه پرداخت">
         <Container maxWidth="md" sx={{ py: 8 }}>
           <Card sx={{ textAlign: "center", p: 4 }}>
-            <ErrorIcon sx={{ fontSize: 64, color: "error.main", mb: 2 }} />
+            <ErrorIcon
+              style={{ fontSize: 64, color: "error.main", marginBottom: 16 }}
+            />
             <Typography variant="h5" sx={{ mb: 2, color: "error.main" }}>
               خطا در شناسه تراکنش
             </Typography>
@@ -161,7 +165,9 @@ const TrxStatusPage: React.FC = () => {
       <AppLayout title="نتیجه پرداخت">
         <Container maxWidth="md" sx={{ py: 8 }}>
           <Card sx={{ textAlign: "center", p: 4 }}>
-            <ErrorIcon sx={{ fontSize: 64, color: "error.main", mb: 2 }} />
+            <ErrorIcon
+              style={{ fontSize: 64, color: "error.main", marginBottom: 16 }}
+            />
             <Typography variant="h5" sx={{ mb: 2, color: "error.main" }}>
               خطا در دریافت اطلاعات
             </Typography>
@@ -271,7 +277,7 @@ const TrxStatusPage: React.FC = () => {
         >
           <CardContent sx={{ p: 4 }}>
             <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-              <ReceiptIcon sx={{ color: "primary.main", mr: 2 }} />
+              <ReceiptIcon style={{ color: "primary.main", marginRight: 16 }} />
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
                 جزئیات تراکنش
               </Typography>
@@ -340,13 +346,17 @@ const TrxStatusPage: React.FC = () => {
                   icon={statusConfig.icon}
                   variant="filled"
                   sx={{
-                    bgcolor: statusConfig.color === "success" ? "#4caf50" : 
-                             statusConfig.color === "error" ? "#f44336" : "#ff9800",
+                    bgcolor:
+                      statusConfig.color === "success"
+                        ? "#4caf50"
+                        : statusConfig.color === "error"
+                          ? "#f44336"
+                          : "#ff9800",
                     color: "#fff",
                     "& .MuiChip-icon": {
                       color: "#fff",
-                      marginRight: 1
-                    }
+                      marginRight: 1,
+                    },
                   }}
                 />
               </Box>

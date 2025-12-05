@@ -9,7 +9,7 @@ import {
   IconButton,
   Chip,
 } from "@mui/material";
-import { Close as CloseIcon } from "@mui/icons-material";
+import { CloseIcon } from "../icons/IconComponents";
 import type { SelectedTemplate } from "~/store/slices/productSlice";
 
 interface TabPanelProps {
@@ -74,7 +74,7 @@ const TemplateForms: React.FC<TemplateFormsProps> = ({
         <Typography variant="body2" color="text.secondary">
           اطلاعات فرم‌های انتخاب شده را تکمیل کنید.
         </Typography>
-        
+
         <Box sx={{ mt: 2 }}>
           <Chip
             label={`${selectedTemplates.length} قالب انتخاب شده`}
@@ -111,7 +111,7 @@ const TemplateForms: React.FC<TemplateFormsProps> = ({
                     }}
                     sx={{ ml: 1 }}
                   >
-                    <CloseIcon fontSize="small" />
+                    <CloseIcon size={"small"} />
                   </IconButton>
                 </Box>
               }

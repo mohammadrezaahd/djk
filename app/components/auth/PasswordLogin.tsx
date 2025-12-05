@@ -8,12 +8,13 @@ import {
   IconButton,
   Divider,
 } from "@mui/material";
+
 import {
-  Phone as PhoneIcon,
-  Lock as LockIcon,
-  Visibility,
-  VisibilityOff,
-} from "@mui/icons-material";
+  PhoneIcon,
+  LockIcon,
+  EyeIcon,
+  EyeSlashIcon,
+} from "../icons/IconComponents";
 import { usePasswordLoginValidation } from "~/validation/hooks";
 import { Controller } from "react-hook-form";
 
@@ -33,7 +34,11 @@ const PasswordLogin: React.FC<PasswordLoginProps> = ({
   isLoading,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const { control, handleSubmit, formState: { errors, isValid } } = usePasswordLoginValidation(phone);
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = usePasswordLoginValidation(phone);
 
   const onFormSubmit = handleSubmit((data) => {
     onSubmit(data.phone, data.password);
@@ -106,7 +111,7 @@ const PasswordLogin: React.FC<PasswordLoginProps> = ({
                     edge="end"
                     disabled={isLoading}
                   >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                    {showPassword ? <EyeSlashIcon /> : <EyeIcon />}
                   </IconButton>
                 </InputAdornment>
               ),

@@ -14,10 +14,13 @@ import {
   StepContent,
   useMediaQuery,
 } from "@mui/material";
-import LoginIcon from "@mui/icons-material/Login";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import SettingsIcon from "@mui/icons-material/Settings";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+
+import {
+  LoginIcon,
+  SettingsIcon,
+  CloudUploadIcon,
+  CircleCheckIcon,
+} from "../icons/IconComponents";
 
 const HowItWorksSection: React.FC = () => {
   const theme = useTheme();
@@ -50,7 +53,7 @@ const HowItWorksSection: React.FC = () => {
     },
     {
       id: 4,
-      icon: <CheckCircleIcon />,
+      icon: <CircleCheckIcon />,
       title: "محصولت آماده‌ی انتشار در دیجی‌کالاست!",
       description:
         "محصولات شما با کیفیت بالا و بهینه‌سازی شده آماده انتشار هستند",

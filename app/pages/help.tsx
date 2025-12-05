@@ -1,7 +1,7 @@
 import React from "react";
 import AppLayout from "~/components/layout/AppLayout";
 import { ComingSoon } from "~/components/common";
-import { Help as HelpIcon } from "@mui/icons-material";
+import { HelpIcon } from "~/components/icons/IconComponents";
 
 export function meta() {
   return [
@@ -16,7 +16,7 @@ const HelpPage = () => {
       <ComingSoon
         title="مرکز راهنما و پشتیبانی"
         description="در این بخش می‌توانید راهنماهای کامل استفاده از سیستم، سوالات متداول و اطلاعات تماس با پشتیبانی را مشاهده کنید."
-        icon={<HelpIcon sx={{ fontSize: 60, color: "white" }} />}
+        icon={<HelpIcon style={{ fontSize: 60, color: "white" }} />}
       />
     </AppLayout>
   );

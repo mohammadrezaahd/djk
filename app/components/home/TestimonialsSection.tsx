@@ -11,8 +11,7 @@ import {
   useTheme,
   Rating,
 } from "@mui/material";
-import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
-
+import { QuoteIcon } from "../icons/IconComponents";
 const TestimonialsSection: React.FC = () => {
   const theme = useTheme();
 
@@ -175,7 +174,7 @@ const TestimonialsSection: React.FC = () => {
                       boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.2)}`,
                     }}
                   >
-                    <FormatQuoteIcon sx={{ fontSize: "1.8rem" }} />
+                    <QuoteIcon style={{ fontSize: "1.8rem" }} />
                   </Box>
 
                   {/* امتیاز */}

@@ -1,8 +1,7 @@
 import React from "react";
 import AppLayout from "~/components/layout/AppLayout";
 import { ComingSoon } from "~/components/common";
-import { Settings as SettingsIcon } from "@mui/icons-material";
-
+import { SettingsIcon } from "~/components/icons/IconComponents";
 export function meta() {
   return [
     { title: "تنظیمات" },
@@ -16,7 +15,7 @@ const SettingsPage = () => {
       <ComingSoon
         title="تنظیمات سیستم"
         description="در این بخش می‌توانید تنظیمات مختلف سیستم را مدیریت کنید. این قابلیت به زودی در دسترس خواهد بود."
-        icon={<SettingsIcon sx={{ fontSize: 60, color: "white" }} />}
+        icon={<SettingsIcon style={{ fontSize: 60, color: "white" }} />}
       />
     </AppLayout>
   );

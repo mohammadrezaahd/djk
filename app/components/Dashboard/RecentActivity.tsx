@@ -12,13 +12,8 @@ import {
   Box,
   Skeleton,
 } from "@mui/material";
-import {
-  Inventory as ProductIcon,
-  Image as ImageIcon,
-  Category as CategoryIcon,
-  Widgets as TemplateIcon,
-} from "@mui/icons-material";
 
+import { ArchiveIcon, TemplateIcon, ImageIcon } from "../icons/IconComponents";
 interface ActivityItem {
   id: number;
   type: "product" | "image" | "template" | "category";
@@ -39,15 +34,15 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
   const getIcon = (type: ActivityItem["type"]) => {
     switch (type) {
       case "product":
-        return <ProductIcon />;
+        return <ArchiveIcon />;
       case "image":
         return <ImageIcon />;
       case "template":
         return <TemplateIcon />;
       case "category":
-        return <CategoryIcon />;
+        return <ArchiveIcon />;
       default:
-        return <ProductIcon />;
+        return <ArchiveIcon />;
     }
   };
 
@@ -109,7 +104,11 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
   return (
     <Card sx={{ height: "100%" }}>
       <CardContent>
-        <Typography variant="h6" gutterBottom sx={{ fontWeight: "bold", mb: 2 }}>
+        <Typography
+          variant="h6"
+          gutterBottom
+          sx={{ fontWeight: "bold", mb: 2 }}
+        >
           فعالیت‌های اخیر
         </Typography>
         {activities.length === 0 ? (

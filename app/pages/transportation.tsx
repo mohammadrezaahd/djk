@@ -1,8 +1,7 @@
 import React from "react";
 import AppLayout from "~/components/layout/AppLayout";
 import { ComingSoon } from "~/components/common";
-import { Help as HelpIcon } from "@mui/icons-material";
-
+import { HelpIcon } from "~/components/icons/IconComponents";
 export function meta() {
   return [
     { title: "حمل و نقل" },
@@ -16,7 +15,7 @@ const TransportationPage = () => {
       <ComingSoon
         title="حمل و نقل"
         description="در این بخش می‌توانید اطلاعات مربوط به حمل و نقل را مشاهده و مدیریت کنید."
-        icon={<HelpIcon sx={{ fontSize: 60, color: "white" }} />}
+        icon={<HelpIcon style={{ fontSize: 60, color: "white" }} />}
       />
     </AppLayout>
   );

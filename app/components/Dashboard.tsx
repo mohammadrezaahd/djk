@@ -1,11 +1,11 @@
 import React, { useMemo } from "react";
 import { Box, Typography, Paper, Container } from "@mui/material";
 import {
-  Inventory as ProductIcon,
-  Image as ImageIcon,
-  Widgets as TemplateIcon,
-  Description as DetailsIcon,
-} from "@mui/icons-material";
+  ArchiveIcon,
+  ImageIcon,
+  GridIcon,
+  DescriptionIcon,
+} from "./icons/IconComponents";
 import StatCard from "./Dashboard/StatCard";
 import RecentActivity from "./Dashboard/RecentActivity";
 import QuickActions from "./Dashboard/QuickActions";
@@ -130,7 +130,7 @@ const Dashboard = () => {
           <StatCard
             title="محصولات"
             value={stats.products}
-            icon={ProductIcon}
+            icon={ArchiveIcon}
             color="#6C5CE7"
             isLoading={isLoading}
           />
@@ -144,14 +144,14 @@ const Dashboard = () => {
           <StatCard
             title="قالب‌های ویژگی"
             value={stats.attributeTemplates}
-            icon={TemplateIcon}
+            icon={GridIcon}
             color="#FDA7DC"
             isLoading={isLoading}
           />
           <StatCard
             title="قالب‌های اطلاعات"
             value={stats.detailTemplates}
-            icon={DetailsIcon}
+            icon={DescriptionIcon}
             color="#FDCB6E"
             isLoading={isLoading}
           />

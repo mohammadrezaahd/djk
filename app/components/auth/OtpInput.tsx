@@ -1,7 +1,13 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Box, TextField, Button, CircularProgress, Typography, Divider } from "@mui/material";
-import { ArrowBack as ArrowBackIcon } from "@mui/icons-material";
-
+import {
+  Box,
+  TextField,
+  Button,
+  CircularProgress,
+  Typography,
+  Divider,
+} from "@mui/material";
+import { AngleLeftIcon } from "../icons/IconComponents";
 interface OtpInputProps {
   otp: string[];
   onOtpChange: (otp: string[]) => void;
@@ -67,7 +73,7 @@ const OtpInput: React.FC<OtpInputProps> = ({
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData("text").slice(0, 6);
-    
+
     if (!/^\d+$/.test(pastedData)) return;
 
     const newOtp = pastedData.split("");
@@ -98,12 +104,16 @@ const OtpInput: React.FC<OtpInputProps> = ({
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ width: "100%" }}>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3, textAlign: "center" }}>
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{ mb: 3, textAlign: "center" }}
+      >
         کد 6 رقمی ارسال شده به شماره <strong>{phone}</strong> را وارد کنید
       </Typography>
 
@@ -145,13 +155,21 @@ const OtpInput: React.FC<OtpInputProps> = ({
       </Box>
 
       {error && (
-        <Typography variant="caption" color="error" sx={{ display: "block", textAlign: "center", mb: 2 }}>
+        <Typography
+          variant="caption"
+          color="error"
+          sx={{ display: "block", textAlign: "center", mb: 2 }}
+        >
           {error}
         </Typography>
       )}
 
       {!canResend && (
-        <Typography variant="caption" color="text.secondary" sx={{ display: "block", textAlign: "center", mb: 2 }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: "block", textAlign: "center", mb: 2 }}
+        >
           ارسال مجدد کد تا {formatTime(countdown)}
         </Typography>
       )}
@@ -198,7 +216,7 @@ const OtpInput: React.FC<OtpInputProps> = ({
         variant="outlined"
         onClick={onBack}
         disabled={isLoading}
-        startIcon={<ArrowBackIcon />}
+        startIcon={<AngleLeftIcon />}
         sx={{
           py: 1.5,
           borderRadius: 2,

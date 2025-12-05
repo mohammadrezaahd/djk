@@ -17,11 +17,11 @@ import {
   FormHelperText,
   Container,
 } from "@mui/material";
-import { ExpandMore as ExpandMoreIcon } from "@mui/icons-material";
+import { ExpandIcon } from "~/components/icons/IconComponents";
 import { Controller } from "react-hook-form";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router";
-import { Save as SaveIcon, Clear as ClearIcon } from "@mui/icons-material";
+import { SaveIcon, CloseIcon } from "~/components/icons/IconComponents";
 import type { ICategoryList } from "~/types/interfaces/categories.interface";
 import type { ICategoryAttr } from "~/types/interfaces/attributes.interface";
 import type { ICategoryDetails } from "~/types/interfaces/details.interface";
@@ -312,7 +312,7 @@ const QuickProductPage = () => {
                   onChange={handleAccordionChange("basic")}
                 >
                   <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
+                    expandIcon={<ExpandIcon />}
                     aria-controls="basic-content"
                     id="basic-header"
                   >
@@ -375,7 +375,7 @@ const QuickProductPage = () => {
                         onChange={handleAccordionChange("details")}
                       >
                         <AccordionSummary
-                          expandIcon={<ExpandMoreIcon />}
+                          expandIcon={<ExpandIcon />}
                           aria-controls="details-content"
                           id="details-header"
                         >
@@ -415,7 +415,7 @@ const QuickProductPage = () => {
                         onChange={handleAccordionChange("attributes")}
                       >
                         <AccordionSummary
-                          expandIcon={<ExpandMoreIcon />}
+                          expandIcon={<ExpandIcon />}
                           aria-controls="attributes-content"
                           id="attributes-header"
                         >
@@ -452,7 +452,7 @@ const QuickProductPage = () => {
                       onChange={handleAccordionChange("images")}
                     >
                       <AccordionSummary
-                        expandIcon={<ExpandMoreIcon />}
+                        expandIcon={<ExpandIcon />}
                         aria-controls="images-content"
                         id="images-header"
                       >
@@ -520,7 +520,7 @@ const QuickProductPage = () => {
                           variant="outlined"
                           onClick={handleReset}
                           disabled={isProductSaving}
-                          startIcon={<ClearIcon />}
+                          startIcon={<CloseIcon />}
                         >
                           پاک کردن فرم
                         </Button>

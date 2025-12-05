@@ -10,12 +10,24 @@ export type VariantType =
 export interface IconProps {
   name: string;
   variant?: VariantType;
-  size?: string | number;
+  size?: string | number | 'small' | 'medium' | 'large' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   color?: string;
   className?: string;
   style?: React.CSSProperties;
   onClick?: () => void;
 }
+
+// Size mapping to match MUI conventions
+const sizeMap: Record<string, number> = {
+  xs: 16,
+  small: 20,
+  sm: 20,
+  medium: 24,
+  md: 24,
+  large: 32,
+  lg: 32,
+  xl: 40,
+};
 
 const Icon: React.FC<IconProps> = ({
   name,
@@ -29,6 +41,16 @@ const Icon: React.FC<IconProps> = ({
   const [svgContent, setSvgContent] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  // Convert size to pixel value
+  const getSize = (size: string | number | undefined): number => {
+    if (typeof size === 'number') return size;
+    if (typeof size === 'string' && sizeMap[size]) return sizeMap[size];
+    if (typeof size === 'string' && !isNaN(Number(size))) return Number(size);
+    return 24; // default
+  };
+
+  const pixelSize = getSize(size);
 
   useEffect(() => {
     const loadIcon = async () => {
@@ -66,8 +88,8 @@ const Icon: React.FC<IconProps> = ({
         component="span"
         sx={{
           display: "inline-block",
-          width: typeof size === "number" ? `${size}px` : size,
-          height: typeof size === "number" ? `${size}px` : size,
+          width: `${pixelSize}px`,
+          height: `${pixelSize}px`,
           backgroundColor: "#f0f0f0",
           borderRadius: "2px",
           ...style,
@@ -85,8 +107,8 @@ const Icon: React.FC<IconProps> = ({
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
-          width: typeof size === "number" ? `${size}px` : size,
-          height: typeof size === "number" ? `${size}px` : size,
+          width: `${pixelSize}px`,
+          height: `${pixelSize}px`,
           backgroundColor: "#ffebee",
           color: "#c62828",
           fontSize: "8px",
@@ -110,8 +132,8 @@ const Icon: React.FC<IconProps> = ({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        width: typeof size === "number" ? `${size}px` : size,
-        height: typeof size === "number" ? `${size}px` : size,
+        width: `${pixelSize}px`,
+        height: `${pixelSize}px`,
         // cursor: onClick ? "pointer" : "default",
         "& svg": {
           width: "100%",

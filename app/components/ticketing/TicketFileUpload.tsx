@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState } from "react";
 import {
   Box,
   Paper,
@@ -8,12 +8,13 @@ import {
   Chip,
   Alert,
   useTheme,
-} from '@mui/material';
+} from "@mui/material";
+
 import {
-  CloudUpload as CloudUploadIcon,
-  Delete as DeleteIcon,
-  AttachFile as AttachFileIcon,
-} from '@mui/icons-material';
+  DeleteIcon,
+  CloudUploadIcon,
+  AttachIcon,
+} from "../icons/IconComponents";
 
 interface TicketFileUploadProps {
   files: File[];
@@ -29,21 +30,21 @@ const TicketFileUpload: React.FC<TicketFileUploadProps> = ({
   onFilesChange,
   maxFiles = 5,
   maxSize = 10 * 1024 * 1024, // 10MB
-  acceptedTypes = ['.jpg', '.jpeg', '.png', '.pdf', '.doc', '.docx', '.txt'],
+  acceptedTypes = [".jpg", ".jpeg", ".png", ".pdf", ".doc", ".docx", ".txt"],
   disabled = false,
 }) => {
   const theme = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
   const [isDragOver, setIsDragOver] = useState(false);
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   const validateFile = (file: File): boolean => {
@@ -54,11 +55,14 @@ const TicketFileUpload: React.FC<TicketFileUploadProps> = ({
     }
 
     // Check file type
-    const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-    if (!acceptedTypes.some(type => 
-      type === fileExtension || 
-      (type.includes('*') && file.type.startsWith(type.replace('*', '')))
-    )) {
+    const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
+    if (
+      !acceptedTypes.some(
+        (type) =>
+          type === fileExtension ||
+          (type.includes("*") && file.type.startsWith(type.replace("*", "")))
+      )
+    ) {
       setError(`فرمت فایل ${file.name} پشتیبانی نمی‌شود`);
       return false;
     }
@@ -69,7 +73,7 @@ const TicketFileUpload: React.FC<TicketFileUploadProps> = ({
   const handleFileSelect = (selectedFiles: FileList | null) => {
     if (!selectedFiles) return;
 
-    setError('');
+    setError("");
     const newFiles = Array.from(selectedFiles);
 
     // Check total files count
@@ -110,7 +114,7 @@ const TicketFileUpload: React.FC<TicketFileUploadProps> = ({
     e.preventDefault();
     setIsDragOver(false);
     if (disabled) return;
-    
+
     const droppedFiles = e.dataTransfer.files;
     handleFileSelect(droppedFiles);
   };
@@ -140,9 +144,9 @@ const TicketFileUpload: React.FC<TicketFileUploadProps> = ({
         ref={fileInputRef}
         type="file"
         multiple
-        accept={acceptedTypes.join(',')}
+        accept={acceptedTypes.join(",")}
         onChange={(e) => handleFileSelect(e.target.files)}
-        style={{ display: 'none' }}
+        style={{ display: "none" }}
       />
 
       {/* Upload Area */}
@@ -159,25 +163,25 @@ const TicketFileUpload: React.FC<TicketFileUploadProps> = ({
           }`,
           borderRadius: 2,
           backgroundColor: isDragOver
-            ? theme.palette.primary.light + '20'
+            ? theme.palette.primary.light + "20"
             : theme.palette.grey[50],
-          cursor: disabled ? 'not-allowed' : 'pointer',
-          transition: 'all 0.2s ease-in-out',
-          textAlign: 'center',
+          cursor: disabled ? "not-allowed" : "pointer",
+          transition: "all 0.2s ease-in-out",
+          textAlign: "center",
           opacity: disabled ? 0.5 : 1,
         }}
       >
         <CloudUploadIcon
-          sx={{
+          style={{
             fontSize: 48,
             color: theme.palette.grey[400],
-            mb: 1,
+            marginBottom: 8,
           }}
         />
         <Typography variant="body1" color="text.secondary" sx={{ mb: 0.5 }}>
           {isDragOver
-            ? 'فایل‌های خود را اینجا رها کنید'
-            : 'فایل‌های خود را اینجا بکشید یا کلیک کنید'}
+            ? "فایل‌های خود را اینجا رها کنید"
+            : "فایل‌های خود را اینجا بکشید یا کلیک کنید"}
         </Typography>
         <Typography variant="caption" color="text.secondary">
           حداکثر {maxFiles} فایل، هر فایل حداکثر {formatFileSize(maxSize)}
@@ -207,26 +211,34 @@ const TicketFileUpload: React.FC<TicketFileUploadProps> = ({
           <Typography variant="subtitle2" sx={{ mb: 2 }}>
             فایل‌های انتخاب شده ({files.length})
           </Typography>
-          
+
           {/* Separate images from other files */}
           {(() => {
-            const imageFiles = files.filter(file => file.type.startsWith('image/'));
-            const otherFiles = files.filter(file => !file.type.startsWith('image/'));
-            
+            const imageFiles = files.filter((file) =>
+              file.type.startsWith("image/")
+            );
+            const otherFiles = files.filter(
+              (file) => !file.type.startsWith("image/")
+            );
+
             return (
               <>
                 {/* Image Grid */}
                 {imageFiles.length > 0 && (
                   <Box sx={{ mb: 2 }}>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', mb: 1, display: 'block' }}>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "text.secondary", mb: 1, display: "block" }}
+                    >
                       تصاویر ({imageFiles.length})
                     </Typography>
-                    <Box 
-                      sx={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          "repeat(auto-fill, minmax(100px, 1fr))",
                         gap: 1,
-                        mb: 2
+                        mb: 2,
                       }}
                     >
                       {imageFiles.map((file, index) => (
@@ -234,23 +246,23 @@ const TicketFileUpload: React.FC<TicketFileUploadProps> = ({
                           key={`image-${index}`}
                           elevation={1}
                           sx={{
-                            position: 'relative',
-                            aspectRatio: '1/1',
+                            position: "relative",
+                            aspectRatio: "1/1",
                             borderRadius: 1.5,
-                            overflow: 'hidden',
-                            backgroundColor: 'grey.100',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
+                            overflow: "hidden",
+                            backgroundColor: "grey.100",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                           }}
                         >
                           <img
                             src={URL.createObjectURL(file)}
                             alt={file.name}
                             style={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'cover'
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
                             }}
                           />
                           <IconButton
@@ -262,42 +274,47 @@ const TicketFileUpload: React.FC<TicketFileUploadProps> = ({
                             }}
                             disabled={disabled}
                             sx={{
-                              position: 'absolute',
+                              position: "absolute",
                               top: 4,
                               right: 4,
-                              backgroundColor: 'rgba(255,255,255,0.9)',
-                              '&:hover': {
-                                backgroundColor: 'rgba(255,255,255,1)'
-                              }
+                              backgroundColor: "rgba(255,255,255,0.9)",
+                              "&:hover": {
+                                backgroundColor: "rgba(255,255,255,1)",
+                              },
                             }}
                           >
-                            <DeleteIcon sx={{ fontSize: 16 }} />
+                            <DeleteIcon style={{ fontSize: 16 }} />
                           </IconButton>
                           <Box
                             sx={{
-                              position: 'absolute',
+                              position: "absolute",
                               bottom: 0,
                               left: 0,
                               right: 0,
-                              backgroundColor: 'rgba(0,0,0,0.7)',
-                              color: 'white',
+                              backgroundColor: "rgba(0,0,0,0.7)",
+                              color: "white",
                               p: 0.5,
-                              fontSize: '0.65rem',
-                              textAlign: 'center'
+                              fontSize: "0.65rem",
+                              textAlign: "center",
                             }}
                           >
-                            {file.name.length > 15 ? file.name.substring(0, 12) + '...' : file.name}
+                            {file.name.length > 15
+                              ? file.name.substring(0, 12) + "..."
+                              : file.name}
                           </Box>
                         </Paper>
                       ))}
                     </Box>
                   </Box>
                 )}
-                
+
                 {/* Other Files List */}
                 {otherFiles.length > 0 && (
                   <Box>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', mb: 1, display: 'block' }}>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "text.secondary", mb: 1, display: "block" }}
+                    >
                       سایر فایل‌ها ({otherFiles.length})
                     </Typography>
                     {otherFiles.map((file, index) => (
@@ -307,13 +324,13 @@ const TicketFileUpload: React.FC<TicketFileUploadProps> = ({
                         sx={{
                           p: 2,
                           mb: 1,
-                          display: 'flex',
-                          alignItems: 'center',
+                          display: "flex",
+                          alignItems: "center",
                           gap: 1,
-                          borderRadius: 1.5
+                          borderRadius: 1.5,
                         }}
                       >
-                        <AttachFileIcon color="primary" />
+                        <AttachIcon color="primary" />
                         <Box sx={{ flex: 1, minWidth: 0 }}>
                           <Typography variant="body2" noWrap>
                             {file.name}
@@ -323,7 +340,7 @@ const TicketFileUpload: React.FC<TicketFileUploadProps> = ({
                           </Typography>
                         </Box>
                         <Chip
-                          label={file.type || 'unknown'}
+                          label={file.type || "unknown"}
                           size="small"
                           variant="outlined"
                           sx={{ borderRadius: 1 }}

@@ -9,7 +9,7 @@ import {
   useTheme,
   alpha,
 } from "@mui/material";
-import { Login as LoginIcon } from "@mui/icons-material";
+import { LoginIcon } from "~/components/icons/IconComponents";
 import {
   useCheckNumber,
   useSendOtp,
@@ -74,7 +74,7 @@ const Auth = () => {
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     const state = location.state as any;
-    
+
     // فقط redirect کن اگر needsRegistration نباشد
     if (token && !state?.needsRegistration) {
       navigate("/dashboard", { replace: true });
@@ -91,7 +91,9 @@ const Auth = () => {
         // کاربر جدید - ارسال OTP
         await sendOtp.mutateAsync({ phone: phoneValue });
         setStep("otp-new-user");
-        enqueueSnackbar("کد تایید به شماره شما ارسال شد", { variant: "success" });
+        enqueueSnackbar("کد تایید به شماره شما ارسال شد", {
+          variant: "success",
+        });
       } else {
         // کاربر موجود - نمایش فرم لاگین با رمز
         setStep("password-login");
@@ -121,10 +123,14 @@ const Auth = () => {
       if (step === "otp-new-user") {
         // کاربر جدید - به فرم ثبت نام بروید
         setStep("register");
-        enqueueSnackbar("کد تایید شد! لطفاً اطلاعات خود را تکمیل کنید", { variant: "success" });
+        enqueueSnackbar("کد تایید شد! لطفاً اطلاعات خود را تکمیل کنید", {
+          variant: "success",
+        });
       } else {
         // کاربر موجود - لاگین شد
-        enqueueSnackbar("ورود موفقیت‌آمیز! در حال انتقال...", { variant: "success" });
+        enqueueSnackbar("ورود موفقیت‌آمیز! در حال انتقال...", {
+          variant: "success",
+        });
         setTimeout(() => {
           navigate("/dashboard");
         }, 1500);
@@ -146,7 +152,9 @@ const Auth = () => {
     try {
       enqueueSnackbar("در حال ثبت نام...", { variant: "info" });
       await register.mutateAsync(data);
-      enqueueSnackbar("ثبت نام موفقیت‌آمیز! در حال ورود به سیستم...", { variant: "success" });
+      enqueueSnackbar("ثبت نام موفقیت‌آمیز! در حال ورود به سیستم...", {
+        variant: "success",
+      });
       setTimeout(() => {
         navigate("/dashboard");
       }, 1500);
@@ -165,7 +173,9 @@ const Auth = () => {
         phone: phoneNum,
         password,
       });
-      enqueueSnackbar("ورود موفقیت‌آمیز! در حال انتقال...", { variant: "success" });
+      enqueueSnackbar("ورود موفقیت‌آمیز! در حال انتقال...", {
+        variant: "success",
+      });
       setTimeout(() => {
         navigate("/dashboard");
       }, 1500);
@@ -181,7 +191,9 @@ const Auth = () => {
 
   const handleSwitchToOtp = async () => {
     if (!phone.trim()) {
-      enqueueSnackbar("لطفاً ابتدا شماره موبایل را وارد کنید", { variant: "warning" });
+      enqueueSnackbar("لطفاً ابتدا شماره موبایل را وارد کنید", {
+        variant: "warning",
+      });
       return;
     }
 
@@ -254,10 +266,7 @@ const Auth = () => {
 
       case "register":
         return (
-          <RegisterForm
-            onSubmit={handleRegisterSubmit}
-            isLoading={isLoading}
-          />
+          <RegisterForm onSubmit={handleRegisterSubmit} isLoading={isLoading} />
         );
 
       case "password-login":
@@ -341,7 +350,7 @@ const Auth = () => {
                   boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
                 }}
               >
-                <LoginIcon sx={{ fontSize: 40, color: "white" }} />
+                <LoginIcon style={{ fontSize: 40, color: "white" }} />
               </Box>
 
               <Typography

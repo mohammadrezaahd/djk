@@ -14,9 +14,7 @@ import {
   useTheme,
 } from "@mui/material";
 
-// import DashboardIcon from "@mui/icons-material/Dashboard";
 import { Link, useLocation } from "react-router";
-import type { SvgIconComponent } from "@mui/icons-material";
 import {
   AngleDown,
   AngleUp,
@@ -24,7 +22,6 @@ import {
   GridIcon,
   ImportIcon,
   MenuBars,
-  SupportIcon,
   TagIcon,
   TemplateIcon,
 } from "../icons/IconComponents";
@@ -42,7 +39,7 @@ interface MenuItem {
   id: string;
   title: string;
   path?: string;
-  icon: SvgIconComponent | ComponentType<any>;
+  icon: ComponentType<any>;
   expandable?: boolean;
   subItems?: SubMenuItem[];
 }

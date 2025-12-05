@@ -13,8 +13,9 @@ import {
   Skeleton,
   Checkbox,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
+
+import { DeleteIcon, EditIcon } from "../icons/IconComponents";
+
 import { useTheme, alpha } from "@mui/material/styles";
 import { PageSizeSelector, PaginationControls } from "~/components/common";
 import type { SelectChangeEvent } from "@mui/material";
@@ -399,7 +400,7 @@ const MediaGrid: React.FC<MediaGridProps> = ({
                               handleEdit(item);
                             }}
                           >
-                            <EditIcon fontSize="small" />
+                            <EditIcon size={"small"} />
                           </IconButton>
                         </Tooltip>
                       </Box>
@@ -415,7 +416,7 @@ const MediaGrid: React.FC<MediaGridProps> = ({
                             onDelete(item._id);
                           }}
                         >
-                          <DeleteIcon fontSize="small" />
+                          <DeleteIcon size={"small"} />
                         </IconButton>
                       </Tooltip>
                     )}

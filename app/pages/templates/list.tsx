@@ -25,13 +25,15 @@ import {
   Button,
   Container,
 } from "@mui/material";
+
 import {
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Storage as AttributesIcon,
-  Description as DetailsIcon,
-  Refresh as RefreshIcon,
-} from "@mui/icons-material";
+  DeleteIcon,
+  RefreshIcon,
+  EditIcon,
+  DescriptionIcon,
+  StorageIcon,
+} from "~/components/icons/IconComponents";
+
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router";
 import { useAttrs, useRemoveAttr } from "~/api/attributes.api";
@@ -365,11 +367,11 @@ const TemplatesList = () => {
                   dir="ltr"
                 >
                   <ToggleButton value="attributes" aria-label="attributes">
-                    <AttributesIcon sx={{ mr: 1 }} />
+                    <StorageIcon style={{ marginRight: 8 }} />
                     ویژگی‌ها
                   </ToggleButton>
                   <ToggleButton value="details" aria-label="details">
-                    <DetailsIcon sx={{ mr: 1 }} />
+                    <DescriptionIcon style={{ marginRight: 8 }} />
                     اطلاعات
                   </ToggleButton>
                 </ToggleButtonGroup>
@@ -464,7 +466,7 @@ const TemplatesList = () => {
                                   handleEdit(item.id, templateType)
                                 }
                               >
-                                <EditIcon fontSize="small" />
+                                <EditIcon size="small" />
                               </IconButton>
                             </Tooltip>
                             <Tooltip title="حذف">
@@ -478,7 +480,7 @@ const TemplatesList = () => {
                                   isRemovingAttribute || isRemovingDetail
                                 }
                               >
-                                <DeleteIcon fontSize="small" />
+                                <DeleteIcon size="small" />
                               </IconButton>
                             </Tooltip>
                           </Box>

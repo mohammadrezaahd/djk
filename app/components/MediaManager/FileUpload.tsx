@@ -15,12 +15,11 @@ import {
   Switch,
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import { CloudUploadIcon } from "../icons/IconComponents";
 import { useSnackbar } from "notistack";
 import { useAddImage, useEditImage, useImage } from "~/api/gallery.api";
 import { ApiStatus } from "~/types";
 import { useGalleryValidation, convertGalleryFormToApi } from "~/validation";
-import type { IGallery } from "~/types/interfaces/gallery.interface";
 import { fixImageUrl } from "~/utils/imageUtils";
 
 export enum MediaType {
@@ -706,14 +705,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
                 ) : (
                   <>
                     <CloudUploadIcon
-                      sx={{
+                      style={{
                         fontSize: isDragOver ? 48 : 40,
                         color: isDragOver
                           ? "primary.main"
                           : selectedFile
                             ? "primary.main"
                             : "grey.500",
-                        mb: 1,
                         transition: "all 0.2s ease-in-out",
                       }}
                     />

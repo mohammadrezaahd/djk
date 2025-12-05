@@ -10,7 +10,9 @@ import {
   Chip,
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+
+import { SearchIcon } from "../icons/IconComponents";
+
 import type { IMediaQueryParams } from "~/types";
 
 const MEDIA_FILTER_TYPES = [
@@ -20,7 +22,7 @@ const MEDIA_FILTER_TYPES = [
     extensions: [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"],
   },
   {
-    value: "product", 
+    value: "product",
     label: "عکس محصول",
     extensions: [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"],
   },
@@ -94,21 +96,21 @@ const MediaFilters: React.FC<MediaFiltersProps> = ({
                   borderRadius: 2,
                   mt: 1,
                   maxHeight: 240,
-                  overflow: 'auto',
+                  overflow: "auto",
                 },
               },
               anchorOrigin: {
-                vertical: 'bottom',
-                horizontal: 'left',
+                vertical: "bottom",
+                horizontal: "left",
               },
               transformOrigin: {
-                vertical: 'top',
-                horizontal: 'left',
+                vertical: "top",
+                horizontal: "left",
               },
               slotProps: {
                 backdrop: {
                   sx: {
-                    backgroundColor: 'transparent',
+                    backgroundColor: "transparent",
                   },
                 },
               },

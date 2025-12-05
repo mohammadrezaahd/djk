@@ -1,8 +1,15 @@
 import React from "react";
-import { Box, Paper, Typography, Button, Container, Divider, useTheme } from "@mui/material";
+import {
+  Box,
+  Paper,
+  Typography,
+  Button,
+  Container,
+  Divider,
+  useTheme,
+} from "@mui/material";
 import { useNavigate } from "react-router";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-
+import { CircleCheckIcon } from "../icons/IconComponents";
 const ResultPage = () => {
   const navigate = useNavigate();
   const theme = useTheme();
@@ -74,8 +81,8 @@ const ResultPage = () => {
                   justifyContent: "center",
                 }}
               >
-                <CheckCircleIcon
-                  sx={{
+                <CircleCheckIcon
+                  style={{
                     fontSize: 70,
                     color: theme.palette.success.main,
                   }}

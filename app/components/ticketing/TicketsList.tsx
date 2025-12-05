@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Box,
   List,
@@ -11,15 +11,17 @@ import {
   Divider,
   useTheme,
   Skeleton,
-} from '@mui/material';
+} from "@mui/material";
+
 import {
-  PriorityHigh as HighPriorityIcon,
-  Remove as MediumPriorityIcon,
-  KeyboardArrowDown as LowPriorityIcon,
-} from '@mui/icons-material';
-import type { ITicketsList } from '~/types/interfaces/ticketing.interface';
-import { TicketPriority } from '~/types/dtos/ticketing.dto';
-import { TicketStatus } from '~/types/interfaces/ticketing.interface';
+  ExclamationIcon,
+  RemoveIcon,
+  AngleDown,
+} from "../icons/IconComponents";
+
+import type { ITicketsList } from "~/types/interfaces/ticketing.interface";
+import { TicketPriority } from "~/types/dtos/ticketing.dto";
+import { TicketStatus } from "~/types/interfaces/ticketing.interface";
 
 interface TicketsListProps {
   tickets: ITicketsList[];
@@ -39,11 +41,23 @@ const TicketsList: React.FC<TicketsListProps> = ({
   const getPriorityIcon = (priority: TicketPriority) => {
     switch (priority) {
       case TicketPriority.HIGH:
-        return <HighPriorityIcon sx={{ fontSize: 16, color: theme.palette.error.main }} />;
+        return (
+          <ExclamationIcon
+            style={{ fontSize: 16, color: theme.palette.error.main }}
+          />
+        );
       case TicketPriority.MEDIUM:
-        return <MediumPriorityIcon sx={{ fontSize: 16, color: theme.palette.warning.main }} />;
+        return (
+          <RemoveIcon
+            style={{ fontSize: 16, color: theme.palette.warning.main }}
+          />
+        );
       case TicketPriority.LOW:
-        return <LowPriorityIcon sx={{ fontSize: 16, color: theme.palette.success.main }} />;
+        return (
+          <AngleDown
+            style={{ fontSize: 16, color: theme.palette.success.main }}
+          />
+        );
       default:
         return null;
     }
@@ -52,13 +66,13 @@ const TicketsList: React.FC<TicketsListProps> = ({
   const getPriorityText = (priority: TicketPriority): string => {
     switch (priority) {
       case TicketPriority.HIGH:
-        return 'بالا';
+        return "بالا";
       case TicketPriority.MEDIUM:
-        return 'متوسط';
+        return "متوسط";
       case TicketPriority.LOW:
-        return 'پایین';
+        return "پایین";
       default:
-        return 'نامشخص';
+        return "نامشخص";
     }
   };
 
@@ -76,11 +90,11 @@ const TicketsList: React.FC<TicketsListProps> = ({
   const getStatusText = (status: TicketStatus): string => {
     switch (status) {
       case TicketStatus.OPEN:
-        return 'باز';
+        return "باز";
       case TicketStatus.CLOSE:
-        return 'بسته';
+        return "بسته";
       default:
-        return 'نامشخص';
+        return "نامشخص";
     }
   };
 
@@ -91,7 +105,7 @@ const TicketsList: React.FC<TicketsListProps> = ({
           <Box key={index} sx={{ p: 2 }}>
             <Skeleton variant="text" width="80%" />
             <Skeleton variant="text" width="60%" />
-            <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+            <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
               <Skeleton variant="rectangular" width={60} height={20} />
               <Skeleton variant="rectangular" width={40} height={20} />
             </Box>
@@ -106,8 +120,8 @@ const TicketsList: React.FC<TicketsListProps> = ({
       <Box
         sx={{
           p: 4,
-          textAlign: 'center',
-          color: 'text.secondary',
+          textAlign: "center",
+          color: "text.secondary",
         }}
       >
         <Typography variant="h6">تیکتی موجود نیست</Typography>
@@ -128,23 +142,32 @@ const TicketsList: React.FC<TicketsListProps> = ({
               selected={selectedTicketId === ticket.id}
               sx={{
                 p: 2,
-                backgroundColor: selectedTicketId === ticket.id 
-                  ? theme.palette.action.selected 
-                  : 'transparent',
-                '&:hover': {
+                backgroundColor:
+                  selectedTicketId === ticket.id
+                    ? theme.palette.action.selected
+                    : "transparent",
+                "&:hover": {
                   backgroundColor: theme.palette.action.hover,
                 },
               }}
             >
               <ListItemText
                 primary={
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mb: 1,
+                    }}
+                  >
                     <Typography
                       variant="subtitle2"
                       noWrap
-                      sx={{ 
+                      sx={{
                         flex: 1,
-                        fontWeight: selectedTicketId === ticket.id ? 'bold' : 'normal',
+                        fontWeight:
+                          selectedTicketId === ticket.id ? "bold" : "normal",
                       }}
                     >
                       {ticket.subject}
@@ -152,50 +175,65 @@ const TicketsList: React.FC<TicketsListProps> = ({
                     <Badge
                       variant="dot"
                       invisible={false}
-                      color={ticket.status === TicketStatus.OPEN ? "success" : "error"}
+                      color={
+                        ticket.status === TicketStatus.OPEN
+                          ? "success"
+                          : "error"
+                      }
                       sx={{
-                        '& .MuiBadge-dot': {
-                          backgroundColor: ticket.status === TicketStatus.OPEN ? '#4caf50' : '#f44336',
+                        "& .MuiBadge-dot": {
+                          backgroundColor:
+                            ticket.status === TicketStatus.OPEN
+                              ? "#4caf50"
+                              : "#f44336",
                           width: 8,
-                          height: 8
-                        }
+                          height: 8,
+                        },
                       }}
                     />
                   </Box>
                 }
                 secondary={
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mt: 1,
+                    }}
+                  >
                     <Chip
                       icon={getPriorityIcon(ticket.priority) || undefined}
                       label={getPriorityText(ticket.priority)}
                       size="small"
                       variant="outlined"
-                      sx={{ 
-                        fontSize: '0.75rem', 
+                      sx={{
+                        fontSize: "0.75rem",
                         height: 26,
                         borderRadius: 1.5,
-                        backgroundColor: 'rgba(102, 126, 234, 0.08)',
-                        borderColor: 'primary.light',
-                        color: 'primary.dark',
+                        backgroundColor: "rgba(102, 126, 234, 0.08)",
+                        borderColor: "primary.light",
+                        color: "primary.dark",
                         fontWeight: 500,
-                        '& .MuiChip-icon': {
-                          fontSize: '0.875rem'
-                        }
+                        "& .MuiChip-icon": {
+                          fontSize: "0.875rem",
+                        },
                       }}
                     />
                     <Chip
                       label={getStatusText(ticket.status)}
                       size="small"
                       sx={{
-                        backgroundColor: ticket.status === TicketStatus.OPEN 
-                          ? '#4caf50' // سبز برای باز
-                          : '#f44336', // قرمز برای بسته
-                        color: 'white',
-                        fontSize: '0.75rem',
+                        backgroundColor:
+                          ticket.status === TicketStatus.OPEN
+                            ? "#4caf50" // سبز برای باز
+                            : "#f44336", // قرمز برای بسته
+                        color: "white",
+                        fontSize: "0.75rem",
                         height: 26,
                         borderRadius: 1.5,
                         fontWeight: 600,
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                       }}
                     />
                   </Box>

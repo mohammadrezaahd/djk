@@ -15,14 +15,16 @@ import {
   Collapse,
   Alert,
 } from "@mui/material";
+
 import {
-  Add as AddIcon,
-  Search as SearchIcon,
-  FilterList as FilterIcon,
-  Refresh as RefreshIcon,
-  ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon,
-} from "@mui/icons-material";
+  AddIcon,
+  SearchIcon,
+  RefreshIcon,
+  FilterIcon,
+  ExpandIcon,
+  CompressIcon,
+} from "../icons/IconComponents";
+
 import { useSnackbar } from "notistack";
 import { useTickets, useDepartments } from "~/api/ticketing.api";
 import { useTicketFiltersValidation } from "~/validation/hooks/useTicketingValidation";
@@ -173,7 +175,7 @@ const TicketingSidebar: React.FC<TicketingSidebarProps> = ({
           onChange={(e) => setValue("search", e.target.value)}
           InputProps={{
             startAdornment: (
-              <SearchIcon sx={{ color: "text.secondary", mr: 1 }} />
+              <SearchIcon style={{ color: "text.secondary", marginRight: 1 }} />
             ),
           }}
           size="small"
@@ -185,7 +187,7 @@ const TicketingSidebar: React.FC<TicketingSidebarProps> = ({
           fullWidth
           variant="outlined"
           onClick={() => setFiltersOpen(!filtersOpen)}
-          endIcon={filtersOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          endIcon={filtersOpen ? <CompressIcon /> : <ExpandIcon />}
           startIcon={<FilterIcon />}
           size="small"
         >

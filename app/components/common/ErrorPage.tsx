@@ -9,14 +9,16 @@ import {
   Paper,
   Chip,
 } from "@mui/material";
+
 import {
-  Home as HomeIcon,
-  ArrowBack as ArrowBackIcon,
-  Refresh as RefreshIcon,
-  Error as ErrorIcon,
-  Warning as WarningIcon,
-  Block as BlockIcon,
-} from "@mui/icons-material";
+  HomeIcon,
+  AngleLeftIcon,
+  BlockIcon,
+  RefreshIcon,
+  WarningIcon,
+  ErrorIcon,
+} from "../icons/IconComponents";
+
 import { useNavigate } from "react-router";
 
 interface ErrorPageProps {
@@ -42,7 +44,7 @@ const ErrorPage: React.FC<ErrorPageProps> = ({
   const theme = useTheme();
 
   const handleGoHome = () => {
-    navigate('/');
+    navigate("/");
   };
 
   const handleGoBack = () => {
@@ -64,7 +66,7 @@ const ErrorPage: React.FC<ErrorPageProps> = ({
           title: "صفحه یافت نشد",
           subtitle:
             "متأسفانه صفحه‌ای که به دنبال آن هستید وجود ندارد یا حذف شده است.",
-          icon: <ErrorIcon sx={{ fontSize: 80, color: "white" }} />,
+          icon: <ErrorIcon style={{ fontSize: 80, color: "white" }} />,
           color: theme.palette.warning.main,
           badge: "خطای 404",
         };
@@ -73,7 +75,7 @@ const ErrorPage: React.FC<ErrorPageProps> = ({
           title: "خطای سرور",
           subtitle:
             "متأسفانه خطای داخلی سرور رخ داده است. لطفاً دوباره تلاش کنید.",
-          icon: <WarningIcon sx={{ fontSize: 80, color: "white" }} />,
+          icon: <WarningIcon style={{ fontSize: 80, color: "white" }} />,
           color: theme.palette.error.main,
           badge: "خطای 500",
         };
@@ -81,7 +83,7 @@ const ErrorPage: React.FC<ErrorPageProps> = ({
         return {
           title: "دسترسی مجاز نیست",
           subtitle: "شما مجوز دسترسی به این صفحه را ندارید.",
-          icon: <BlockIcon sx={{ fontSize: 80, color: "white" }} />,
+          icon: <BlockIcon style={{ fontSize: 80, color: "white" }} />,
           color: theme.palette.error.main,
           badge: "خطای 403",
         };
@@ -90,7 +92,7 @@ const ErrorPage: React.FC<ErrorPageProps> = ({
           title: title || "خطایی رخ داده است",
           subtitle:
             subtitle || "متأسفانه مشکلی پیش آمده است. لطفاً دوباره تلاش کنید.",
-          icon: <ErrorIcon sx={{ fontSize: 80, color: "white" }} />,
+          icon: <ErrorIcon style={{ fontSize: 80, color: "white" }} />,
           color: theme.palette.error.main,
           badge: "خطا",
         };
@@ -316,7 +318,7 @@ const ErrorPage: React.FC<ErrorPageProps> = ({
                 variant="text"
                 size="large"
                 onClick={handleGoBack}
-                startIcon={<ArrowBackIcon />}
+                startIcon={<AngleLeftIcon />}
                 sx={{
                   px: 4,
                   py: 1.5,
@@ -352,8 +354,8 @@ const ErrorPage: React.FC<ErrorPageProps> = ({
               color="text.secondary"
               sx={{ lineHeight: 1.6 }}
             >
-              💡 در صورت تکرار این خطا، لطفاً با پشتیبانی تماس بگیرید یا صفحه
-              را رفرش کنید.
+              💡 در صورت تکرار این خطا، لطفاً با پشتیبانی تماس بگیرید یا صفحه را
+              رفرش کنید.
             </Typography>
           </Box>
         </Paper>

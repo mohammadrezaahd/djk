@@ -2,11 +2,9 @@ import React, { useEffect, useState } from "react";
 import AppLayout from "~/components/layout/AppLayout";
 import {
   Box,
-  Card,
   CardContent,
   Typography,
   Avatar,
-  Divider,
   Chip,
   useTheme,
   alpha,
@@ -21,22 +19,19 @@ import {
   Tooltip,
   Badge,
 } from "@mui/material";
+
 import {
-  Person as PersonIcon,
-  Email as EmailIcon,
-  Phone as PhoneIcon,
-  CheckCircle as CheckCircleIcon,
-  Edit as EditIcon,
-  Save as SaveIcon,
-  Cancel as CancelIcon,
-  LocationOn as LocationIcon,
-  Work as WorkIcon,
-  CalendarToday as CalendarIcon,
-  Star as StarIcon,
-  Shield as ShieldIcon,
-  Verified as VerifiedIcon,
-  Camera as CameraIcon,
-} from "@mui/icons-material";
+  EmailIcon,
+  UserIcon,
+  PhoneIcon,
+  EditIcon,
+  CloseIcon,
+  StarIcon,
+  ShieldIcon,
+  VerifiedIcon,
+  SaveIcon,
+} from "~/components/icons/IconComponents";
+
 import { useProfile, useUpdateProfile } from "~/api/profile.api";
 import { useAppDispatch, useAppSelector } from "~/store/hooks";
 import { setUser } from "~/store/slices/userSlice";
@@ -219,7 +214,14 @@ const ProfilePage = () => {
           }}
         >
           <Box sx={{ position: "relative", zIndex: 2, p: 4 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 4, flexDirection: { xs: "column", md: "row" } }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                flexDirection: { xs: "column", md: "row" },
+              }}
+            >
               <Box sx={{ flexShrink: 0 }}>
                 <Badge
                   overlap="circular"
@@ -234,9 +236,7 @@ const ProfilePage = () => {
                           boxShadow: 2,
                           "&:hover": { bgcolor: theme.palette.grey[100] },
                         }}
-                      >
-                        <CameraIcon fontSize="small" />
-                      </IconButton>
+                      ></IconButton>
                     </Tooltip>
                   }
                 >
@@ -259,212 +259,219 @@ const ProfilePage = () => {
                 </Badge>
               </Box>
 
-              <Box 
-                sx={{ 
+              <Box
+                sx={{
                   color: "white",
                   flex: 1,
-                  textAlign: { xs: "center", md: "right" }
+                  textAlign: { xs: "center", md: "right" },
                 }}
               >
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                    mb: 3,
+                    flexDirection: { xs: "column", md: "row" },
+                    gap: { xs: 2, md: 0 },
+                  }}
+                >
+                  <Box sx={{ flex: 1 }}>
+                    <Typography
+                      variant="h3"
+                      sx={{
+                        fontWeight: "bold",
+                        mb: 1.5,
+                        textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                        fontSize: { xs: "2rem", md: "3rem" },
+                      }}
+                    >
+                      {userInfo?.first_name && userInfo?.last_name
+                        ? `${userInfo.first_name} ${userInfo.last_name}`
+                        : "کاربر محترم"}
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        opacity: 0.9,
+                        fontWeight: 400,
+                        mb: { xs: 2, md: 0 },
+                      }}
+                    >
+                      عضو هوشمارکت
+                    </Typography>
+                  </Box>
+
                   <Box
                     sx={{
                       display: "flex",
-                      alignItems: "flex-start",
-                      justifyContent: "space-between",
-                      mb: 3,
-                      flexDirection: { xs: "column", md: "row" },
-                      gap: { xs: 2, md: 0 }
+                      gap: 1,
+                      justifyContent: { xs: "center", md: "flex-end" },
+                      alignSelf: { xs: "center", md: "flex-start" },
                     }}
                   >
-                    <Box sx={{ flex: 1 }}>
-                      <Typography
-                        variant="h3"
-                        sx={{
-                          fontWeight: "bold",
-                          mb: 1.5,
-                          textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                          fontSize: { xs: "2rem", md: "3rem" }
-                        }}
-                      >
-                        {userInfo?.first_name && userInfo?.last_name
-                          ? `${userInfo.first_name} ${userInfo.last_name}`
-                          : "کاربر محترم"}
-                      </Typography>
-                      <Typography
-                        variant="h6"
-                        sx={{ 
-                          opacity: 0.9, 
-                          fontWeight: 400,
-                          mb: { xs: 2, md: 0 }
-                        }}
-                      >
-                        عضو هوشمارکت
-                      </Typography>
-                    </Box>
-
-                    <Box 
-                      sx={{ 
-                        display: "flex", 
-                        gap: 1,
-                        justifyContent: { xs: "center", md: "flex-end" },
-                        alignSelf: { xs: "center", md: "flex-start" }
-                      }}
-                    >
-                      {isEditing ? (
-                        <>
-                          <Tooltip title="ذخیره تغییرات">
-                            <IconButton
-                              onClick={handleSave}
-                              disabled={updateProfileMutation.isPending}
-                              sx={{
-                                color: "white",
-                                bgcolor: alpha(theme.palette.success.main, 0.3),
-                                backdropFilter: "blur(10px)",
-                                border: `1px solid ${alpha(theme.palette.common.white, 0.3)}`,
-                                "&:hover": {
-                                  bgcolor: alpha(
-                                    theme.palette.success.main,
-                                    0.5
-                                  ),
-                                },
-                              }}
-                            >
-                              {updateProfileMutation.isPending ? (
-                                <CircularProgress
-                                  size={20}
-                                  sx={{ color: "white" }}
-                                />
-                              ) : (
-                                <SaveIcon />
-                              )}
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="لغو">
-                            <IconButton
-                              onClick={handleEditToggle}
-                              disabled={updateProfileMutation.isPending}
-                              sx={{
-                                color: "white",
-                                bgcolor: alpha(theme.palette.error.main, 0.3),
-                                backdropFilter: "blur(10px)",
-                                border: `1px solid ${alpha(theme.palette.common.white, 0.3)}`,
-                                "&:hover": {
-                                  bgcolor: alpha(theme.palette.error.main, 0.5),
-                                },
-                              }}
-                            >
-                              <CancelIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </>
-                      ) : (
-                        <Tooltip title="ویرایش پروفایل">
+                    {isEditing ? (
+                      <>
+                        <Tooltip title="ذخیره تغییرات">
                           <IconButton
-                            onClick={handleEditToggle}
+                            onClick={handleSave}
+                            disabled={updateProfileMutation.isPending}
                             sx={{
                               color: "white",
-                              bgcolor: alpha(theme.palette.common.white, 0.2),
+                              bgcolor: alpha(theme.palette.success.main, 0.3),
                               backdropFilter: "blur(10px)",
                               border: `1px solid ${alpha(theme.palette.common.white, 0.3)}`,
                               "&:hover": {
-                                bgcolor: alpha(theme.palette.common.white, 0.3),
+                                bgcolor: alpha(theme.palette.success.main, 0.5),
                               },
                             }}
                           >
-                            <EditIcon />
+                            {updateProfileMutation.isPending ? (
+                              <CircularProgress
+                                size={20}
+                                sx={{ color: "white" }}
+                              />
+                            ) : (
+                              <SaveIcon />
+                            )}
                           </IconButton>
                         </Tooltip>
-                      )}
-                    </Box>
-                  </Box>
-
-                  <Box
-                    sx={{ 
-                      display: "flex", 
-                      gap: 1.5, 
-                      flexWrap: "wrap", 
-                      mb: 4,
-                      justifyContent: { xs: "center", md: "flex-start" }
-                    }}
-                  >
-                    <Chip
-                      icon={<VerifiedIcon />}
-                      label="تایید شده"
-                      size="small"
-                      sx={{
-                        bgcolor: alpha(theme.palette.success.main, 0.2),
-                        color: "white",
-                        border: `1px solid ${alpha(theme.palette.success.main, 0.4)}`,
-                        fontWeight: "bold",
-                        backdropFilter: "blur(10px)",
-                      }}
-                    />
-                    <Chip
-                      icon={<ShieldIcon />}
-                      label="امن"
-                      size="small"
-                      sx={{
-                        bgcolor: alpha(theme.palette.info.main, 0.2),
-                        color: "white",
-                        border: `1px solid ${alpha(theme.palette.info.main, 0.4)}`,
-                        fontWeight: "bold",
-                        backdropFilter: "blur(10px)",
-                      }}
-                    />
-                    <Chip
-                      icon={<StarIcon />}
-                      label="کاربر فعال"
-                      size="small"
-                      sx={{
-                        bgcolor: alpha(theme.palette.warning.main, 0.2),
-                        color: "white",
-                        border: `1px solid ${alpha(theme.palette.warning.main, 0.4)}`,
-                        fontWeight: "bold",
-                        backdropFilter: "blur(10px)",
-                      }}
-                    />
-                  </Box>
-
-                  <Grid container spacing={3}>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <Box sx={{ textAlign: { xs: "center", md: "right" }, py: 1 }}>
-                        <Typography
-                          variant="h4"
+                        <Tooltip title="لغو">
+                          <IconButton
+                            onClick={handleEditToggle}
+                            disabled={updateProfileMutation.isPending}
+                            sx={{
+                              color: "white",
+                              bgcolor: alpha(theme.palette.error.main, 0.3),
+                              backdropFilter: "blur(10px)",
+                              border: `1px solid ${alpha(theme.palette.common.white, 0.3)}`,
+                              "&:hover": {
+                                bgcolor: alpha(theme.palette.error.main, 0.5),
+                              },
+                            }}
+                          >
+                            <CloseIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </>
+                    ) : (
+                      <Tooltip title="ویرایش پروفایل">
+                        <IconButton
+                          onClick={handleEditToggle}
                           sx={{
-                            fontWeight: "bold",
-                            textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                            mb: 0.5
+                            color: "white",
+                            bgcolor: alpha(theme.palette.common.white, 0.2),
+                            backdropFilter: "blur(10px)",
+                            border: `1px solid ${alpha(theme.palette.common.white, 0.3)}`,
+                            "&:hover": {
+                              bgcolor: alpha(theme.palette.common.white, 0.3),
+                            },
                           }}
                         >
-                          فعال
-                        </Typography>
-                        <Typography variant="body1" sx={{ opacity: 0.85, fontWeight: 500 }}>
-                          وضعیت حساب
-                        </Typography>
-                      </Box>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <Box sx={{ textAlign: { xs: "center", md: "right" }, py: 1 }}>
-                        <Typography
-                          variant="h4"
-                          sx={{
-                            fontWeight: "bold",
-                            textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                            mb: 0.5,
-                            fontSize: { xs: "1.5rem", sm: "2rem" }
-                          }}
-                        >
-                          {new Date().toLocaleDateString("fa-IR")}
-                        </Typography>
-                        <Typography variant="body1" sx={{ opacity: 0.85, fontWeight: 500 }}>
-                          تاریخ عضویت
-                        </Typography>
-                      </Box>
-                    </Grid>
-                  </Grid>
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </Box>
                 </Box>
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    gap: 1.5,
+                    flexWrap: "wrap",
+                    mb: 4,
+                    justifyContent: { xs: "center", md: "flex-start" },
+                  }}
+                >
+                  <Chip
+                    icon={<VerifiedIcon />}
+                    label="تایید شده"
+                    size="small"
+                    sx={{
+                      bgcolor: alpha(theme.palette.success.main, 0.2),
+                      color: "white",
+                      border: `1px solid ${alpha(theme.palette.success.main, 0.4)}`,
+                      fontWeight: "bold",
+                      backdropFilter: "blur(10px)",
+                    }}
+                  />
+                  <Chip
+                    icon={<ShieldIcon />}
+                    label="امن"
+                    size="small"
+                    sx={{
+                      bgcolor: alpha(theme.palette.info.main, 0.2),
+                      color: "white",
+                      border: `1px solid ${alpha(theme.palette.info.main, 0.4)}`,
+                      fontWeight: "bold",
+                      backdropFilter: "blur(10px)",
+                    }}
+                  />
+                  <Chip
+                    icon={<StarIcon />}
+                    label="کاربر فعال"
+                    size="small"
+                    sx={{
+                      bgcolor: alpha(theme.palette.warning.main, 0.2),
+                      color: "white",
+                      border: `1px solid ${alpha(theme.palette.warning.main, 0.4)}`,
+                      fontWeight: "bold",
+                      backdropFilter: "blur(10px)",
+                    }}
+                  />
+                </Box>
+
+                <Grid container spacing={3}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Box
+                      sx={{ textAlign: { xs: "center", md: "right" }, py: 1 }}
+                    >
+                      <Typography
+                        variant="h4"
+                        sx={{
+                          fontWeight: "bold",
+                          textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                          mb: 0.5,
+                        }}
+                      >
+                        فعال
+                      </Typography>
+                      <Typography
+                        variant="body1"
+                        sx={{ opacity: 0.85, fontWeight: 500 }}
+                      >
+                        وضعیت حساب
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Box
+                      sx={{ textAlign: { xs: "center", md: "right" }, py: 1 }}
+                    >
+                      <Typography
+                        variant="h4"
+                        sx={{
+                          fontWeight: "bold",
+                          textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                          mb: 0.5,
+                          fontSize: { xs: "1.5rem", sm: "2rem" },
+                        }}
+                      >
+                        {new Date().toLocaleDateString("fa-IR")}
+                      </Typography>
+                      <Typography
+                        variant="body1"
+                        sx={{ opacity: 0.85, fontWeight: 500 }}
+                      >
+                        تاریخ عضویت
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
               </Box>
             </Box>
+          </Box>
         </Paper>
 
         {/* Modern Information Grid */}
@@ -502,7 +509,7 @@ const ProfilePage = () => {
                       height: 48,
                     }}
                   >
-                    <PersonIcon sx={{ fontSize: "1.5rem" }} />
+                    <UserIcon style={{ fontSize: "1.5rem" }} />
                   </Avatar>
                   <Typography
                     variant="h6"
@@ -711,7 +718,7 @@ const ProfilePage = () => {
                     </Typography>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <PhoneIcon
-                        sx={{
+                        style={{
                           color: theme.palette.text.secondary,
                           fontSize: "1.2rem",
                         }}
@@ -767,7 +774,7 @@ const ProfilePage = () => {
                       height: 48,
                     }}
                   >
-                    <StarIcon sx={{ fontSize: "1.5rem" }} />
+                    <StarIcon style={{ fontSize: "1.5rem" }} />
                   </Avatar>
                   <Typography
                     variant="h6"
@@ -907,7 +914,7 @@ const ProfilePage = () => {
                   <Button
                     fullWidth
                     variant="outlined"
-                    startIcon={<PersonIcon />}
+                    startIcon={<UserIcon />}
                     sx={{
                       borderRadius: 3,
                       py: 2.5,

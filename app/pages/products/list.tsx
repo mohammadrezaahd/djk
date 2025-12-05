@@ -23,13 +23,15 @@ import {
   Button,
   Container,
 } from "@mui/material";
+
 import {
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Refresh as RefreshIcon,
-  Publish as PublishIcon,
-  Inventory as InventoryIcon,
-} from "@mui/icons-material";
+  EditIcon,
+  DeleteIcon,
+  RefreshIcon,
+  ArchiveIcon,
+  ExportIcon,
+} from "~/components/icons/IconComponents";
+
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router";
 import {
@@ -475,7 +477,7 @@ const ProductsList = () => {
                                 handleViewSubProducts(item.id, item.title)
                               }
                             >
-                              <InventoryIcon fontSize="small" />
+                              <ArchiveIcon size="small" />
                             </IconButton>
                           </Tooltip>
                         </TableCell>
@@ -494,7 +496,7 @@ const ProductsList = () => {
                                 onClick={() => handleEdit(item.id)}
                                 disabled={item.user_status !== 0}
                               >
-                                <EditIcon fontSize="small" />
+                                <EditIcon size="small" />
                               </IconButton>
                             </Tooltip>
                             <Tooltip title="حذف">
@@ -504,7 +506,7 @@ const ProductsList = () => {
                                 onClick={() => handleDelete(item.id)}
                                 disabled={item.user_status !== 0 || isRemoving}
                               >
-                                <DeleteIcon fontSize="small" />
+                                <DeleteIcon size="small" />
                               </IconButton>
                             </Tooltip>
                             <Tooltip title="انتشار">
@@ -516,7 +518,7 @@ const ProductsList = () => {
                                   item.user_status !== 0 || isPublishing
                                 }
                               >
-                                <PublishIcon fontSize="small" />
+                                <ExportIcon size="small" />
                               </IconButton>
                             </Tooltip>
                           </Box>

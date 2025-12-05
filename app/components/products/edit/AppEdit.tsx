@@ -16,7 +16,7 @@ import {
   Typography,
 } from "@mui/material";
 import DynamicTitleBuilder from "../DynamicTitleBuilder";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { DeleteIcon } from "~/components/icons/IconComponents";
 import ImageSelector from "~/components/templates/ImageSelector";
 import ProductAttributesForm from "../ProductAttributesForm";
 import type { ICategoryAttr } from "~/types/interfaces/attributes.interface";
@@ -251,7 +251,7 @@ const AppEditProduct: React.FC<AppEditProductProps> = ({
                               handleRemoveDetailsTemplate(index);
                             }}
                           >
-                            <DeleteIcon fontSize="small" />
+                            <DeleteIcon size="small" />
                           </IconButton>
                         </Box>
                       }
@@ -312,7 +312,7 @@ const AppEditProduct: React.FC<AppEditProductProps> = ({
                               handleRemoveAttributesTemplate(index);
                             }}
                           >
-                            <DeleteIcon fontSize="small" />
+                            <DeleteIcon size="small" />
                           </IconButton>
                         </Box>
                       }

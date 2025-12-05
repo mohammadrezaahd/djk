@@ -11,7 +11,7 @@ import {
   Switch,
   FormControlLabel,
 } from "@mui/material";
-import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
+import { GalleryIcon } from "~/components/icons/IconComponents";
 import { useImages } from "~/api/gallery.api";
 import { MediaManager, MediaGrid } from "~/components/MediaManager";
 import { SearchInput } from "~/components/common";
@@ -185,14 +185,12 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
       {/* Main selector button */}
       <Button
         variant="outlined"
-        startIcon={<PhotoLibraryIcon />}
+        startIcon={<GalleryIcon />}
         onClick={() => setOpen(true)}
         fullWidth
         sx={{ mb: 2, py: 1.5 }}
       >
-        {selectedImages.length > 0
-          ? `انتخاب تصویر`
-          : label}
+        {selectedImages.length > 0 ? `انتخاب تصویر` : label}
       </Button>
 
       {/* Selected images preview */}

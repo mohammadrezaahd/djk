@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from "react";
-import {
-  TextField,
-  Box,
-  InputAdornment,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-
+import { TextField, Box, InputAdornment } from "@mui/material";
+import { SearchIcon } from "../icons/IconComponents";
 interface SearchInputProps {
   value?: string;
   onSearchChange: (searchValue: string) => void;

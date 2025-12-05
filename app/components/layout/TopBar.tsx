@@ -5,7 +5,7 @@ import {
   Typography,
   Box,
 } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
+import { MenuBars } from "../icons/IconComponents";
 import Navbar from "./Navbar";
 
 interface AppBarProps {
@@ -41,7 +41,7 @@ const TopBar = ({
           onClick={handleDrawerToggle}
           sx={{ ml: 2, display: { sm: "none" } }}
         >
-          <MenuIcon />
+          <MenuBars />
         </IconButton>
 
         {/* Title */}

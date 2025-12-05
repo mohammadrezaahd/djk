@@ -14,9 +14,8 @@ import "./app.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SnackbarProvider, closeSnackbar } from "notistack";
 import { IconButton, Box, Typography, Button, Container } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
 import { NotFoundPage, ErrorPage } from "./components/common";
-
+import { CloseIcon } from "./components/icons/IconComponents";
 export const links = () => [
   { rel: "icon", href: "/Hoshmarket.ico", type: "image/x-icon" },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -58,7 +57,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   size="small"
                   sx={{ color: "primary.contrastText" }}
                 >
-                  <CloseIcon fontSize="small" />
+                  <CloseIcon size={"small"} />
                 </IconButton>
               )}
             >
@@ -90,7 +89,7 @@ export function ErrorBoundary({ error }: { error: any }) {
         </Provider>
       );
     }
-    
+
     // Handle other HTTP errors
     return (
       <Provider store={store}>
@@ -98,7 +97,9 @@ export function ErrorBoundary({ error }: { error: any }) {
           <ThemeProvider>
             <ErrorPage
               errorCode={error.status}
-              subtitle={error.statusText || `خطای HTTP ${error.status} رخ داده است.`}
+              subtitle={
+                error.statusText || `خطای HTTP ${error.status} رخ داده است.`
+              }
               showRefreshButton={true}
             />
           </ThemeProvider>
@@ -115,12 +116,12 @@ export function ErrorBoundary({ error }: { error: any }) {
           <Container maxWidth="md" sx={{ py: 8 }}>
             <Box
               sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                textAlign: 'center',
-                minHeight: 'calc(100vh - 200px)',
-                justifyContent: 'center',
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
+                minHeight: "calc(100vh - 200px)",
+                justifyContent: "center",
               }}
             >
               <Typography
@@ -128,16 +129,16 @@ export function ErrorBoundary({ error }: { error: any }) {
                 component="h1"
                 gutterBottom
                 sx={{
-                  fontSize: { xs: '1.8rem', md: '2.5rem' },
-                  fontWeight: 'bold',
-                  color: 'error.main',
+                  fontSize: { xs: "1.8rem", md: "2.5rem" },
+                  fontWeight: "bold",
+                  color: "error.main",
                   mb: 2,
-                  fontFamily: 'Vazirmatn',
+                  fontFamily: "Vazirmatn",
                 }}
               >
                 خطای سیستم
               </Typography>
-              
+
               <Typography
                 variant="h6"
                 color="text.secondary"
@@ -145,23 +146,25 @@ export function ErrorBoundary({ error }: { error: any }) {
                   mb: 4,
                   maxWidth: 500,
                   lineHeight: 1.6,
-                  fontFamily: 'Vazirmatn',
+                  fontFamily: "Vazirmatn",
                 }}
               >
-                {error instanceof Error ? error.message : 'خطای غیرمنتظره‌ای رخ داده است.'}
+                {error instanceof Error
+                  ? error.message
+                  : "خطای غیرمنتظره‌ای رخ داده است."}
               </Typography>
 
               {import.meta.env.DEV && error instanceof Error && error.stack && (
                 <Box
                   component="pre"
                   sx={{
-                    width: '100%',
+                    width: "100%",
                     p: 2,
-                    backgroundColor: 'grey.100',
+                    backgroundColor: "grey.100",
                     borderRadius: 1,
-                    overflow: 'auto',
-                    fontSize: '0.875rem',
-                    fontFamily: 'monospace',
+                    overflow: "auto",
+                    fontSize: "0.875rem",
+                    fontFamily: "monospace",
                     mb: 3,
                     maxHeight: 300,
                   }}
@@ -173,12 +176,12 @@ export function ErrorBoundary({ error }: { error: any }) {
               <Button
                 variant="contained"
                 size="large"
-                onClick={() => window.location.href = '/'}
+                onClick={() => (window.location.href = "/")}
                 sx={{
                   px: 4,
                   py: 1.5,
                   borderRadius: 2,
-                  fontFamily: 'Vazirmatn',
+                  fontFamily: "Vazirmatn",
                 }}
               >
                 بازگشت به خانه

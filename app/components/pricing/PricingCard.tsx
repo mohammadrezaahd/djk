@@ -14,13 +14,15 @@ import {
   CircularProgress,
   Stack,
 } from "@mui/material";
-import { 
-  Check as CheckIcon, 
-  Star as StarIcon,
-  AccessTime as TimeIcon,
-  SmartToy as AIIcon,
-  Inventory as ProductIcon,
-} from "@mui/icons-material";
+
+import {
+  ArchiveIcon,
+  CheckIcon,
+  StarIcon,
+  AlarmIcon,
+  AiIcon,
+} from "../icons/IconComponents";
+
 import type { IPricing } from "~/types/interfaces/pricing.interface";
 
 interface PricingCardProps {
@@ -55,17 +57,17 @@ const PricingCard: React.FC<PricingCardProps> = ({
   const features = [
     {
       text: `حداکثر ${plan.max_products.toLocaleString("fa-IR")} محصول`,
-      icon: <ProductIcon />,
+      icon: <ArchiveIcon />,
       included: true,
     },
     {
       text: `${plan.ai_usage_limit.toLocaleString("fa-IR")} استفاده از هوش مصنوعی`,
-      icon: <AIIcon />,
+      icon: <AiIcon />,
       included: true,
     },
     {
       text: `اعتبار ${formatDuration(plan.duration_days)}`,
-      icon: <TimeIcon />,
+      icon: <AlarmIcon />,
       included: true,
     },
     {
@@ -170,7 +172,12 @@ const PricingCard: React.FC<PricingCardProps> = ({
 
         {/* Pricing */}
         <Box sx={{ textAlign: "right", mb: 4 }}>
-          <Stack direction="row" alignItems="baseline" justifyContent="flex-end" spacing={1}>
+          <Stack
+            direction="row"
+            alignItems="baseline"
+            justifyContent="flex-end"
+            spacing={1}
+          >
             <Typography
               variant="h3"
               component="span"
@@ -187,19 +194,23 @@ const PricingCard: React.FC<PricingCardProps> = ({
               variant="h6"
               component="span"
               sx={{
-                color: isPopular ? "rgba(255, 255, 255, 0.8)" : "text.secondary",
+                color: isPopular
+                  ? "rgba(255, 255, 255, 0.8)"
+                  : "text.secondary",
                 fontWeight: 600,
               }}
             >
               تومان
             </Typography>
           </Stack>
-          
+
           <Box sx={{ mt: 1.5 }}>
             <Typography
               variant="body2"
               sx={{
-                color: isPopular ? "rgba(255, 255, 255, 0.7)" : "text.secondary",
+                color: isPopular
+                  ? "rgba(255, 255, 255, 0.7)"
+                  : "text.secondary",
                 fontWeight: 500,
               }}
             >
@@ -221,7 +232,10 @@ const PricingCard: React.FC<PricingCardProps> = ({
         {/* Features List */}
         <List sx={{ p: 0, mb: 2, direction: "rtl" }}>
           {features.map((feature, index) => (
-            <ListItem key={index} sx={{ px: 0, py: 1, flexDirection: "row-reverse" }}>
+            <ListItem
+              key={index}
+              sx={{ px: 0, py: 1, flexDirection: "row-reverse" }}
+            >
               <ListItemIcon sx={{ minWidth: 32, justifyContent: "flex-start" }}>
                 <Box
                   sx={{
@@ -238,7 +252,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
                   }}
                 >
                   <CheckIcon
-                    sx={{
+                    style={{
                       color: isPopular ? "white" : "white",
                       fontSize: 16,
                     }}
@@ -251,7 +265,9 @@ const PricingCard: React.FC<PricingCardProps> = ({
                   textAlign: "right",
                   "& .MuiListItemText-primary": {
                     fontSize: "0.9rem",
-                    color: isPopular ? "rgba(255, 255, 255, 0.9)" : "text.primary",
+                    color: isPopular
+                      ? "rgba(255, 255, 255, 0.9)"
+                      : "text.primary",
                     fontWeight: 500,
                     lineHeight: 1.4,
                   },
@@ -278,13 +294,11 @@ const PricingCard: React.FC<PricingCardProps> = ({
             fontSize: "1rem",
             textTransform: "none",
             position: "relative",
-            background: isPopular
-              ? "rgba(255, 255, 255, 0.15)"
-              : "transparent",
+            background: isPopular ? "rgba(255, 255, 255, 0.15)" : "transparent",
             backdropFilter: isPopular ? "blur(10px)" : "none",
             border: "2px solid",
-            borderColor: isPopular 
-              ? "rgba(255, 255, 255, 0.3)" 
+            borderColor: isPopular
+              ? "rgba(255, 255, 255, 0.3)"
               : "primary.main",
             color: isPopular ? "white" : "primary.main",
             "&:hover": {
@@ -292,8 +306,8 @@ const PricingCard: React.FC<PricingCardProps> = ({
                 ? "rgba(255, 255, 255, 0.25)"
                 : "primary.main",
               color: "white",
-              borderColor: isPopular 
-                ? "rgba(255, 255, 255, 0.4)" 
+              borderColor: isPopular
+                ? "rgba(255, 255, 255, 0.4)"
                 : "primary.main",
               transform: "translateY(-2px)",
               boxShadow: isPopular
@@ -304,9 +318,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
               background: isPopular
                 ? "rgba(255, 255, 255, 0.1)"
                 : "action.disabledBackground",
-              color: isPopular
-                ? "rgba(255, 255, 255, 0.5)"
-                : "action.disabled",
+              color: isPopular ? "rgba(255, 255, 255, 0.5)" : "action.disabled",
               borderColor: isPopular
                 ? "rgba(255, 255, 255, 0.2)"
                 : "action.disabled",

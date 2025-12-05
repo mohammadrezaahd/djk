@@ -7,13 +7,14 @@ import {
   InputAdornment,
   IconButton,
 } from "@mui/material";
+
 import {
-  Person as PersonIcon,
-  Email as EmailIcon,
-  Lock as LockIcon,
-  Visibility,
-  VisibilityOff,
-} from "@mui/icons-material";
+  EyeIcon,
+  EyeSlashIcon,
+  LockIcon,
+  EmailIcon,
+  UserIcon,
+} from "../icons/IconComponents";
 import { useRegisterValidation } from "~/validation/hooks";
 import { Controller } from "react-hook-form";
 
@@ -27,12 +28,13 @@ interface RegisterFormProps {
   isLoading: boolean;
 }
 
-const RegisterForm: React.FC<RegisterFormProps> = ({
-  onSubmit,
-  isLoading,
-}) => {
+const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit, isLoading }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const { control, handleSubmit, formState: { errors, isValid } } = useRegisterValidation();
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useRegisterValidation();
 
   const onFormSubmit = handleSubmit((data) => {
     onSubmit(data);
@@ -58,7 +60,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <PersonIcon color="action" />
+                  <UserIcon color="action" />
                 </InputAdornment>
               ),
             }}
@@ -88,7 +90,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <PersonIcon color="action" />
+                  <UserIcon color="action" />
                 </InputAdornment>
               ),
             }}
@@ -144,7 +146,10 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
             label="رمز عبور"
             type={showPassword ? "text" : "password"}
             error={!!errors.password}
-            helperText={errors.password?.message || "حداقل 8 کاراکتر، شامل حروف بزرگ، کوچک، عدد و کاراکتر خاص"}
+            helperText={
+              errors.password?.message ||
+              "حداقل 8 کاراکتر، شامل حروف بزرگ، کوچک، عدد و کاراکتر خاص"
+            }
             autoComplete="new-password"
             disabled={isLoading}
             InputProps={{
@@ -161,7 +166,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
                     edge="end"
                     disabled={isLoading}
                   >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                    {showPassword ? <EyeSlashIcon /> : <EyeIcon />}
                   </IconButton>
                 </InputAdornment>
               ),

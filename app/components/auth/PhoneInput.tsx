@@ -6,9 +6,9 @@ import {
   CircularProgress,
   InputAdornment,
 } from "@mui/material";
-import { Phone as PhoneIcon } from "@mui/icons-material";
 import { usePhoneValidation } from "~/validation/hooks";
 import { Controller } from "react-hook-form";
+import { PhoneIcon } from "../icons/IconComponents";
 
 interface PhoneInputProps {
   phone: string;

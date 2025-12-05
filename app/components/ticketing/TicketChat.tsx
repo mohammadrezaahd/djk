@@ -13,15 +13,17 @@ import {
   Chip,
   Avatar,
 } from "@mui/material";
+
 import {
-  Send as SendIcon,
-  AttachFile as AttachFileIcon,
-  Close as CloseIcon,
-  PriorityHigh as PriorityIcon,
-  Schedule as ScheduleIcon,
-  Business as BusinessIcon,
-  Lock as LockIcon,
-} from "@mui/icons-material";
+  CloseIcon,
+  LockIcon,
+  AttachIcon,
+  ExclamationIcon,
+  SendIcon,
+  ClockIcon,
+  BusinessIcon,
+} from "../icons/IconComponents";
+
 import { useSnackbar } from "notistack";
 import { useTicket, useNewMessage, useCloseTicket } from "~/api/ticketing.api";
 import { useReplyMessageValidation } from "~/validation/hooks/useTicketingValidation";
@@ -56,25 +58,26 @@ const TicketChat: React.FC<TicketChatProps> = ({ ticketId, onClose }) => {
 
   // Debug log for form validation
   const messageValue = replyForm.watch("message");
-  const isButtonDisabled = !messageValue?.trim() || newMessageMutation.isPending;
-  
-  console.log('Form validation debug:', {
+  const isButtonDisabled =
+    !messageValue?.trim() || newMessageMutation.isPending;
+
+  console.log("Form validation debug:", {
     messageValue: messageValue,
     messageLength: messageValue?.length || 0,
     hasMessageText: !!messageValue?.trim(),
     isButtonDisabled: isButtonDisabled,
     isPending: newMessageMutation.isPending,
     formValid: replyForm.isFormValid,
-    formErrors: replyForm.formState.errors
+    formErrors: replyForm.formState.errors,
   });
 
   // Load ticket data
   useEffect(() => {
-    console.log('useEffect triggered with ticketId:', ticketId);
+    console.log("useEffect triggered with ticketId:", ticketId);
     if (ticketId) {
       loadTicket();
     } else {
-      console.log('No ticketId provided, not loading ticket');
+      console.log("No ticketId provided, not loading ticket");
     }
   }, [ticketId]);
 
@@ -89,46 +92,49 @@ const TicketChat: React.FC<TicketChatProps> = ({ ticketId, onClose }) => {
       const response = await ticketMutation.mutateAsync({
         ticket_id: ticketId,
       });
-      console.log('Full ticket response:', JSON.stringify(response, null, 2));
-      
+      console.log("Full ticket response:", JSON.stringify(response, null, 2));
+
       // تلاش برای پیدا کردن ticket data در ساختارهای مختلف
       let ticketData: any = null;
-      
+
       if (response?.data?.list) {
         // ساختار: { data: { list: ITicket } }
         ticketData = response.data.list;
-        console.log('Found ticket in response.data.list');
+        console.log("Found ticket in response.data.list");
       } else if ((response as any)?.list) {
         // ساختار: { list: ITicket }
         ticketData = (response as any).list;
-        console.log('Found ticket in response.list');
+        console.log("Found ticket in response.list");
       } else if (response?.data && (response.data as any).id) {
         // ساختار: { data: ITicket }
         ticketData = response.data;
-        console.log('Found ticket in response.data');
+        console.log("Found ticket in response.data");
       } else if ((response as any)?.id) {
         // ساختار مستقیم: ITicket
         ticketData = response;
-        console.log('Found ticket in response');
+        console.log("Found ticket in response");
       }
-      
+
       if (ticketData && ticketData.id) {
-        console.log('Setting ticket data:', ticketData);
+        console.log("Setting ticket data:", ticketData);
         setTicket(ticketData as ITicket);
-        
+
         // پردازش messages
         if (ticketData.messages) {
           const messagesList = Array.isArray(ticketData.messages)
             ? ticketData.messages
             : [ticketData.messages];
-          console.log('Setting messages:', messagesList);
+          console.log("Setting messages:", messagesList);
           setMessages(messagesList);
         } else {
-          console.log('No messages found');
+          console.log("No messages found");
           setMessages([]);
         }
       } else {
-        console.error('Could not find valid ticket data in response:', response);
+        console.error(
+          "Could not find valid ticket data in response:",
+          response
+        );
       }
     } catch (error) {
       console.error("Error loading ticket:", error);
@@ -194,40 +200,45 @@ const TicketChat: React.FC<TicketChatProps> = ({ ticketId, onClose }) => {
 
     try {
       const messageData = replyForm.getValues();
-      const validFiles = (messageData.files || []).filter((file): file is File => 
-        file instanceof File && file.size > 0
+      const validFiles = (messageData.files || []).filter(
+        (file): file is File => file instanceof File && file.size > 0
       );
-      
+
       // Create payload for new message
       const payload: IAddMessage = {
         ticket_id: ticketId,
         message: messageData.message,
-        ...(validFiles.length > 0 && { files: validFiles })
+        ...(validFiles.length > 0 && { files: validFiles }),
       };
-      
-      console.log('Sending message payload:', {
+
+      console.log("Sending message payload:", {
         ticket_id: payload.ticket_id,
         message: payload.message,
-        files: validFiles.map(f => ({ name: f.name, size: f.size, type: f.type }))
+        files: validFiles.map((f) => ({
+          name: f.name,
+          size: f.size,
+          type: f.type,
+        })),
       });
-      
+
       const response = await newMessageMutation.mutateAsync(payload);
-      
-      console.log('Send message response:', response);
-      
+
+      console.log("Send message response:", response);
+
       // Check for success
-      if (response?.status === 'true') {
+      if (response?.status === "true") {
         enqueueSnackbar("پیام با موفقیت ارسال شد", { variant: "success" });
-        
+
         // Reset form after successful send
         replyForm.reset();
         setShowFileUpload(false);
-        
+
         // Reload ticket to get new messages
         loadTicket();
       } else {
-        const errorMessage = response?.error || response?.message || 'خطا در ارسال پیام';
-        enqueueSnackbar(errorMessage, { variant: 'error' });
+        const errorMessage =
+          response?.error || response?.message || "خطا در ارسال پیام";
+        enqueueSnackbar(errorMessage, { variant: "error" });
       }
     } catch (error) {
       console.error("Error sending message:", error);
@@ -244,21 +255,22 @@ const TicketChat: React.FC<TicketChatProps> = ({ ticketId, onClose }) => {
 
     try {
       const response = await closeTicketMutation.mutateAsync(ticket.id);
-      
-      console.log('Close ticket response:', response);
-      
-      if (response?.status === 'true') {
-        enqueueSnackbar('تیکت با موفقیت بسته شد', { variant: 'success' });
-        
+
+      console.log("Close ticket response:", response);
+
+      if (response?.status === "true") {
+        enqueueSnackbar("تیکت با موفقیت بسته شد", { variant: "success" });
+
         // Reload ticket to get updated status
         loadTicket();
       } else {
-        const errorMessage = response?.error || response?.message || 'خطا در بستن تیکت';
-        enqueueSnackbar(errorMessage, { variant: 'error' });
+        const errorMessage =
+          response?.error || response?.message || "خطا در بستن تیکت";
+        enqueueSnackbar(errorMessage, { variant: "error" });
       }
     } catch (error) {
-      console.error('Error closing ticket:', error);
-      enqueueSnackbar('خطا در بستن تیکت', { variant: 'error' });
+      console.error("Error closing ticket:", error);
+      enqueueSnackbar("خطا در بستن تیکت", { variant: "error" });
     }
   };
 
@@ -285,10 +297,16 @@ const TicketChat: React.FC<TicketChatProps> = ({ ticketId, onClose }) => {
           {loading ? "در حال بارگذاری..." : "تیکتی انتخاب نشده است"}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          {loading ? "لطفاً صبر کنید..." : "یک تیکت از لیست انتخاب کنید یا تیکت جدید ایجاد کنید"}
+          {loading
+            ? "لطفاً صبر کنید..."
+            : "یک تیکت از لیست انتخاب کنید یا تیکت جدید ایجاد کنید"}
         </Typography>
         {ticketId && (
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ mt: 1, display: "block" }}
+          >
             Ticket ID: {ticketId}
           </Typography>
         )}
@@ -321,7 +339,7 @@ const TicketChat: React.FC<TicketChatProps> = ({ ticketId, onClose }) => {
 
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
               <Chip
-                icon={<PriorityIcon />}
+                icon={<ExclamationIcon />}
                 label={getPriorityText(ticket.priority)}
                 size="small"
                 sx={{
@@ -329,11 +347,11 @@ const TicketChat: React.FC<TicketChatProps> = ({ ticketId, onClose }) => {
                   color: "white",
                   fontWeight: 600,
                   borderRadius: 1.5,
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
-                  '& .MuiChip-icon': {
-                    color: 'white',
-                    fontSize: '0.875rem'
-                  }
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
+                  "& .MuiChip-icon": {
+                    color: "white",
+                    fontSize: "0.875rem",
+                  },
                 }}
               />
 
@@ -341,12 +359,13 @@ const TicketChat: React.FC<TicketChatProps> = ({ ticketId, onClose }) => {
                 label={getStatusText(ticket.status)}
                 size="small"
                 sx={{
-                  backgroundColor: ticket.status === TicketStatus.OPEN ? '#4caf50' : '#f44336',
-                  color: 'white',
+                  backgroundColor:
+                    ticket.status === TicketStatus.OPEN ? "#4caf50" : "#f44336",
+                  color: "white",
                   fontWeight: 600,
                   borderRadius: 1.5,
-                  border: 'none',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.15)'
+                  border: "none",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
                 }}
               />
 
@@ -355,38 +374,38 @@ const TicketChat: React.FC<TicketChatProps> = ({ ticketId, onClose }) => {
                 label={ticket.department?.name || "نامشخص"}
                 size="small"
                 sx={{
-                  backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                  color: 'primary.main',
+                  backgroundColor: "rgba(102, 126, 234, 0.1)",
+                  color: "primary.main",
                   borderRadius: 1.5,
-                  border: '1px solid rgba(102, 126, 234, 0.3)',
+                  border: "1px solid rgba(102, 126, 234, 0.3)",
                   fontWeight: 500,
-                  '& .MuiChip-icon': {
-                    color: 'primary.main',
-                    fontSize: '0.875rem'
-                  }
+                  "& .MuiChip-icon": {
+                    color: "primary.main",
+                    fontSize: "0.875rem",
+                  },
                 }}
               />
 
               <Chip
-                icon={<ScheduleIcon />}
+                icon={<ClockIcon />}
                 label={new Date(ticket.created_at).toLocaleDateString("fa-IR")}
                 size="small"
                 sx={{
-                  backgroundColor: 'rgba(158, 158, 158, 0.1)',
-                  color: 'text.secondary',
+                  backgroundColor: "rgba(158, 158, 158, 0.1)",
+                  color: "text.secondary",
                   borderRadius: 1.5,
-                  border: '1px solid rgba(158, 158, 158, 0.3)',
+                  border: "1px solid rgba(158, 158, 158, 0.3)",
                   fontWeight: 500,
-                  '& .MuiChip-icon': {
-                    color: 'text.secondary',
-                    fontSize: '0.875rem'
-                  }
+                  "& .MuiChip-icon": {
+                    color: "text.secondary",
+                    fontSize: "0.875rem",
+                  },
                 }}
               />
             </Box>
           </Box>
 
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>            
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
             {ticket.status === TicketStatus.OPEN && (
               <Button
                 variant="outlined"
@@ -397,10 +416,10 @@ const TicketChat: React.FC<TicketChatProps> = ({ ticketId, onClose }) => {
                 disabled={closeTicketMutation.isPending}
                 sx={{ mr: 1 }}
               >
-                {closeTicketMutation.isPending ? 'در حال بستن...' : 'بستن تیکت'}
+                {closeTicketMutation.isPending ? "در حال بستن..." : "بستن تیکت"}
               </Button>
             )}
-            
+
             <IconButton onClick={onClose} size="small">
               <CloseIcon />
             </IconButton>
@@ -468,9 +487,9 @@ const TicketChat: React.FC<TicketChatProps> = ({ ticketId, onClose }) => {
               placeholder="پیام خود را بنویسید..."
               value={replyForm.watch("message") || ""}
               onChange={(e) => {
-                replyForm.setValue("message", e.target.value, { 
+                replyForm.setValue("message", e.target.value, {
                   shouldValidate: true,
-                  shouldDirty: true 
+                  shouldDirty: true,
                 });
               }}
               error={!!replyForm.formState.errors.message}
@@ -482,14 +501,14 @@ const TicketChat: React.FC<TicketChatProps> = ({ ticketId, onClose }) => {
               onClick={handleFileUpload}
               color={showFileUpload ? "primary" : "default"}
             >
-              <AttachFileIcon />
+              <AttachIcon />
             </IconButton>
 
             <Button
               variant="contained"
               onClick={handleSendMessage}
               disabled={
-                !replyForm.watch("message")?.trim() || 
+                !replyForm.watch("message")?.trim() ||
                 newMessageMutation.isPending
               }
               startIcon={<SendIcon />}

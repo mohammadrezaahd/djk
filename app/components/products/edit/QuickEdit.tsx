@@ -1,26 +1,17 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
   Grid,
-  Card,
-  CardContent,
   Typography,
   TextField,
   Box,
-  Button,
   Alert,
-  Divider,
-  Paper,
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  FormControl,
-  FormHelperText,
 } from "@mui/material";
-import { ExpandMore as ExpandMoreIcon } from "@mui/icons-material";
+import { ExpandIcon } from "~/components/icons/IconComponents";
 import { Controller } from "react-hook-form";
-import type { ICategoryList } from "~/types/interfaces/categories.interface";
-import type { ICategoryAttr } from "~/types/interfaces/attributes.interface";
-import type { ICategoryDetails } from "~/types/interfaces/details.interface";
+
 import { useCategory } from "~/api/categories.api";
 import AttributesFormFields from "~/components/templates/attributes/AttributesFormFields";
 import DetailsFormFields from "~/components/templates/details/DetailsFormFields";
@@ -73,14 +64,14 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
     if (!productData?.data) return null;
     return {
       id: productData.data.category_id,
-      title: productData.data.category_title || 'دسته‌بندی',
+      title: productData.data.category_title || "دسته‌بندی",
       parent_id: productData.data.parent_category_id || 0, // Add required field
-      slug: productData.data.category_slug || '', // Add if available
-      description: '', // Default value
-      image: '', // Default value
+      slug: productData.data.category_slug || "", // Add if available
+      description: "", // Default value
+      image: "", // Default value
       status: 1, // Default active status
-      created_at: '', // Default value
-      updated_at: '', // Default value
+      created_at: "", // Default value
+      updated_at: "", // Default value
     };
   }, [productData?.data]);
 
@@ -94,19 +85,19 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
 
   // Keep form in sync with props
   useEffect(() => {
-    form.setValue('title', productTitle);
+    form.setValue("title", productTitle);
   }, [productTitle, form]);
 
   useEffect(() => {
-    form.setValue('description', productDescription);
+    form.setValue("description", productDescription);
   }, [productDescription, form]);
 
   useEffect(() => {
-    form.setValue('images', selectedImages);
+    form.setValue("images", selectedImages);
   }, [selectedImages, form]);
 
   useEffect(() => {
-    form.setValue('selectedCategory', selectedCategory);
+    form.setValue("selectedCategory", selectedCategory);
   }, [selectedCategory, form]);
 
   // API hooks
@@ -137,15 +128,15 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
     const detailsFormData: { [key: string]: any } = {};
     if (product.details?.list && product.details.list.length > 0) {
       const detailData = product.details.list[0]; // Take first template for quick edit
-      
+
       // Extract static fields
       const staticFields = [
         "is_fake_product",
-        "brand", 
+        "brand",
         "status",
         "platform",
         "product_class",
-        "category_product_type", 
+        "category_product_type",
         "fake_reason",
         "theme",
         "id_type",
@@ -158,12 +149,12 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
         }
       });
 
-      // Extract bind text fields  
+      // Extract bind text fields
       if (detailData.bind) {
         const bind = detailData.bind as any;
         const textFields = [
           "brand_model",
-          "color_pattern", 
+          "color_pattern",
           "warranty",
           "size",
           "weight",
@@ -188,7 +179,7 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
     const attributesFormData: { [key: string]: any } = {};
     if (product.attributes?.list && product.attributes.list.length > 0) {
       const attrData = product.attributes.list[0]; // Take first template for quick edit
-      
+
       if (attrData.category_group_attributes) {
         Object.values(attrData.category_group_attributes).forEach(
           (categoryData: any) => {
@@ -210,9 +201,9 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
                   }
                   break;
                 case "select":
-                  const selectedValue = Object.entries(
-                    attr.values || {}
-                  ).find(([_, v]: [string, any]) => v.selected)?.[0];
+                  const selectedValue = Object.entries(attr.values || {}).find(
+                    ([_, v]: [string, any]) => v.selected
+                  )?.[0];
                   if (selectedValue) {
                     attributesFormData[fieldKey] = selectedValue;
                   }
@@ -247,18 +238,20 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
         }
       });
 
-      onDetailsTemplatesChange([{
-        id: 1000,
-        title: 'قالب ویرایش سریع',
-        source: productData?.data?.source,
-        data: processedDetails,
-        formData: detailsFormData,
-      }]);
+      onDetailsTemplatesChange([
+        {
+          id: 1000,
+          title: "قالب ویرایش سریع",
+          source: productData?.data?.source,
+          data: processedDetails,
+          formData: detailsFormData,
+        },
+      ]);
     }
 
     if (attributesData) {
       const processedAttributes = JSON.parse(JSON.stringify(attributesData));
-      
+
       if (processedAttributes.category_group_attributes) {
         Object.values(processedAttributes.category_group_attributes).forEach(
           (categoryData: any) => {
@@ -288,13 +281,15 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
         );
       }
 
-      onAttributesTemplatesChange([{
-        id: 2000,
-        title: 'قالب ویرایش سریع',
-        source: productData?.data?.source,
-        data: processedAttributes,
-        formData: attributesFormData,
-      }]);
+      onAttributesTemplatesChange([
+        {
+          id: 2000,
+          title: "قالب ویرایش سریع",
+          source: productData?.data?.source,
+          data: processedAttributes,
+          formData: attributesFormData,
+        },
+      ]);
     }
   }, [productData?.data, detailsData, attributesData]);
 
@@ -312,7 +307,7 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
     // Update parent templates for saving
     if (detailsData) {
       const processedDetails = JSON.parse(JSON.stringify(detailsData));
-      
+
       // Apply current form data
       const currentFormData = { ...formData.details, [fieldKey]: value };
       Object.keys(currentFormData).forEach((field) => {
@@ -322,13 +317,15 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
         }
       });
 
-      onDetailsTemplatesChange([{
-        id: 1000,
-        title: 'قالب ویرایش سریع',
-        source: productData?.data?.source,
-        data: processedDetails,
-        formData: currentFormData,
-      }]);
+      onDetailsTemplatesChange([
+        {
+          id: 1000,
+          title: "قالب ویرایش سریع",
+          source: productData?.data?.source,
+          data: processedDetails,
+          formData: currentFormData,
+        },
+      ]);
     }
   };
 
@@ -346,10 +343,10 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
     // Update parent templates for saving
     if (attributesData) {
       const processedAttributes = JSON.parse(JSON.stringify(attributesData));
-      
+
       // Apply current form data
       const currentFormData = { ...formData.attributes, [fieldKey]: value };
-      
+
       if (processedAttributes.category_group_attributes) {
         Object.values(processedAttributes.category_group_attributes).forEach(
           (categoryData: any) => {
@@ -379,13 +376,15 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
         );
       }
 
-      onAttributesTemplatesChange([{
-        id: 2000,
-        title: 'قالب ویرایش سریع',
-        source: productData?.data?.source,
-        data: processedAttributes,
-        formData: currentFormData,
-      }]);
+      onAttributesTemplatesChange([
+        {
+          id: 2000,
+          title: "قالب ویرایش سریع",
+          source: productData?.data?.source,
+          data: processedAttributes,
+          formData: currentFormData,
+        },
+      ]);
     }
   };
 
@@ -423,7 +422,8 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
       <Grid size={{ xs: 12 }}>
         <Alert severity="info" sx={{ mb: 2 }}>
           <Typography variant="body2">
-            <strong>دسته‌بندی محصول:</strong> {selectedCategory?.title || 'نامشخص'}
+            <strong>دسته‌بندی محصول:</strong>{" "}
+            {selectedCategory?.title || "نامشخص"}
           </Typography>
           <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
             در ویرایش سریع، امکان تغییر دسته‌بندی وجود ندارد
@@ -438,7 +438,7 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
           onChange={handleAccordionChange("basic")}
         >
           <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
+            expandIcon={<ExpandIcon />}
             aria-controls="basic-content"
             id="basic-header"
           >
@@ -505,17 +505,12 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
           onChange={handleAccordionChange("details")}
         >
           <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
+            expandIcon={<ExpandIcon />}
             aria-controls="details-content"
             id="details-header"
           >
-            <Typography variant="h6">
-              اطلاعات تفصیلی محصول
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{ ml: 1, color: "text.secondary" }}
-            >
+            <Typography variant="h6">اطلاعات تفصیلی محصول</Typography>
+            <Typography variant="body2" sx={{ ml: 1, color: "text.secondary" }}>
               (اختیاری)
             </Typography>
           </AccordionSummary>
@@ -547,15 +542,12 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
           onChange={handleAccordionChange("attributes")}
         >
           <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
+            expandIcon={<ExpandIcon />}
             aria-controls="attributes-content"
             id="attributes-header"
           >
             <Typography variant="h6">ویژگی‌های محصول</Typography>
-            <Typography
-              variant="body2"
-              sx={{ ml: 1, color: "text.secondary" }}
-            >
+            <Typography variant="body2" sx={{ ml: 1, color: "text.secondary" }}>
               (اختیاری)
             </Typography>
           </AccordionSummary>
@@ -587,7 +579,7 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
           onChange={handleAccordionChange("images")}
         >
           <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
+            expandIcon={<ExpandIcon />}
             aria-controls="images-content"
             id="images-header"
           >
@@ -611,10 +603,7 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
               }}
               onPageSizeChange={(event) => {
                 // Handle page size change if needed in future
-                console.log(
-                  "Page size changed to:",
-                  event.target.value
-                );
+                console.log("Page size changed to:", event.target.value);
               }}
               showUpload={true}
               onUploadSuccess={() => {
@@ -624,9 +613,7 @@ const QuickEditProduct: React.FC<QuickEditProductProps> = ({
                 console.error("Upload error:", error);
               }}
               selectionMode={true}
-              selectedItems={
-                selectedImages?.map((id) => id.toString()) || []
-              }
+              selectedItems={selectedImages?.map((id) => id.toString()) || []}
               onSelectionChange={handleImagesChange}
               allowMultiple={true}
               showSearch={false}

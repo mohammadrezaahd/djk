@@ -11,7 +11,11 @@ import {
   StepIcon,
   stepIconClasses,
 } from "@mui/material";
-import { CheckCircle, Error, RadioButtonUnchecked } from "@mui/icons-material";
+import {
+  CircleCheckIcon,
+  ErrorIcon,
+  RadioButtonIcon,
+} from "../icons/IconComponents";
 import { FormStep } from "~/store/slices/productSlice";
 
 interface FormStepsProps {
@@ -31,10 +35,10 @@ const Connector = styled(StepConnector)(({ theme }) => ({
     top: 10, // برای آیکون‌های کوچکتر در موبایل
     left: theme.direction === "rtl" ? "calc(50% + 8px)" : "calc(-50% + 8px)",
     right: theme.direction === "rtl" ? "calc(-50% + 8px)" : "calc(50% + 8px)",
-    [theme.breakpoints.up('sm')]: {
+    [theme.breakpoints.up("sm")]: {
       top: 12,
     },
-    [theme.breakpoints.up('md')]: {
+    [theme.breakpoints.up("md")]: {
       top: 14,
     },
   },
@@ -75,21 +79,24 @@ const StepIconComponent = (props: any) => {
   const iconSize = { xs: 20, sm: 24, md: 28 };
 
   if (completed && !hasError) {
-    return <CheckCircle sx={{ width: iconSize, height: iconSize, color: 'success.main' }} />;
+    return <CircleCheckIcon style={{ color: "success.main" }} />;
   }
-  
+
   if (hasBeenVisited && hasError) {
-    return <Error sx={{ width: iconSize, height: iconSize, color: 'error.main' }} />;
+    return <ErrorIcon style={{ color: "error.main" }} />;
   }
 
   if (active) {
-    return <RadioButtonUnchecked sx={{ width: iconSize, height: iconSize, color: 'primary.main' }} />;
+    return <RadioButtonIcon style={{ color: "primary.main" }} />;
   }
 
-  return <RadioButtonUnchecked sx={{ width: iconSize, height: iconSize, color: 'grey.400' }} />;
+  return <RadioButtonIcon style={{ color: "grey.400" }} />;
 };
 
-const FormSteps: React.FC<FormStepsProps> = ({ currentStep, stepValidationErrors }) => {
+const FormSteps: React.FC<FormStepsProps> = ({
+  currentStep,
+  stepValidationErrors,
+}) => {
   const theme = useTheme();
 
   const steps = [
@@ -120,7 +127,10 @@ const FormSteps: React.FC<FormStepsProps> = ({ currentStep, stepValidationErrors
 
   // Check if a step has validation errors
   const hasStepError = (stepKey: FormStep) => {
-    return stepValidationErrors[stepKey as keyof typeof stepValidationErrors] || false;
+    return (
+      stepValidationErrors[stepKey as keyof typeof stepValidationErrors] ||
+      false
+    );
   };
 
   return (
@@ -177,31 +187,35 @@ const FormSteps: React.FC<FormStepsProps> = ({ currentStep, stepValidationErrors
                 )}
                 sx={{
                   "& .MuiStepLabel-label": {
-                    color: hasBeenVisited && hasError
-                      ? theme.palette.error.main + ' !important'
-                      : isActive
-                      ? theme.palette.primary.main
-                      : isCompleted
-                      ? theme.palette.success.main
-                      : theme.palette.text.secondary,
-                    fontWeight: hasBeenVisited && hasError
-                      ? 600
-                      : isActive
-                      ? 700
-                      : isCompleted
-                      ? 500
-                      : 400,
+                    color:
+                      hasBeenVisited && hasError
+                        ? theme.palette.error.main + " !important"
+                        : isActive
+                          ? theme.palette.primary.main
+                          : isCompleted
+                            ? theme.palette.success.main
+                            : theme.palette.text.secondary,
+                    fontWeight:
+                      hasBeenVisited && hasError
+                        ? 600
+                        : isActive
+                          ? 700
+                          : isCompleted
+                            ? 500
+                            : 400,
                   },
                   "& .MuiStepLabel-label.Mui-active": {
-                    color: isActive && hasError && hasBeenVisited
-                      ? theme.palette.error.main + ' !important'
-                      : theme.palette.primary.main + ' !important',
+                    color:
+                      isActive && hasError && hasBeenVisited
+                        ? theme.palette.error.main + " !important"
+                        : theme.palette.primary.main + " !important",
                   },
                   "& .MuiStepLabel-label.Mui-completed": {
-                    color: hasError && hasBeenVisited
-                      ? theme.palette.error.main + ' !important'
-                      : theme.palette.success.main + ' !important',
-                  }
+                    color:
+                      hasError && hasBeenVisited
+                        ? theme.palette.error.main + " !important"
+                        : theme.palette.success.main + " !important",
+                  },
                 }}
               >
                 {step.label}

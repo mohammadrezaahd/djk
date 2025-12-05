@@ -8,11 +8,13 @@ import {
   useTheme,
   alpha,
 } from "@mui/material";
+
 import {
-  Lock as LockIcon,
-  Login as LoginIcon,
-  Home as HomeIcon,
-} from "@mui/icons-material";
+  LockIcon,
+  LoginIcon,
+  HomeIcon,
+} from "~/components/icons/IconComponents";
+
 import { useNavigate } from "react-router";
 
 export function meta() {
@@ -85,7 +87,7 @@ const RestrictedPage = () => {
               boxShadow: `0 4px 20px ${alpha(theme.palette.error.main, 0.4)}`,
             }}
           >
-            <LockIcon sx={{ fontSize: 50, color: "white" }} />
+            <LockIcon style={{ fontSize: 50, color: "white" }} />
           </Box>
 
           {/* Title */}
@@ -110,8 +112,8 @@ const RestrictedPage = () => {
           </Typography>
 
           <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-            برای دسترسی به این بخش، لطفاً ابتدا وارد حساب کاربری خود شوید.
-            اگر حساب کاربری ندارید، با پشتیبانی تماس بگیرید.
+            برای دسترسی به این بخش، لطفاً ابتدا وارد حساب کاربری خود شوید. اگر
+            حساب کاربری ندارید، با پشتیبانی تماس بگیرید.
           </Typography>
 
           {/* Divider */}
